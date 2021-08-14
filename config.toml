@@ -1,0 +1,71 @@
+# module configuration
+module_system = "summit"
+module_solver = "specfem"
+module_kernel = "ortho"
+module_misfit = "ortho"
+module_optimizer = "gd"
+module_search = "bracket"
+
+# job configuration
+job_name = "greenland"
+job_nnodes = 64
+job_account = "GEO111"
+job_walltime = 120.0
+job_gap = 1.0
+job_debug = false
+
+# main task
+task = ["sebox.solver", "forward"]
+
+# path to external directories
+path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
+path_catalog = "/gpfs/alpine/scratch/ccui/geo111/dataset/north_syn"
+path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
+path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m00.bp"
+
+# solver
+duration = 348.0
+transient_duration = 60.0
+lddrk = false
+catalog_range = [85.0, -115.0, 70.0, 90.0]
+
+
+
+# kernel
+dt = 0.16
+period_range = [17.0, 150.0]
+unwrap_phase = false
+test_encoding = false
+frequency_increment = 60
+nkernels = 4
+nkernels_rng = 1
+reference_velocity = 6.0
+normalize_source = true
+taper = 5.0
+deglitch = [1, 200, 95]
+measurement_threshold = 0
+noise_threshold = 1e-8
+event_weighting = [0.33, 1.0, 4.0, 5.0]
+station_weighting = [0.125, 0.5, 2.0, 5.0]
+randomize_frequency = 1
+remove_response = [0.00533, 0.00666, 0.0589, 0.0735]
+seed = 0
+
+kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
+hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
+smooth_kernels = [150.0, 70.0, 0.9]
+smooth_hessian = [150.0, 70.0, 0.9]
+smooth_vertical = 0.6
+fixed_preconditioner = false
+precondition = 200.0
+source_mask = true
+
+phase_factor = 1.0
+amplitude_factor = 0.0
+mix_single = 1.0
+double_difference = true
+
+niters = 20
+nsteps = 5
+step_init = 0.01
+mem = 5
