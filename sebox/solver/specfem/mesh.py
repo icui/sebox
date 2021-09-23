@@ -7,4 +7,4 @@ def echo(ws: Mesh):
 
 async def mesh(ws: Mesh):
     """Generate mesh."""
-    await ws.mpiexec(echo)
+    await ws.mpiexec(echo, 4)
