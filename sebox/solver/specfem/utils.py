@@ -1,6 +1,6 @@
 import typing as tp
 
-from sebox import Directory
+from sebox.core.directory import Directory
 
 
 def probe_mesher(d: Directory) -> float:
