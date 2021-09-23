@@ -158,3 +158,16 @@ class Directory:
         
         else:
             raise TypeError(f'unsupported file type {ext}')
+    
+    async def mpiexec(self, cmd: tp.Union[str, tp.Callable], 
+        nprocs: int = 1, gpu: tp.Union[bool, int, tp.Tuple[int, int]] = False, name: tp.Optional[str] = None):
+        """Run MPI task."""
+        from .mpiexec import mpiexec
+
+        if isinstance(gpu, bool):
+            gpu = (1, int(gpu))
+        
+        elif isinstance(gpu, int):
+            gpu = (gpu, gpu)
+        
+        await mpiexec(self, cmd, nprocs, gpu[0], gpu[1], name)

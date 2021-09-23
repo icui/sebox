@@ -1,0 +1,2 @@
+def mesh():
+    """Generate mesh."""

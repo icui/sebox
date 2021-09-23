@@ -3,6 +3,9 @@ import typing as tp
 
 from sebox import root, Workspace, Directory
 
+if tp.TYPE_CHECKING:
+    from sebox.solver import Forward, Mesh
+
 
 class Par_file(tp.TypedDict, total=False):
     """DATA/Par_file in specfem."""
@@ -54,10 +57,16 @@ class Par_file(tp.TypedDict, total=False):
 
 async def xspecfem(ws: Workspace):
     """Call xspecfem3D."""
+    await ws.mpiexec('bin/xspecfem3D', getsize(ws), True)
 
 
-async def xmeshfem(ws: Workspace):
+async def xmeshfem(ws: tp.Union[Forward, Mesh]):
     """Call xmeshfem3D."""
+    if ws.path_mesh:
+        ws.ln(ws.abs(ws.path_mesh, 'DATABASES_MPI/*.bp'))
+    
+    else:
+        await ws.mpiexec('bin/xmeshfem3D', getsize(ws))
 
 
 def getpars(d: tp.Optional[Directory] = None) -> Par_file:

@@ -14,6 +14,12 @@ class Solver(tp.Protocol):
     adjoint: Task[Adjoint]
 
 
+class MeshData(tp.Protocol):
+    """Mesh configuraiton."""
+    # path to model file
+    path_model: str
+
+
 class ForwardData(tp.Protocol):
     """Forward simulation."""
     # path to CMTSOLUTION
@@ -24,6 +30,9 @@ class ForwardData(tp.Protocol):
 
     # path to generated mesh
     path_mesh: str
+
+    # path to model file (if self.path_mesh is None)
+    path_model: str
 
     # save forward wavefield for adjoint computation
     save_forward: bool
@@ -50,6 +59,10 @@ class AdjointData(tp.Protocol):
     path_forward: str
 
 
+class Mesh(Workspace, MeshData):
+    """A workspace to generate mesh."""
+
+
 class Forward(Workspace, ForwardData):
     """A workspace to run forward simulation."""
 
@@ -58,10 +71,22 @@ class Adjoint(Workspace, AdjointData):
     """A workspace to run adjiont simulation."""
 
 
+def add_mesh(ws: Workspace, name: str, *,
+    path_model: tp.Optional[str] = None) -> Mesh:
+    """A a workspace to run mesher."""
+    solver = tp.cast(Mesh, ws.add(name, False, ('sebox.solver', 'mesh')))
+
+    if path_model is not None:
+        solver.path_model = path_model
+    
+    return solver
+
+
 def add_forward(ws: Workspace, name: str, *,
     path_event: tp.Optional[str] = None,
     path_stations: tp.Optional[str] = None,
-    path_mesh: tp.Optional[str] = None) -> Forward:
+    path_mesh: tp.Optional[str] = None,
+    path_model: tp.Optional[str] = None) -> Forward:
     """A a workspace to run forward simulation."""
     solver = tp.cast(Forward, ws.add(name, False, ('sebox.solver', 'forward')))
 
@@ -73,6 +98,9 @@ def add_forward(ws: Workspace, name: str, *,
     
     if path_mesh is not None:
         solver.path_mesh = path_mesh
+    
+    if path_model is not None:
+        solver.path_model = path_model
     
     return solver
 

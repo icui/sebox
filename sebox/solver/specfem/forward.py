@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from sebox import Directory
 from sebox.solver import Forward
-from .specfem import Par_file, xspecfem, setpars
+from .specfem import Par_file, xmeshfem, xspecfem, setpars
 
 
 class Specfem(Forward):
@@ -31,10 +31,17 @@ def setup(ws: Specfem):
 
     # link specfem model directories
     for subdir in d.ls('DATA', isdir=True):
-        ws.ln(d.abs('DATA', subdir), 'DATA')
+        if subdir != 'GLL':
+            ws.ln(d.abs('DATA', subdir), 'DATA')
     
-    # link mesh files
-    ws.ln(ws.abs(ws.path_mesh, 'DATABASES_MPI/*.bp'))
+    if not ws.path_mesh:
+        # link model file to run mesher
+        if ws.path_model:
+            ws.mkdir('DATA/GLL')
+            ws.ln(ws.path_model, 'DATA/GLL/model_gll.bp')
+        
+        else:
+            raise AttributeError('path_mesh or path_model is required')
 
     # update Par_file
     pars: Par_file = { 'SIMULATION_TYPE': 1, 'MODEL': 'GLL' }
@@ -81,5 +88,6 @@ def finalize(ws: Specfem):
 def forward(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
+    ws.add(xmeshfem)
     ws.add(xspecfem)
     ws.add(finalize)
