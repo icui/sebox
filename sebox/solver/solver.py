@@ -1,8 +1,6 @@
 from __future__ import annotations
 import typing as tp
-
-if tp.TYPE_CHECKING:
-    from sebox import Task, Workspace
+from sebox import Task, Workspace
 
 
 class Solver(tp.Protocol):
