@@ -58,10 +58,10 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
     
     try:
         # calculate node number
-        nnodes = int(ceil(nprocs * cpus_per_proc  / root.cpus_per_node))
+        nnodes = int(ceil(nprocs * cpus_per_proc  / (root.cpus_per_node or root.sys.cpus_per_node)))
 
         if gpus_per_proc > 0:
-            nnodes = max(nnodes, int(ceil(nprocs * gpus_per_proc  / root.gpus_per_node)))
+            nnodes = max(nnodes, int(ceil(nprocs * gpus_per_proc  / (root.gpus_per_node or root.sys.gpus_per_node))))
 
         # wait for node resources
         await lock.acquire()

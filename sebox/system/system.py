@@ -9,3 +9,9 @@ class System(tp.Protocol):
 
     # resubmit current job
     requeue: tp.Callable[[], None]
+
+    # number of CPUs per node
+    cpus_per_node: int
+
+    # number of GPUs per node
+    gpus_per_node: int
