@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from sebox import Directory
 from sebox.solver import Forward
 from .specfem import Par_file, xmeshfem, xspecfem, setpars
 
@@ -16,6 +15,8 @@ class Specfem(Forward):
 
 def setup(ws: Specfem):
     """Create forward workspace."""
+    from sebox import Directory
+
     d = Directory(ws.path_specfem)
 
     # specfem directories
