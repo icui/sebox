@@ -6,6 +6,7 @@ from sebox import root
 
 def add_error(e: Exception):
     """Save error message.."""
+    print('???')
     err = format_exc()
     print(err, file=stderr)
     root.write(err, f'{argv[1]}.error', 'a')
