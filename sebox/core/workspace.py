@@ -1,5 +1,6 @@
 from __future__ import annotations
 from os import path
+from sys import stderr
 from importlib import import_module
 from time import time
 import asyncio
@@ -154,6 +155,8 @@ class Workspace(Directory):
             self._data = self._backup
             self._backup = None
 
+            print(e, file=stderr)
+
             if err or root.job_debug:
                 # job failed twice or job in debug mode
                 root.job_aborted = True
@@ -184,7 +187,6 @@ class Workspace(Directory):
                 if ws not in exclude and not ws.done:
                     wss.append(ws)
             
-            print(wss, len(exclude))
             return wss
 
         while len(wss := get_unfinished()):
