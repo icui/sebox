@@ -1,6 +1,10 @@
 from sebox.solver import Mesh
 
 
-def mesh(ws: Mesh):
+def echo(ws: Mesh):
+    print(ws.path_model, 1)
+
+
+async def mesh(ws: Mesh):
     """Generate mesh."""
-    print(1)
+    await ws.mpiexec(echo)
