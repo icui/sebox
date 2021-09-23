@@ -184,10 +184,10 @@ class Workspace(Directory):
                 if ws not in exclude and not ws.done:
                     wss.append(ws)
             
+            print(wss, len(exclude))
             return wss
 
         while len(wss := get_unfinished()):
-            print(wss)
             if self._concurrent:
                 # execute nodes concurrently
                 exclude += wss
