@@ -60,7 +60,7 @@ class Root(Workspace, Job):
         if 'sys' not in self._cache:
             self._cache['sys'] = import_module(f'sebox.system.{root.module_system}')
 
-        return tp.cast(System, self._cache['sys'])
+        return tp.cast(tp.Any, self._cache['sys'])
     
     @property
     def cache(self):
