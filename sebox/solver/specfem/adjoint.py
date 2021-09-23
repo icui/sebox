@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sebox import Directory
+from sebox.core.directory import Directory
 from sebox.solver import Adjoint
 from .specfem import xspecfem, setpars
 

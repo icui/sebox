@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import root, Workspace, Directory
+from sebox.core.workspace import Workspace, Directory
 
 if tp.TYPE_CHECKING:
     from sebox.solver import Forward, Mesh
@@ -71,6 +71,8 @@ async def xmeshfem(ws: tp.Union[Forward, Mesh]):
 
 def getpars(d: tp.Optional[Directory] = None) -> Par_file:
     """Get entries in Par_file."""
+    from sebox import root
+    
     if d is None:
         d = Directory(tp.cast(str, root.path_specfem))
 
