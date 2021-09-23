@@ -97,7 +97,7 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
             await process.communicate()
 
             # write elapsed time
-            f.write(f'\nelapsed: {timedelta(seconds=time()-time_start)}\n')
+            f.write(f'\nelapsed: {timedelta(seconds=int(time()-time_start))}\n')
 
         if d.has(f'{name}.error'):
             raise RuntimeError(d.read(f'{name}.error'))

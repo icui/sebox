@@ -6,6 +6,9 @@ from sebox.core.workspace import Task, Workspace
 
 class Solver(tp.Protocol):
     """Required functions in a solver module."""
+    # generate mesh
+    mesh: Task[Mesh]
+
     # forward simulation
     forward: Task[Forward]
 
