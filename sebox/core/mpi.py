@@ -1,7 +1,15 @@
-from sys import argv
+from sys import argv, stderr
+from traceback import format_exc
 import asyncio
 
 from sebox import root
+
+def add_error(e: Exception):
+    """Save error message.."""
+    err = format_exc()
+    print(err, file=stderr)
+    root.write(err, f'{argv[1]}.error', 'a')
+
 
 if __name__ == '__main__':
     try:
@@ -11,4 +19,4 @@ if __name__ == '__main__':
             asyncio.run(result)
     
     except Exception as e:
-        root.write(f'{argv[1]}.error', str(e), 'a')
+        add_error(e)
