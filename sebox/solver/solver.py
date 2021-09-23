@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing as tp
-from sebox import Task, Workspace
+
+from sebox.core.workspace import Task, Workspace
 
 
 class Solver(tp.Protocol):
