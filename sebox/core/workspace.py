@@ -150,12 +150,14 @@ class Workspace(Directory):
                 await result
         
         except Exception as e:
+            from traceback import format_exc
+            
             self._starttime = None
             self._err = e
             self._data = self._backup
             self._backup = None
 
-            print(e, file=stderr)
+            print(format_exc(), file=stderr)
 
             if err or root.job_debug:
                 # job failed twice or job in debug mode
