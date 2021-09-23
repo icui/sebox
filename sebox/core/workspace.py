@@ -141,7 +141,7 @@ class Workspace(Directory):
             task: tp.Any = self.task
 
             if isinstance(task, tuple) or isinstance(task, list):
-                module = import_module(task[0] + '.' + tp.cast(str, self['module_' + task[0].split('.')[-1]]))
+                module = import_module(task[0] + '.' + getattr(self, 'module_' + task[0].split('.')[-1]))
                 task = getattr(module, task[1])
 
             # call task function
