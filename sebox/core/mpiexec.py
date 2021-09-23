@@ -6,7 +6,8 @@ from math import ceil
 from time import time
 from datetime import timedelta
 
-from sebox import root, Directory
+from .root import root
+from .directory import Directory
 
 
 # pending tasks

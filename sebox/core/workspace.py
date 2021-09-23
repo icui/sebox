@@ -187,6 +187,7 @@ class Workspace(Directory):
             return wss
 
         while len(wss := get_unfinished()):
+            print(wss)
             if self._concurrent:
                 # execute nodes concurrently
                 exclude += wss
