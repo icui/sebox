@@ -1,4 +1,5 @@
 from os import path, fsync
+from functools import partial
 from subprocess import check_call
 from glob import glob
 import pickle
@@ -160,14 +161,29 @@ class Directory:
             raise TypeError(f'unsupported file type {ext}')
     
     async def mpiexec(self, cmd: tp.Union[str, tp.Callable], 
-        nprocs: int = 1, gpu: tp.Union[bool, int, tp.Tuple[int, int]] = False, name: tp.Optional[str] = None):
+        nprocs: int = 1, per_proc: tp.Union[int, tp.Tuple[int, int]] = (0, 1), *,
+        name: tp.Optional[str] = None, arg: tp.Any = None, args: tp.Optional[list] = None):
         """Run MPI task."""
         from .mpiexec import mpiexec
 
-        if isinstance(gpu, bool):
-            gpu = (1, int(gpu))
+        if isinstance(per_proc, int):
+            per_proc = (per_proc, per_proc)
         
-        elif isinstance(gpu, int):
-            gpu = (gpu, gpu)
+        if arg is not None:
+            if args is not None:
+                raise TypeError('arg and args can not be set at the same time')
+
+            if isinstance(cmd, str):
+                cmd += ' ' + str(arg)
+            
+            else:
+                cmd = partial(cmd, arg)
         
-        await mpiexec(self, cmd, nprocs, gpu[0], gpu[1], name)
+        elif args is not None:
+            if isinstance(cmd, str):
+                cmd += ' ' + ' '.join(args)
+            
+            else:
+                cmd = partial(cmd, *args)
+        
+        await mpiexec(self, cmd, nprocs, per_proc[0], per_proc[1], name)
