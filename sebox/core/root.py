@@ -3,15 +3,10 @@ from importlib import import_module
 import typing as tp
 import signal
 
-from .directory import Directory
 from .workspace import Workspace
 
 if tp.TYPE_CHECKING:
     from sebox.system import System
-
-
-# root directory
-_rootdir = Directory('.')
 
 
 class Job(tp.Protocol):
@@ -55,12 +50,12 @@ class Root(Workspace, Job):
     # runtime global cache
     _cache: tp.Dict[str, tp.Any] = {}
 
+    # module of job scheduler
+    _sys: System
+
     @property
     def sys(self) -> System:
-        if 'sys' not in self._cache:
-            self._cache['sys'] = import_module(f'sebox.system.{root.module_system}')
-
-        return tp.cast(tp.Any, self._cache['sys'])
+        return self._sys
     
     @property
     def cache(self):
@@ -71,30 +66,43 @@ class Root(Workspace, Job):
     
     async def run(self):
         """Run main task."""
+        self.restore()
+
         # requeue before job gets killed
-        signal.signal(signal.SIGALRM, _check_requeue)
+        signal.signal(signal.SIGALRM, self._check_requeue)
         signal.alarm(int((self.job_walltime - self.job_gap) * 60))
 
         await super().run()
 
         # requeue job if task failed
         if self.job_failed:
-            _check_requeue()
-
-
-if _rootdir.has('root.pickle'):
-    # load saved root workspace
-    root = tp.cast(Root, _rootdir.load('root.pickle'))
-
-else:
-    # create new root workspace
-    root = Root('.', False, None, None)
+            self._check_requeue()
     
-    if root.has('config.toml'):
-        root._data.update(root.load('config.toml'))
+    def save(self):
+        """Save state."""
+        self.dump(self.__getstate__(), 'root.pickle')
+    
+    def restore(self):
+        """Restore state."""
+        if hasattr(self, '_sys'):
+            return
+
+        if self.has('root.pickle'):
+            # restore previous state
+            self.__setstate__(self.load('root.pickle'))
+        
+        elif self.has('config.toml'):
+            # load configuration
+            self._data.update(root.load('config.toml'))
+        
+        # load module of job scheduler
+        self._sys = tp.cast(tp.Any, import_module(f'sebox.system.{self.module_system}'))
+
+    def _check_requeue(self, *_):
+        """Requeue job if necessary."""
+        if not self.job_aborted and not self.job_debug:
+            self.sys.requeue()
 
 
-def _check_requeue(*_):
-    """Requeue job if necessary."""
-    if not root.job_aborted and not root.job_debug:
-        root.sys.requeue()
+# create root workspace
+root = Root('.', False, None, None)

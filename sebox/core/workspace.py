@@ -170,7 +170,7 @@ class Workspace(Directory):
         else:
             self._endtime = time()
         
-        root.dump(root, 'root.pickle')
+        root.save()
     
     async def run_ws(self):
         """Execute self._ws."""
