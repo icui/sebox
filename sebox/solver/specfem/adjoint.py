@@ -25,16 +25,15 @@ def setup(ws: Adjoint):
     ws.mkdir('DATA')
     ws.mkdir('OUTPUT_FILES')
     
-    # link files and create Par_file
+    # link files
     ws.ln(d.abs('bin'))
     ws.ln(d.abs('DATABASES_MPI'))
     ws.ln(d.abs('DATA/*'), 'DATA')
-    ws.rm('DATA/Par_file')
-    ws.cp(d.abs('DATA/Par_file'), 'DATA')
     ws.ln(ws.path_misfit, 'SEM/adjoint.h5')
-    ws.cp('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
+    ws.ln('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
 
     #  update Par_file
+    ws.cp(d.abs('DATA/Par_file'), 'DATA')
     setpars(ws, { 'SIMULATION_TYPE': 3, 'SAVE_FORWARD': False })
 
 
