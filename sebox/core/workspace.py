@@ -84,11 +84,11 @@ class Workspace(Directory):
     
     def __setattr__(self, key: str, val):
         """Set workspace data."""
-        if self._endtime or not self._starttime:
-            raise AttributeError('workspace property can only be changed by its task')
-
         if key.startswith('_'):
             object.__setattr__(self, key, val)
+        
+        elif self._endtime or not self._starttime:
+            raise AttributeError('workspace property can only be changed by its task')
         
         else:
             self._data[key] = val
