@@ -9,7 +9,7 @@ if tp.TYPE_CHECKING:
 
     class Par_file(tp.TypedDict, total=False):
         """DATA/Par_file in specfem."""
-        # 0 for forward simulation, 3 for adjoint simulation
+        # 1 for forward simulation, 3 for adjoint simulation
         SIMULATION_TYPE: int
 
         # save forward wavefield
