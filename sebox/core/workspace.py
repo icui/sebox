@@ -56,7 +56,7 @@ class Workspace(Directory):
     @property
     def task(self) -> Task:
         """Workspace task (defined as property to avoid inheriting from parent)."""
-        return self._data.get('task')
+        return self._data.get('task') or self._init.get('task')
     
     def __init__(self, cwd: str, concurrent: bool, data: dict, parent: tp.Optional[Workspace]):
         super().__init__(cwd)
