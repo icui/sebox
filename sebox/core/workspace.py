@@ -148,21 +148,22 @@ class Workspace(Directory):
             if root.job_paused:
                 name += ' (terminated)'
             
-            elif self.prober:
-                try:
-                    state = self.prober(self)
-                    
-                    if isinstance(state, float):
-                        name += f' ({state*100:.1f}%)'
-                    
-                    else:
-                        name += f' ({state})'
-
-                except:
-                    name += ' (running)'
-            
             else:
-                name += ' (running)'
+                if self.prober:
+                    try:
+                        state = self.prober(self)
+
+                        if isinstance(state, float):
+                            name += f' ({state*100:.1f}%)'
+                        
+                        else:
+                            name += f' ({state})'
+
+                    except:
+                        pass
+                
+                if name == self.name:
+                    name += ' (running)'
         
         return name
 
