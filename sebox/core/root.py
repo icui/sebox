@@ -43,7 +43,7 @@ class Root(Workspace):
 
     # module for job scheduler
     module_system: str
-    
+
     # runtime global cache
     _cache: tp.Dict[str, tp.Any] = {}
 
@@ -90,7 +90,7 @@ class Root(Workspace):
         
         elif self.has('config.toml'):
             # load configuration
-            self._data.update(root.load('config.toml'))
+            self._init.update(root.load('config.toml'))
         
         # load module of job scheduler
         self._sys = tp.cast(tp.Any, import_module(f'sebox.system.{self.module_system}'))
@@ -102,4 +102,4 @@ class Root(Workspace):
 
 
 # create root workspace
-root = Root('.', False, None, None)
+root = Root('.', False, {}, None)

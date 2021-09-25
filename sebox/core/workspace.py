@@ -11,10 +11,10 @@ from .directory import Directory
 
 class Workspace(Directory):
     """A directory with a task."""
-    # backup of workspace data before execution
-    _backup: tp.Optional[dict] = None
+    # initial data passed to self.__init__
+    _init: dict
 
-    # workspace data
+    # data modified by self.task
     _data: dict
 
     # whether child workspaces are executed concurrently
@@ -58,9 +58,10 @@ class Workspace(Directory):
         """Workspace task (defined as property to avoid inheriting from parent)."""
         return self._data.get('task')
     
-    def __init__(self, cwd: str, concurrent: bool, task: Task, parent: tp.Optional[Workspace]):
+    def __init__(self, cwd: str, concurrent: bool, data: dict, parent: tp.Optional[Workspace]):
         super().__init__(cwd)
-        self._data = { 'task': task }
+        self._init = data
+        self._data = {}
         self._concurrent = concurrent
         self._parent = parent
         self._ws = []
@@ -72,6 +73,9 @@ class Workspace(Directory):
 
         if key in self._data:
             return self._data[key]
+
+        if key in self._init:
+            return self._init[key]
         
         if self._parent:
             return self._parent.__getattr__(key)
@@ -80,19 +84,14 @@ class Workspace(Directory):
     
     def __setattr__(self, key: str, val):
         """Set workspace data."""
+        if self._endtime or not self._starttime:
+            raise AttributeError('workspace property can only be changed by its task')
+
         if key.startswith('_'):
             object.__setattr__(self, key, val)
         
         else:
             self._data[key] = val
-    
-    def __delattr__(self, key: str):
-        """Delete workspace data."""
-        if key.startswith('_'):
-            object.__delattr__(self, key)
-
-        else:
-            del self._data[key]
     
     def __getstate__(self):
         """Items to be saved when pickled."""
@@ -132,10 +131,10 @@ class Workspace(Directory):
         err = self._err
 
         # backup data and reset state before execution
-        self._backup = self._data.copy()
         self._starttime = time()
         self._endtime = None
         self._err = None
+        self._data.clear()
 
         try:
             # import task
@@ -154,8 +153,6 @@ class Workspace(Directory):
             
             self._starttime = None
             self._err = e
-            self._data = self._backup
-            self._backup = None
 
             print(format_exc(), file=stderr)
 
@@ -207,7 +204,7 @@ class Workspace(Directory):
                 break
 
     @tp.overload
-    def add(self, name: str, concurrent: bool, task: Task) -> Workspace:
+    def add(self, name: str, concurrent: bool, data: tp.Optional[dict]) -> Workspace:
         """Add a child workspace."""
     
     @tp.overload
@@ -218,15 +215,15 @@ class Workspace(Directory):
     def add(self, name: tp.Tuple[str, str]) -> Workspace:
         """Add a child task (imported from a module)."""
 
-    def add(self, name: tp.Union[str, Task], concurrent: bool = False, task: Task = None) -> Workspace:
+    def add(self, name: tp.Union[str, Task], concurrent: bool = False, data: tp.Optional[dict] = None) -> Workspace:
         """Add a child workspace or a child task."""
         if isinstance(name, str):
             # create a new workspace
-            ws = Workspace(self.rel(name), concurrent, task, self)
+            ws = Workspace(self.rel(name), concurrent, data or {}, self)
         
         else:
             # add a task to current workspace
-            ws = Workspace(self.rel(), False, name, self)
+            ws = Workspace(self.rel(), False, { 'task': name }, self)
         
         self._ws.append(ws)
         return ws
