@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Workspace
-from .utils import getsize
+from .utils import getsize, probe_mesher, probe_solver
 
 if tp.TYPE_CHECKING:
     from sebox.solver import Forward, Mesh
@@ -55,15 +55,25 @@ if tp.TYPE_CHECKING:
         SPONGE_RADIUS_IN_DEGREES: float
 
 
-async def xspecfem(ws: Workspace):
+async def _xspecfem(ws: Workspace):
     """Call xspecfem3D."""
     await ws.mpiexec('bin/xspecfem3D', getsize(ws), 1)
 
 
-async def xmeshfem(ws: tp.Union[Forward, Mesh]):
+def xspecfem(ws: Workspace):
+    """Add a task to call xspecfem3D."""
+    ws.add(_xspecfem, { 'prober': probe_solver })
+
+
+async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
     """Call xmeshfem3D."""
     if ws.path_mesh:
         ws.ln(ws.abs(ws.path_mesh, 'DATABASES_MPI/*.bp'))
     
     else:
         await ws.mpiexec('bin/xmeshfem3D', getsize(ws))
+
+
+def xmeshfem(ws: Workspace):
+    """Add a task to call xspecfem3D."""
+    ws.add(_xmeshfem, { 'prober': probe_mesher })

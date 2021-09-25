@@ -58,6 +58,6 @@ def finalize(ws: Forward):
 def forward(ws: Forward):
     """Forward simulation."""
     ws.add(setup)
-    ws.add(xmeshfem)
-    ws.add(xspecfem)
+    xmeshfem(ws)
+    xspecfem(ws)
     ws.add(finalize)

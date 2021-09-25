@@ -45,5 +45,5 @@ def finalize(ws: Adjoint):
 def adjoint(ws: Adjoint):
     """Forward simulation."""
     ws.add(setup)
-    ws.add(xspecfem)
+    xspecfem(ws)
     ws.add(finalize)
