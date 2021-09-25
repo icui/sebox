@@ -60,11 +60,6 @@ async def _xspecfem(ws: Workspace):
     await ws.mpiexec('bin/xspecfem3D', getsize(ws), 1)
 
 
-def xspecfem(ws: Workspace):
-    """Add a task to call xspecfem3D."""
-    ws.add(_xspecfem, { 'prober': probe_solver })
-
-
 async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
     """Call xmeshfem3D."""
     if ws.path_mesh:
@@ -74,6 +69,11 @@ async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
         await ws.mpiexec('bin/xmeshfem3D', getsize(ws))
 
 
+def xspecfem(ws: Workspace):
+    """Add task to call xspecfem3D."""
+    ws.add(_xspecfem, { 'prober': probe_solver })
+
+
 def xmeshfem(ws: Workspace):
-    """Add a task to call xspecfem3D."""
+    """Add task to call xmeshfem3D."""
     ws.add(_xmeshfem, { 'prober': probe_mesher })
