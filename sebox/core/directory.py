@@ -161,7 +161,7 @@ class Directory:
             raise TypeError(f'unsupported file type {ext}')
     
     async def mpiexec(self, cmd: tp.Union[str, tp.Callable], 
-        nprocs: int = 1, per_proc: tp.Union[int, tp.Tuple[int, int]] = (0, 1), *,
+        nprocs: int = 1, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
         name: tp.Optional[str] = None, arg: tp.Any = None, args: tp.Optional[list] = None):
         """Run MPI task."""
         from .mpiexec import mpiexec
