@@ -43,6 +43,7 @@ def requeue():
     """Run current job again."""
     if environ.get('LSB_INTERACTIVE') != 'Y':
         check_call('brequeue ' + environ['LSB_JOBID'], shell=True)
+        exit()
 
 
 def mpiexec(cmd: str, nprocs: int, cpus_per_proc: int = 1, gpus_per_proc: int = 0):

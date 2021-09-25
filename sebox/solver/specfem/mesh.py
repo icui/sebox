@@ -3,7 +3,7 @@ import typing as tp
 
 from sebox import Directory
 from .specfem import xmeshfem
-from .utils import setpars
+from .utils import setpars, probe_mesher
 
 if tp.TYPE_CHECKING:
     from .specfem import Par_file
@@ -57,4 +57,4 @@ async def mesh(ws: Forward):
     """Generate mesh."""
     ws.test = 'abc'
     ws.add(setup)
-    ws.add(xmeshfem)
+    ws.add(xmeshfem, { 'prober': probe_mesher })

@@ -116,8 +116,31 @@ class Workspace(Directory):
         return self._ws[key]
 
     def __len__(self):
-        """Number of child workspaces."""
         return len(self._ws)
+    
+    def __str__(self):
+        from .root import root
+        
+        name = self.name
+
+        if self.done:
+            name += ' (done)'
+        
+        elif self._err:
+            name += ' (failed)'
+        
+        elif self._starttime and not self._endtime:
+            if root.job_paused:
+                name += ' (terminated)'
+            
+            else:
+                name += ' (running)'
+        
+        return name
+
+
+    def __repr__(self):
+        return self.stat(False)
     
     async def run(self):
         """Execute task and child tasks."""
@@ -234,6 +257,39 @@ class Workspace(Directory):
         
         self._ws.append(ws)
         return ws
+    
+    def stat(self, verbose: bool = False):
+        """Structure and execution status."""
+        stat = str(self)
+
+        if not verbose:
+            stat = stat.split(' ')[0]
+
+        def idx(j):
+            if self._concurrent:
+                return '- '
+
+            return '0' * (len(str(len(self) + 1)) - len(str(j + 1))) + str(j + 1) + ') '
+            
+        collapsed = False
+
+        for i, node in enumerate(self._ws):
+            stat += '\n' + idx(i)
+
+            if not verbose and (node.done or (collapsed and node._starttime is None)):
+                stat += str(node)
+        
+            else:
+                collapsed = True
+                
+                if len(node):
+                    stat += '\n  '.join(node.stat(verbose).split('\n'))
+                
+                else:
+                    stat += str(node)
+        
+        return stat
+
 
 # type annotation for a workspace task function
 T = tp.TypeVar('T', bound=Workspace)

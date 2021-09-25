@@ -35,6 +35,9 @@ class Root(Workspace):
     # any task failed twice during execution
     job_aborted: bool
 
+    # paused due to insuffcient time
+    job_paused: bool
+
     # number of CPUs per node
     cpus_per_node: int
 
@@ -66,14 +69,15 @@ class Root(Workspace):
         self.restore()
 
         # requeue before job gets killed
-        signal.signal(signal.SIGALRM, self._check_requeue)
-        signal.alarm(int((self.job_walltime - self.job_gap) * 60))
+        if not self.job_debug:
+            signal.signal(signal.SIGALRM, self._signal)
+            signal.alarm(int((self.job_walltime - self.job_gap) * 60))
 
         await super().run()
 
         # requeue job if task failed
-        if self.job_failed:
-            self._check_requeue()
+        if self.job_failed and not self.job_aborted and not self.job_debug:
+            self.sys.requeue()
     
     def save(self):
         """Save state."""
@@ -92,12 +96,17 @@ class Root(Workspace):
             # load configuration
             self._init.update(root.load('config.toml'))
         
+        self.job_paused = False
+
         # load module of job scheduler
         self._sys = tp.cast(tp.Any, import_module(f'sebox.system.{self.module_system}'))
-
-    def _check_requeue(self, *_):
-        """Requeue job if necessary."""
-        if not self.job_aborted and not self.job_debug:
+        
+    
+    def _signal(self, *_):
+        """Requeue due to insufficient time."""
+        if not self.job_aborted:
+            self.job_paused = True
+            self.save()
             self.sys.requeue()
 
 
