@@ -23,7 +23,7 @@ class Workspace(Directory):
     task: Task
 
     # task progress prober
-    prober: tp.Optional[tp.Callable]
+    prober: tp.Optional[tp.Callable[[Workspace], tp.Union[float, str, None]]]
 
     # whether child workspaces are executed concurrently
     concurrent: tp.Optional[bool]
@@ -147,6 +147,18 @@ class Workspace(Directory):
         elif self._starttime and not self._endtime:
             if root.job_paused:
                 name += ' (terminated)'
+            
+            elif self.prober:
+                try:
+                    state = self.prober(self)
+                    if isinstance(state, float):
+                        name += f' ({state*100:.1f}%)'
+                    
+                    else:
+                        name += f' ({state})'
+
+                except:
+                    name += ' (running)'
             
             else:
                 name += ' (running)'
