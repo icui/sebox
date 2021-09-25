@@ -177,6 +177,7 @@ class Workspace(Directory):
         self._endtime = None
         self._err = None
         self._data.clear()
+        root.save()
 
         try:
             # import task
