@@ -25,7 +25,7 @@ class Workspace(Directory):
     prober: tp.Optional[tp.Callable]
 
     # whether child workspaces are executed concurrently
-    concurrent: bool
+    concurrent: tp.Optional[bool]
 
     # initial data passed to self.__init__
     _init: dict
@@ -51,6 +51,8 @@ class Workspace(Directory):
     @property
     def name(self) -> str:
         """Directory name."""
+        # if self.task:
+
         return path.basename(self.abs())
 
     @property
@@ -270,7 +272,7 @@ class Workspace(Directory):
             stat = stat.split(' ')[0]
 
         def idx(j):
-            if self._concurrent:
+            if self.concurrent:
                 return '- '
 
             return '0' * (len(str(len(self) + 1)) - len(str(j + 1))) + str(j + 1) + ') '
