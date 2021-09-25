@@ -1,9 +1,8 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Directory
-
 if tp.TYPE_CHECKING:
+    from sebox import Directory
     from .specfem import Par_file
 
 

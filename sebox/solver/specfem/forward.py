@@ -6,9 +6,9 @@ from .specfem import Par_file, xmeshfem, xspecfem
 from .utils import setpars
 
 if tp.TYPE_CHECKING:
-    from sebox.solver import Forward
+    from sebox.solver import Forward as _Forward
 
-    class SpecfemForward(Forward):
+    class Forward(_Forward):
         """Forward simulation with specfem-specific configuraitons."""
         # specfem directory
         path_specfem: str
@@ -17,7 +17,7 @@ if tp.TYPE_CHECKING:
         lddrk: bool
 
 
-def setup(ws: SpecfemForward):
+def setup(ws: Forward):
     """Create forward workspace."""
     d = Directory(ws.path_specfem)
 
@@ -83,12 +83,12 @@ def setup(ws: SpecfemForward):
     setpars(ws, pars)
 
 
-def finalize(ws: SpecfemForward):
+def finalize(ws: Forward):
     """Move generated forward traces."""
     ws.mv('OUTPUT_FILES/synthetic.h5', 'traces.h5')
 
 
-def forward(ws: SpecfemForward):
+def forward(ws: Forward):
     """Forward simulation."""
     ws.add(setup)
     ws.add(xmeshfem)
