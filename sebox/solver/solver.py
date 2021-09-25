@@ -3,18 +3,7 @@ import typing as tp
 
 
 if tp.TYPE_CHECKING:
-    from sebox import Task, Workspace
-
-    class Solver(tp.Protocol):
-        """Required functions in a solver module."""
-        # generate mesh
-        mesh: Task[Mesh]
-
-        # forward simulation
-        forward: Task[Forward]
-
-        # adjoint simulation
-        adjoint: Task[Adjoint]
+    from sebox import Workspace
 
 
     class Mesh(Workspace):
@@ -62,7 +51,7 @@ if tp.TYPE_CHECKING:
         path_forward: str
 
 
-def add_mesh(ws: Workspace, name: str, *,
+def mesh(ws: Workspace, name: str, *,
     path_model: tp.Optional[str] = None) -> Mesh:
     """A a workspace to run mesher."""
     solver = tp.cast(Mesh, ws.add(name, { 'task': ('sebox.solver', 'mesh') }))
@@ -73,7 +62,7 @@ def add_mesh(ws: Workspace, name: str, *,
     return solver
 
 
-def add_forward(ws: Workspace, name: str, *,
+def forward(ws: Workspace, name: str, *,
     path_event: tp.Optional[str] = None,
     path_stations: tp.Optional[str] = None,
     path_mesh: tp.Optional[str] = None,
@@ -96,7 +85,7 @@ def add_forward(ws: Workspace, name: str, *,
     return solver
 
 
-def add_adjoint(ws: Workspace, name: str, *,
+def adjoint(ws: Workspace, name: str, *,
     path_misfit: tp.Optional[str] = None,
     path_forward: tp.Optional[str] = None) -> Adjoint:
     """A a workspace to run adjoint simulation."""

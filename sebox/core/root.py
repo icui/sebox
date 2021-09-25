@@ -47,6 +47,9 @@ class Root(Workspace):
     # module for job scheduler
     module_system: str
 
+    # default number of nodes to run MPI tasks
+    nnodes: int
+
     # runtime global cache
     _cache: tp.Dict[str, tp.Any] = {}
 

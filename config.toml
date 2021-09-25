@@ -5,6 +5,7 @@ module_kernel = "ortho"
 module_misfit = "ortho"
 module_optimizer = "gd"
 module_search = "bracket"
+module_trace = "asdf"
 
 # job configuration
 job_name = "greenland"
@@ -16,6 +17,7 @@ job_debug = false
 
 # main task
 task = ["sebox.solver", "forward"]
+nnodes = 1
 
 # path to external directories
 path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"

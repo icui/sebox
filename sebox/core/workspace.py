@@ -154,7 +154,7 @@ class Workspace(Directory):
                         state = self.prober(self)
 
                         if isinstance(state, float):
-                            name += f' ({state*100:.1f}%)'
+                            name += f' ({int(state*100)}%)'
                         
                         else:
                             name += f' ({state})'

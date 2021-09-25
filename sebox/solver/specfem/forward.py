@@ -1,8 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from .specfem import xmeshfem, xspecfem
-from .utils import setpars
+from .specfem import xmeshfem, xspecfem, setpars
 from .mesh import setup as setup_mesh
 
 if tp.TYPE_CHECKING:
