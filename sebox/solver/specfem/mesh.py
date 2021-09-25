@@ -7,7 +7,7 @@ from .utils import setpars, probe_mesher
 
 if tp.TYPE_CHECKING:
     from .specfem import Par_file
-    from .solver import Forward
+    from .forward import Forward
 
 
 def setup(ws: Forward):

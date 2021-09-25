@@ -261,18 +261,18 @@ class Workspace(Directory):
                 break
 
     @tp.overload
-    def add(self, name: str, data: tp.Optional[tp.Union[bool, dict]]) -> Workspace:
+    def add(self, name: str, data: tp.Union[bool, dict, None] = None) -> Workspace:
         """Add a child workspace."""
     
     @tp.overload
-    def add(self, name: tp.Callable[..., tp.Optional[tp.Coroutine]]) -> Workspace:
+    def add(self, name: tp.Callable[..., tp.Optional[tp.Coroutine]], data: tp.Optional[dict] = None) -> Workspace:
         """Add a child task."""
     
     @tp.overload
-    def add(self, name: tp.Tuple[str, str]) -> Workspace:
+    def add(self, name: tp.Tuple[str, str], data: tp.Optional[dict] = None) -> Workspace:
         """Add a child task (imported from a module)."""
 
-    def add(self, name: tp.Union[str, Task], data: tp.Optional[tp.Union[bool, dict]] = None) -> Workspace:
+    def add(self, name: tp.Union[str, Task], data: tp.Union[bool, dict, None] = None) -> Workspace:
         """Add a child workspace or a child task."""
         if isinstance(name, str):
             # create a new workspace
@@ -283,9 +283,12 @@ class Workspace(Directory):
         
         else:
             # add a task to current workspace
-            ws = Workspace(self.rel(), { 'task': name }, self)
+            data = tp.cast(dict, data or {})
+            data['task'] = name
+            ws = Workspace(self.rel(), data, self)
         
         self._ws.append(ws)
+        
         return ws
     
     def stat(self, verbose: bool = False):
