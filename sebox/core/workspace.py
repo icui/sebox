@@ -3,6 +3,7 @@ from os import path
 from sys import stderr
 from importlib import import_module
 from time import time
+from functools import partial
 import asyncio
 import typing as tp
 
@@ -51,7 +52,15 @@ class Workspace(Directory):
     @property
     def name(self) -> str:
         """Directory name."""
-        # if self.task:
+        if func := self.task:
+            if isinstance(func, tuple):
+                return func[1]
+
+            while isinstance(func, partial):
+                func = func.func
+            
+            if hasattr(func, '__name__'):
+                return func.__name__.lstrip('_')
 
         return path.basename(self.abs())
 
