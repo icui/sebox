@@ -151,6 +151,7 @@ class Workspace(Directory):
             elif self.prober:
                 try:
                     state = self.prober(self)
+                    
                     if isinstance(state, float):
                         name += f' ({state*100:.1f}%)'
                     
