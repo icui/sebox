@@ -95,7 +95,7 @@ class Workspace(Directory):
             object.__setattr__(self, key, val)
         
         elif (self._endtime or not self._starttime) and key not in _root:
-            raise AttributeError('workspace property can only be set by its task')
+            raise AttributeError(f'{key} can only be set by its task')
         
         else:
             self._data[key] = val
