@@ -9,16 +9,26 @@ import typing as tp
 from .directory import Directory
 
 
+# properties that should not inherit from parent workspace
+_locals = ('task', 'prober', 'concurrent')
+
+
 class Workspace(Directory):
     """A directory with a task."""
+    # workspace task
+    task: Task
+
+    # task progress prober
+    prober: tp.Optional[tp.Callable]
+
+    # whether child workspaces are executed concurrently
+    concurrent: bool
+
     # initial data passed to self.__init__
     _init: dict
 
     # data modified by self.task
     _data: dict
-
-    # whether child workspaces are executed concurrently
-    _concurrent: bool
 
     # parent workspace
     _parent: tp.Optional[Workspace]
@@ -53,19 +63,10 @@ class Workspace(Directory):
 
         return False
     
-    @property
-    def task(self) -> Task:
-        """Workspace task (defined as property to avoid inheriting from parent)."""
-        if 'task' in self._data:
-            return self._data['task']
-        
-        return self._init.get('task')
-    
-    def __init__(self, cwd: str, concurrent: bool, data: dict, parent: tp.Optional[Workspace]):
+    def __init__(self, cwd: str, data: dict, parent: tp.Optional[Workspace]):
         super().__init__(cwd)
         self._init = data
         self._data = {}
-        self._concurrent = concurrent
         self._parent = parent
         self._ws = []
     
@@ -80,7 +81,7 @@ class Workspace(Directory):
         if key in self._init:
             return self._init[key]
         
-        if self._parent:
+        if self._parent and key not in _locals:
             return self._parent.__getattr__(key)
         
         return None
@@ -91,7 +92,7 @@ class Workspace(Directory):
             object.__setattr__(self, key, val)
         
         elif self._endtime or not self._starttime:
-            raise AttributeError('workspace property can only be changed by its task')
+            raise AttributeError('workspace property can only be set by its task')
         
         else:
             self._data[key] = val
@@ -192,7 +193,7 @@ class Workspace(Directory):
             return wss
 
         while len(wss := get_unfinished()):
-            if self._concurrent:
+            if self.concurrent:
                 # execute nodes concurrently
                 exclude += wss
                 await asyncio.gather(*(ws.run() for ws in wss))
@@ -207,7 +208,7 @@ class Workspace(Directory):
                 break
 
     @tp.overload
-    def add(self, name: str, concurrent: bool, data: tp.Optional[dict]) -> Workspace:
+    def add(self, name: str, data: tp.Optional[tp.Union[bool, dict]]) -> Workspace:
         """Add a child workspace."""
     
     @tp.overload
@@ -218,15 +219,18 @@ class Workspace(Directory):
     def add(self, name: tp.Tuple[str, str]) -> Workspace:
         """Add a child task (imported from a module)."""
 
-    def add(self, name: tp.Union[str, Task], concurrent: bool = False, data: tp.Optional[dict] = None) -> Workspace:
+    def add(self, name: tp.Union[str, Task], data: tp.Optional[tp.Union[bool, dict]] = None) -> Workspace:
         """Add a child workspace or a child task."""
         if isinstance(name, str):
             # create a new workspace
-            ws = Workspace(self.rel(name), concurrent, data or {}, self)
+            if isinstance(data, bool):
+                data = { 'concurrent': data }
+
+            ws = Workspace(self.rel(name), data or {}, self)
         
         else:
             # add a task to current workspace
-            ws = Workspace(self.rel(), False, { 'task': name }, self)
+            ws = Workspace(self.rel(), { 'task': name }, self)
         
         self._ws.append(ws)
         return ws

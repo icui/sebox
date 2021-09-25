@@ -102,4 +102,4 @@ class Root(Workspace):
 
 
 # create root workspace
-root = Root('.', False, {}, None)
+root = Root('.', {}, None)
