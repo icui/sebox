@@ -11,12 +11,6 @@ if tp.TYPE_CHECKING:
 
 class Root(Workspace):
     """Root workspace with job configuration."""
-    # runtime global cache
-    _cache: tp.Dict[str, tp.Any] = {}
-
-    # module of job scheduler
-    _sys: System
-
     # job name
     job_name: str
 
@@ -49,6 +43,12 @@ class Root(Workspace):
 
     # module for job scheduler
     module_system: str
+    
+    # runtime global cache
+    _cache: tp.Dict[str, tp.Any] = {}
+
+    # module of job scheduler
+    _sys: System
     
     @property
     def cache(self):

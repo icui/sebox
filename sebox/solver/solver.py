@@ -53,13 +53,13 @@ if tp.TYPE_CHECKING:
         catalog_boundary: tp.Tuple[float, float, float, float]
 
 
-class Adjoint(Workspace):
-    """A workspace to run adjiont simulation."""
-    # path to adjoint source
-    path_misfit: str
+    class Adjoint(Workspace):
+        """A workspace to run adjiont simulation."""
+        # path to adjoint source
+        path_misfit: str
 
-    # path to forward simulation directory
-    path_forward: str
+        # path to forward simulation directory
+        path_forward: str
 
 
 def add_mesh(ws: Workspace, name: str, *,
