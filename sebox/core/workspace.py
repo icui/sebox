@@ -105,7 +105,8 @@ class Workspace(Directory):
         state = {}
         
         for key in tp.get_type_hints(Workspace):
-            state[key] = getattr(self, key)
+            if key.startswith('_'):
+                state[key] = getattr(self, key)
         
         return state
     
