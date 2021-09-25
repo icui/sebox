@@ -55,5 +55,6 @@ def setup(ws: Forward):
 
 async def mesh(ws: Forward):
     """Generate mesh."""
+    ws.test = 'abc'
     ws.add(setup)
     ws.add(xmeshfem)
