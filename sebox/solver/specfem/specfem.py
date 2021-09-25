@@ -57,7 +57,7 @@ class Par_file(tp.TypedDict, total=False):
 
 async def xspecfem(ws: Workspace):
     """Call xspecfem3D."""
-    await ws.mpiexec('bin/xspecfem3D', getsize(ws), True)
+    await ws.mpiexec('bin/xspecfem3D', getsize(ws), 1)
 
 
 async def xmeshfem(ws: tp.Union[Forward, Mesh]):
