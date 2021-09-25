@@ -1,20 +1,23 @@
 from __future__ import annotations
+import typing as tp
 
-from sebox.core.directory import Directory
-from sebox.solver import Forward
-from .specfem import Par_file, xmeshfem, xspecfem, setpars
+from sebox import Directory
+from .specfem import Par_file, xmeshfem, xspecfem
+from .utils import setpars
+
+if tp.TYPE_CHECKING:
+    from sebox.solver import Forward
+
+    class SpecfemForward(Forward):
+        """Forward simulation with specfem-specific configuraitons."""
+        # specfem directory
+        path_specfem: str
+
+        # use LDDRK time scheme
+        lddrk: bool
 
 
-class Specfem(Forward):
-    """Forward simulation with specfem-specific configuraitons."""
-    # specfem directory
-    path_specfem: str
-
-    # use LDDRK time scheme
-    lddrk: bool
-
-
-def setup(ws: Specfem):
+def setup(ws: SpecfemForward):
     """Create forward workspace."""
     d = Directory(ws.path_specfem)
 
@@ -80,12 +83,12 @@ def setup(ws: Specfem):
     setpars(ws, pars)
 
 
-def finalize(ws: Specfem):
+def finalize(ws: SpecfemForward):
     """Move generated forward traces."""
     ws.mv('OUTPUT_FILES/synthetic.h5', 'traces.h5')
 
 
-def forward(ws: Specfem):
+def forward(ws: SpecfemForward):
     """Forward simulation."""
     ws.add(setup)
     ws.add(xmeshfem)

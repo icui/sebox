@@ -9,8 +9,14 @@ if tp.TYPE_CHECKING:
     from sebox.system import System
 
 
-class Job(tp.Protocol):
-    """Job configuration for submitting to scheduler."""
+class Root(Workspace):
+    """Root workspace with job configuration."""
+    # runtime global cache
+    _cache: tp.Dict[str, tp.Any] = {}
+
+    # module of job scheduler
+    _sys: System
+
     # job name
     job_name: str
 
@@ -43,23 +49,14 @@ class Job(tp.Protocol):
 
     # module for job scheduler
     module_system: str
-
-
-class Root(Workspace, Job):
-    """Root workspace with job configuration."""
-    # runtime global cache
-    _cache: tp.Dict[str, tp.Any] = {}
-
-    # module of job scheduler
-    _sys: System
-
-    @property
-    def sys(self) -> System:
-        return self._sys
     
     @property
     def cache(self):
         return self._cache
+
+    @property
+    def sys(self) -> System:
+        return self._sys
 
     def submit(self):
         """Submit job to scheduler."""

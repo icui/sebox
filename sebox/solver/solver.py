@@ -1,76 +1,65 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox.core.workspace import Task, Workspace
+from sebox import Task, Workspace
 
 
-class Solver(tp.Protocol):
-    """Required functions in a solver module."""
-    # generate mesh
-    mesh: Task[Mesh]
+if tp.TYPE_CHECKING:
+    class Solver(tp.Protocol):
+        """Required functions in a solver module."""
+        # generate mesh
+        mesh: Task[Mesh]
 
-    # forward simulation
-    forward: Task[Forward]
+        # forward simulation
+        forward: Task[Forward]
 
-    # adjoint simulation
-    adjoint: Task[Adjoint]
-
-
-class MeshData(tp.Protocol):
-    """Mesh configuraiton."""
-    # path to model file
-    path_model: str
+        # adjoint simulation
+        adjoint: Task[Adjoint]
 
 
-class ForwardData(tp.Protocol):
-    """Forward simulation."""
-    # path to CMTSOLUTION
-    path_event: str
-
-    # path to STATIONS
-    path_stations: str
-
-    # path to generated mesh
-    path_mesh: str
-
-    # path to model file (if self.path_mesh is None)
-    path_model: str
-
-    # save forward wavefield for adjoint computation
-    save_forward: bool
-
-    # use monochromatic source time function
-    monochromatic_source: bool
-
-    # simulation duration in minutes
-    duration: float
-
-    # time duration to reach steady state for source encoding
-    transient_duration: float
-
-    # geographical limit of the catalog (center_lat, center_lon, radius, max_epicentral_dist)
-    catalog_boundary: tp.Tuple[float, float, float, float]
+    class Mesh(Workspace):
+        """A workspace to generate mesh."""
+        # path to model file
+        path_model: str
 
 
-class AdjointData(tp.Protocol):
-    """Adjoint simulation."""
+    class Forward(Workspace):
+        """A workspace to run forward simulation."""
+        # path to CMTSOLUTION
+        path_event: str
+
+        # path to STATIONS
+        path_stations: str
+
+        # path to generated mesh
+        path_mesh: str
+
+        # path to model file (if self.path_mesh is None)
+        path_model: str
+
+        # save forward wavefield for adjoint computation
+        save_forward: bool
+
+        # use monochromatic source time function
+        monochromatic_source: bool
+
+        # simulation duration in minutes
+        duration: float
+
+        # time duration to reach steady state for source encoding
+        transient_duration: float
+
+        # geographical limit of the catalog (center_lat, center_lon, radius, max_epicentral_dist)
+        catalog_boundary: tp.Tuple[float, float, float, float]
+
+
+class Adjoint(Workspace):
+    """A workspace to run adjiont simulation."""
     # path to adjoint source
     path_misfit: str
 
     # path to forward simulation directory
     path_forward: str
-
-
-class Mesh(Workspace, MeshData):
-    """A workspace to generate mesh."""
-
-
-class Forward(Workspace, ForwardData):
-    """A workspace to run forward simulation."""
-
-
-class Adjoint(Workspace, AdjointData):
-    """A workspace to run adjiont simulation."""
 
 
 def add_mesh(ws: Workspace, name: str, *,

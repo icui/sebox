@@ -1,6 +1,8 @@
 from functools import partial
+import typing as tp
 
-from sebox.solver import Mesh
+if tp.TYPE_CHECKING:
+    from sebox.solver import Mesh
 
 
 def echo(f):

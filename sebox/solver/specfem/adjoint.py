@@ -1,8 +1,12 @@
 from __future__ import annotations
+import typing as tp
 
-from sebox.core.directory import Directory
-from sebox.solver import Adjoint
-from .specfem import xspecfem, setpars
+from sebox import Directory
+from .specfem import xspecfem
+from .utils import setpars
+
+if tp.TYPE_CHECKING:
+    from sebox.solver import Adjoint
 
 
 def setup(ws: Adjoint):
