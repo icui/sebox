@@ -12,6 +12,9 @@ from .directory import Directory
 # properties that should not inherit from parent workspace
 _locals = ('task', 'prober', 'concurrent')
 
+# root properties that can be set
+_root = ('job_paused', 'job_failed', 'job_aborted')
+
 
 class Workspace(Directory):
     """A directory with a task."""
@@ -91,7 +94,7 @@ class Workspace(Directory):
         if key.startswith('_'):
             object.__setattr__(self, key, val)
         
-        elif self._endtime or not self._starttime:
+        elif (self._endtime or not self._starttime) and key not in _root:
             raise AttributeError('workspace property can only be set by its task')
         
         else:
