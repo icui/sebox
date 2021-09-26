@@ -22,3 +22,6 @@ if tp.TYPE_CHECKING:
 
         # path to MPI data file
         path_mpi: str
+
+        # collective data
+        stats: tp.Optional[dict]

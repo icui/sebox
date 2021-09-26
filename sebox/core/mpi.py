@@ -1,7 +1,6 @@
 from sys import argv, stderr
 from traceback import format_exc
 from mpi4py.MPI import COMM_WORLD as comm
-import typing as tp
 import asyncio
 
 from sebox import root

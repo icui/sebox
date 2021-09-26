@@ -4,27 +4,36 @@ import typing as tp
 from sebox import root
 
 if tp.TYPE_CHECKING:
+    from pyasdf import ASDFDataSet
+    from obspy import Trace
+
     from sebox.typing import Convert
 
 
-def _scatter(path: tp.Tuple[str, str], stas: tp.List[str]):
-    from pyasdf import ASDFDataSet
-    from sebox import Directory
-    from sebox.core.mpi import pid
-
-    with ASDFDataSet(path[0], mode='r', mpi=False) as ds:
-        data = {}
-
-        for sta in stas:
-            wav = ds.waveforms[sta]
-            data[sta] = wav[wav.get_waveform_tags()[0]]
-        
-        Directory(path[1]).dump(data, f'{pid}.pickle', mkdir=False)
+def get_stream(ds: ASDFDataSet, sta: str) -> tp.List[Trace]:
+    wav = ds.waveforms[sta]
+    return tp.cast(tp.Any, wav[wav.get_waveform_tags()[0]])
 
 
 async def gather(ws: Convert):
     """Convert MPI trace to ASDF trace."""
     from pyasdf import ASDFDataSet
+
+
+def _scatter(path: tp.Tuple[str, str, dict], stas: tp.List[str]):
+    from pyasdf import ASDFDataSet
+
+    from sebox import Directory
+    from sebox.core.mpi import pid
+
+    with ASDFDataSet(path[0], mode='r', mpi=False) as ds:
+        # data = np.zeros([3 * len(stas), path[2]])
+        data = {}
+
+        for sta in stas:
+            data[sta] = get_stream(ds, sta)
+        
+        Directory(path[1]).dump(data, f'{pid}.pickle', mkdir=False)
 
 
 async def scatter(ws: Convert):
