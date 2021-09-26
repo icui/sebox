@@ -163,28 +163,11 @@ class Directory:
     
     async def mpiexec(self, cmd: tp.Union[str, tp.Callable], 
         nprocs: int = 1, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
-        name: tp.Optional[str] = None, arg: tp.Any = None, args: tp.Optional[list] = None):
+        name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None):
         """Run MPI task."""
         from .mpiexec import mpiexec
 
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
         
-        if arg is not None:
-            if args is not None:
-                raise TypeError('arg and args can not be set at the same time')
-
-            if isinstance(cmd, str):
-                cmd += ' ' + str(arg)
-            
-            else:
-                cmd = partial(cmd, arg)
-        
-        elif args is not None:
-            if isinstance(cmd, str):
-                cmd += ' ' + ' '.join(args)
-            
-            else:
-                cmd = partial(cmd, *args)
-        
-        await mpiexec(self, cmd, nprocs, per_proc[0], per_proc[1], name)
+        await mpiexec(self, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi)

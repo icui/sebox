@@ -294,3 +294,11 @@ def extract_stations(d: Directory, dst: str):
                 _format_station(lines, ll)
         
         d.writelines(lines.values(), join(dst, f'STATIONS.{event}'))
+
+def test_mpi(arg):
+    print(arg)
+
+
+async def test(ws: Workspace):
+    from sebox import root
+    await ws.mpiexec(test_mpi, root.task_nprocs, arg_mpi=list(range(200)))

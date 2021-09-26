@@ -48,7 +48,8 @@ def _name(cmd: tp.Union[str, tp.Callable]):
 
 
 async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
-    nprocs: int, cpus_per_proc: int, gpus_per_proc: int, name: tp.Optional[str]):
+    nprocs: int, cpus_per_proc: int, gpus_per_proc: int,
+    name: tp.Optional[str], arg: tp.Any, arg_mpi: tp.Optional[list]):
     """Schedule the execution of MPI task"""
     # task queue controller
     lock = asyncio.Lock()
@@ -57,6 +58,10 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
     err = None
     
     try:
+        # remove unused proceessors
+        if arg_mpi:
+            nprocs = min(len(arg_mpi), nprocs)
+
         # calculate node number
         nnodes = int(ceil(nprocs * cpus_per_proc  / (root.cpus_per_node or root.sys.cpus_per_node)))
 
@@ -75,9 +80,26 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
             name = _name(cmd)
 
         if callable(cmd):
+            if arg_mpi:
+                # assign a chunk of arg_mpi to each processor
+                if arg is not None:
+                    raise TypeError('arg and arg_mpi can not be set at the same time')
+
+                arg_mpi = sorted(arg_mpi)
+                args = []
+                chunk = int(round(len(arg_mpi) / nprocs))
+
+                for i in range(nprocs - 1):
+                    args.append(arg_mpi[i * chunk: (i + 1) * chunk])
+                
+                args.append(arg_mpi[(nprocs - 1) * chunk:])
+            
+            else:
+                args = None
+
             cwd = None
             d.rm(f'{name}.*')
-            d.dump(cmd, f'{name}.pickle')
+            d.dump((cmd, arg, arg_mpi), f'{name}.pickle')
             cmd = f'python -m "sebox.core.mpi" {d.path(name)}'
         
         else:
