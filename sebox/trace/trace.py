@@ -19,7 +19,7 @@ def gather(ws: Workspace, name: str, *,
     path_trace: tp.Optional[str] = None,
     path_mpi: tp.Optional[str] = None):
     """Convert MPI trace to bundled trace."""
-    trace = tp.cast(Trace, ws.add(name, { 'task': ('sebox.trace', 'gather') }))
+    trace = ws.add(name, { 'task': ('sebox.trace', 'gather') })
 
     if path_trace is not None:
         trace.path_trace = path_trace
@@ -34,7 +34,7 @@ def scatter(ws: Workspace, name: str, *,
     path_trace: tp.Optional[str] = None,
     path_mpi: tp.Optional[str] = None):
     """Convert bundled trace to MPI trace."""
-    trace = tp.cast(Trace, ws.add(name, { 'task': ('sebox.trace', 'scatter') }))
+    trace = ws.add(name, { 'task': ('sebox.trace', 'scatter') })
 
     if path_trace is not None:
         trace.path_trace = path_trace
