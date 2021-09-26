@@ -11,10 +11,7 @@ from .directory import Directory
 
 
 # properties that should not inherit from parent workspace
-_locals = ('task', 'prober', 'concurrent')
-
-# root properties that can be set
-_root = ('job_paused', 'job_failed', 'job_aborted')
+_no_inherit = ('task', 'prober', 'concurrent')
 
 
 class Workspace(Directory):
@@ -95,7 +92,7 @@ class Workspace(Directory):
         if key in self._init:
             return self._init[key]
         
-        if self._parent and key not in _locals:
+        if self._parent and key not in _no_inherit:
             return self._parent.__getattr__(key)
         
         return None
@@ -105,7 +102,7 @@ class Workspace(Directory):
         if key.startswith('_'):
             object.__setattr__(self, key, val)
         
-        elif (self._endtime or not self._starttime) and key not in _root:
+        elif (self._endtime or not self._starttime):
             raise AttributeError(f'{key} can only be set by its task')
         
         else:
@@ -261,8 +258,12 @@ class Workspace(Directory):
                 break
 
     @tp.overload
-    def add(self, name: str, data: tp.Union[bool, dict, None] = None) -> Workspace:
+    def add(self, name: str, data: tp.Optional[dict] = None) -> Workspace:
         """Add a child workspace."""
+    
+    @tp.overload
+    def add(self, name: dict) -> Workspace:
+        """Add a child workspace (with data dict)."""
     
     @tp.overload
     def add(self, name: tp.Callable[..., tp.Optional[tp.Coroutine]], data: tp.Optional[dict] = None) -> Workspace:
@@ -272,14 +273,14 @@ class Workspace(Directory):
     def add(self, name: tp.Tuple[str, str], data: tp.Optional[dict] = None) -> Workspace:
         """Add a child task (imported from a module)."""
 
-    def add(self, name: tp.Union[str, Task], data: tp.Union[bool, dict, None] = None) -> Workspace:
+    def add(self, name: tp.Union[str, dict, Task], data: tp.Optional[dict] = None) -> Workspace:
         """Add a child workspace or a child task."""
         if isinstance(name, str):
             # create a new workspace
-            if isinstance(data, bool):
-                data = { 'concurrent': data }
-
             ws = Workspace(self.path(name), data or {}, self)
+        
+        elif isinstance(name, dict):
+            ws = Workspace(self.path(), name, self)
         
         else:
             # add a task to current workspace

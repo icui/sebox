@@ -15,7 +15,7 @@ if tp.TYPE_CHECKING:
         path_mpi: str
 
 
-def gather(ws: Workspace, name: str, *,
+def gather(ws: Workspace, name: tp.Optional[str] = None,
     path_trace: tp.Optional[str] = None,
     path_mpi: tp.Optional[str] = None):
     """Convert MPI trace to bundled trace."""
@@ -27,10 +27,13 @@ def gather(ws: Workspace, name: str, *,
     if path_mpi is not None:
         data['path_mpi'] = path_mpi
 
+    if name is None:
+        return ws.add(data)
+
     return ws.add(name, data)
 
 
-def scatter(ws: Workspace, name: str, *,
+def scatter(ws: Workspace, name: tp.Optional[str] = None,
     path_trace: tp.Optional[str] = None,
     path_mpi: tp.Optional[str] = None):
     """Convert bundled trace to MPI trace."""
@@ -42,5 +45,8 @@ def scatter(ws: Workspace, name: str, *,
     if path_mpi is not None:
         data['path_mpi'] = path_mpi
 
+    if name is None:
+        return ws.add(data)
+    
     return ws.add(name, data)
 

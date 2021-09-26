@@ -68,6 +68,14 @@ class Root(Workspace):
     def task_nprocs(self) -> int:
         """Number of processors to run MPI tasks."""
         return self.task_nnodes * (self.cpus_per_node or self.sys.cpus_per_node)
+    
+    def __setattr__(self, key: str, val):
+        """Set workspace data (allow changing data at any time)."""
+        if key.startswith('_'):
+            object.__setattr__(self, key, val)
+        
+        else:
+            self._data[key] = val
 
     def submit(self):
         """Submit job to scheduler."""
