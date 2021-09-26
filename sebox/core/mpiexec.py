@@ -88,7 +88,6 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
                 arg_mpi = sorted(arg_mpi)
                 args = []
                 chunk = int(round(len(arg_mpi) / nprocs))
-                print(chunk)
 
                 for i in range(nprocs - 1):
                     args.append(arg_mpi[i * chunk: (i + 1) * chunk])
@@ -100,7 +99,7 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
 
             cwd = None
             d.rm(f'{name}.*')
-            d.dump((cmd, arg, arg_mpi), f'{name}.pickle')
+            d.dump((cmd, arg, args), f'{name}.pickle')
             cmd = f'python -m "sebox.core.mpi" {d.path(name)}'
         
         else:
