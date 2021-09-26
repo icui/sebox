@@ -11,20 +11,14 @@ def gather(ws: Trace):
     from pyasdf import ASDFDataSet
 
 
-def scatter(ws: Trace):
-    """Convert ASDF trace to MPI trace."""
-    import numpy as np
-    from pyasdf import ASDFDataSet
+def _scatter(stas: tp.List[str]):
+    print(stas)
 
-    nprocs = root.task_nprocs
+
+async def scatter(ws: Trace):
+    """Convert ASDF trace to MPI trace."""
+    from pyasdf import ASDFDataSet
 
     with ASDFDataSet(ws.rel(ws.path_trace), mode='r', mpi=False) as ds:
         stas = ds.waveforms.list()
-        stas_mpi: tp.List[tp.List[str]] = []
-        chunk = max(1, int(np.round(len(stas) / nprocs)))
-
-        # assign processors with stations
-        for i in range(nprocs - 1):
-            stas_mpi.append(stas[i * chunk: (i + 1) * chunk])
-        
-        stas_mpi.append(stas[(nprocs - 1) * chunk:])
+        await ws.mpiexec(_scatter, root.task_nprocs, arg_mpi=stas)

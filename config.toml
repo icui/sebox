@@ -16,7 +16,7 @@ job_gap = 1.0
 job_debug = false
 
 # main task
-task = ["sebox.solver", "forward"]
+task = ["sebox.solver", "sss"]
 task_nnodes = 1
 
 # path to external directories
