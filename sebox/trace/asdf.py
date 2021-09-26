@@ -28,8 +28,7 @@ def _scatter(path: tp.Tuple[str, str], stas: tp.List[str]):
             data[sta] = wav[wav.get_waveform_tags()[0]]
         
         zeros = '0' * (len(str(size - 1)) - len(str(rank)))
-        print(f'p{zeros}{rank}.pickle')
-        Directory(path[1]).dump(data, f'p{zeros}{rank}.pickle')
+        Directory(path[1]).dump(data, f'p{zeros}{rank}.pickle', mkdir=False)
 
 
 async def scatter(ws: Trace):
@@ -39,6 +38,7 @@ async def scatter(ws: Trace):
     src = ws.rel(ws.path_trace)
     dst = ws.rel(ws.path_mpi)
     path = (src, dst)
+    ws.mkdir(ws.path_mpi)
 
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
         stas = ds.waveforms.list()

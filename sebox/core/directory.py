@@ -40,21 +40,24 @@ class Directory:
         """Remove a file or a directory."""
         check_call('rm -rf ' + self.path(src), shell=True)
     
-    def cp(self, src: str, dst: str = '.'):
+    def cp(self, src: str, dst: str = '.', mkdir: bool = True):
         """Copy file or a directory."""
-        self.mkdir(path.dirname(dst))
+        if mkdir:
+            self.mkdir(path.dirname(dst))
 
         check_call(f'cp -r {self.path(src)} {self.path(dst)}', shell=True)
     
-    def mv(self, src: str, dst: str = '.'):
+    def mv(self, src: str, dst: str = '.', mkdir: bool = True):
         """Move a file or a directory."""
-        self.mkdir(path.dirname(dst))
+        if mkdir:
+            self.mkdir(path.dirname(dst))
 
         check_call(f'mv {self.path(src)} {self.path(dst)}', shell=True)
     
-    def ln(self, src: str, dst: str = '.'):
+    def ln(self, src: str, dst: str = '.', mkdir: bool = True):
         """Link a file or a directory."""
-        self.mkdir(path.dirname(dst))
+        if mkdir:
+            self.mkdir(path.dirname(dst))
 
         # relative source path
         if not path.isabs(src):
@@ -102,9 +105,10 @@ class Directory:
         with open(self.path(src), 'r') as f:
             return f.read()
 
-    def write(self, text: str, dst: str, mode: str = 'w'):
+    def write(self, text: str, dst: str, mode: str = 'w', mkdir: bool = True):
         """Write text and wait until write is complete."""
-        self.mkdir(path.dirname(dst))
+        if mkdir:
+            self.mkdir(path.dirname(dst))
 
         with open(self.path(dst), mode) as f:
             f.write(text)
@@ -139,9 +143,10 @@ class Directory:
         else:
             raise TypeError(f'unsupported file type {ext}')
     
-    def dump(self, obj, dst: str, ext: DumpType = None):
+    def dump(self, obj, dst: str, ext: DumpType = None, mkdir: bool = True):
         """Save a pickle / toml file."""
-        self.mkdir(path.dirname(dst))
+        if mkdir:
+            self.mkdir(path.dirname(dst))
 
         if ext is None:
             ext = dst.split('.')[-1] # type: ignore
