@@ -51,50 +51,59 @@ if tp.TYPE_CHECKING:
         path_forward: str
 
 
-def mesh(ws: Workspace, name: str, *,
-    path_model: tp.Optional[str] = None) -> Mesh:
+def mesh(ws: Workspace, name: tp.Optional[str] = None,
+    path_model: tp.Optional[str] = None):
     """A a workspace to run mesher."""
-    solver = tp.cast(Mesh, ws.add(name, { 'task': ('sebox.solver', 'mesh') }))
+    data = tp.cast(dict, { 'task': ('sebox.solver', 'mesh') })
 
     if path_model is not None:
-        solver.path_model = path_model
+        data['path_model'] = path_model
+
+    if name is None:
+        return ws.add(data)
     
-    return solver
+    return ws.add(name, data)
 
 
-def forward(ws: Workspace, name: str, *,
+def forward(ws: Workspace, name: tp.Optional[str] = None,
     path_event: tp.Optional[str] = None,
     path_stations: tp.Optional[str] = None,
     path_mesh: tp.Optional[str] = None,
-    path_model: tp.Optional[str] = None) -> Forward:
+    path_model: tp.Optional[str] = None):
     """A a workspace to run forward simulation."""
-    solver = tp.cast(Forward, ws.add(name, { 'task': ('sebox.solver', 'forward') }))
+    data = tp.cast(dict, { 'task': ('sebox.solver', 'forward') })
 
     if path_event is not None:
-        solver.path_event = path_event
+        data['path_event'] = path_event
     
     if path_stations is not None:
-        solver.path_stations = path_stations
+        data['path_stations'] = path_stations
     
     if path_mesh is not None:
-        solver.path_mesh = path_mesh
+        data['path_mesh'] = path_mesh
     
     if path_model is not None:
-        solver.path_model = path_model
+        data['path_model'] = path_model
+
+    if name is None:
+        return ws.add(data)
     
-    return solver
+    return ws.add(name, data)
 
 
-def adjoint(ws: Workspace, name: str, *,
+def adjoint(ws: Workspace, name: tp.Optional[str] = None,
     path_misfit: tp.Optional[str] = None,
-    path_forward: tp.Optional[str] = None) -> Adjoint:
+    path_forward: tp.Optional[str] = None):
     """A a workspace to run adjoint simulation."""
-    solver = tp.cast(Adjoint, ws.add(name, { 'task': ('sebox.solver', 'adjoint') }))
+    data = tp.cast(dict, { 'task': ('sebox.solver', 'adjoint') })
 
     if path_misfit is not None:
-        solver.path_misfit = path_misfit
+        data['path_misfit'] = path_misfit
     
     if path_forward is not None:
-        solver.path_forward = path_forward
+        data['path_forward'] = path_forward
+
+    if name is None:
+        return ws.add(data)
     
-    return solver
+    return ws.add(name, data)

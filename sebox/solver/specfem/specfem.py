@@ -294,8 +294,3 @@ def extract_stations(d: Directory, dst: str):
                 _format_station(lines, ll)
         
         d.writelines(lines.values(), join(dst, f'STATIONS.{event}'))
-
-
-def sss(ws: Workspace):
-    from sebox.trace import scatter
-    scatter(ws, path_trace=ws.rel('traces.h5'), path_mpi='traces_mpi')
