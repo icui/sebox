@@ -4,12 +4,7 @@ import typing as tp
 from sebox import root
 
 if tp.TYPE_CHECKING:
-    from sebox.trace import Trace
-
-
-def gather(ws: Trace):
-    """Convert MPI trace to ASDF trace."""
-    from pyasdf import ASDFDataSet
+    from sebox.typing import Convert
 
 
 def _scatter(path: tp.Tuple[str, str], stas: tp.List[str]):
@@ -31,11 +26,16 @@ def _scatter(path: tp.Tuple[str, str], stas: tp.List[str]):
         Directory(path[1]).dump(data, f'p{zeros}{rank}.pickle', mkdir=False)
 
 
-async def scatter(ws: Trace):
+def gather(ws: Convert):
+    """Convert MPI trace to ASDF trace."""
+    from pyasdf import ASDFDataSet
+
+
+async def scatter(ws: Convert):
     """Convert ASDF trace to MPI trace."""
     from pyasdf import ASDFDataSet
 
-    src = ws.rel(ws.path_trace)
+    src = ws.rel(ws.path_bundle)
     dst = ws.rel(ws.path_mpi)
     path = (src, dst)
     ws.mkdir(ws.path_mpi)

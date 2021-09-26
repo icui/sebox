@@ -10,17 +10,13 @@ import typing as tp
 from .directory import Directory
 
 
-# properties that should not inherit from parent workspace
-_no_inherit = ('task', 'prober', 'concurrent')
-
-
 class Workspace(Directory):
     """A directory with a task."""
     # workspace task
     task: Task
 
     # task progress prober
-    prober: tp.Optional[tp.Callable[[Workspace], tp.Union[float, str, None]]]
+    prober: Prober
 
     # whether child workspaces are executed concurrently
     concurrent: tp.Optional[bool]
@@ -92,7 +88,7 @@ class Workspace(Directory):
         if key in self._init:
             return self._init[key]
         
-        if self._parent and key not in _no_inherit:
+        if self._parent and key not in tp.get_type_hints(Workspace):
             return self._parent.__getattr__(key)
         
         return None
@@ -257,37 +253,25 @@ class Workspace(Directory):
             if root.job_failed or root.job_aborted:
                 break
 
-    @tp.overload
-    def add(self, name: str, data: tp.Optional[dict] = None) -> Workspace:
-        """Add a child workspace."""
-    
-    @tp.overload
-    def add(self, name: dict) -> Workspace:
-        """Add a child workspace (with data dict)."""
-    
-    @tp.overload
-    def add(self, name: tp.Callable[..., tp.Optional[tp.Coroutine]], data: tp.Optional[dict] = None) -> Workspace:
-        """Add a child task."""
-    
-    @tp.overload
-    def add(self, name: tp.Tuple[str, str], data: tp.Optional[dict] = None) -> Workspace:
-        """Add a child task (imported from a module)."""
-
-    def add(self, name: tp.Union[str, dict, Task], data: tp.Optional[dict] = None) -> Workspace:
+    def add(self, name: tp.Union[str, Task[tp.Any]] = None, task: Task[tp.Any] = None, *,
+        concurrent: tp.Optional[bool] = None, prober: Prober = None, **data) -> Workspace:
         """Add a child workspace or a child task."""
-        if isinstance(name, str):
-            # create a new workspace
-            ws = Workspace(self.path(name), data or {}, self)
+        if name is not None and not isinstance(name, str):
+            if task is not None:
+                raise TypeError('duplicate task when adding workspace')
+
+            task = name
         
-        elif isinstance(name, dict):
-            ws = Workspace(self.path(), name, self)
+        if task is not None:
+            data['task'] = task
         
-        else:
-            # add a task to current workspace
-            data = tp.cast(dict, data or {})
-            data['task'] = name
-            ws = Workspace(self.path(), data, self)
+        if prober is not None:
+            data['prober'] = prober
         
+        if concurrent is not None:
+            data['concurrent'] = concurrent
+
+        ws = Workspace(self.path(name) if isinstance(name, str) else self.path(), data, self)
         self._ws.append(ws)
         
         return ws
@@ -328,3 +312,4 @@ class Workspace(Directory):
 # type annotation for a workspace task function
 T = tp.TypeVar('T', bound=Workspace)
 Task = tp.Optional[tp.Union[tp.Callable[[T], tp.Optional[tp.Coroutine]], tp.Tuple[str, str]]]
+Prober = tp.Optional[tp.Callable[[Workspace], tp.Union[float, str, None]]]

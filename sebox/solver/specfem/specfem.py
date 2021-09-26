@@ -4,7 +4,7 @@ import typing as tp
 from sebox import Workspace, Directory
 
 if tp.TYPE_CHECKING:
-    from sebox.solver import Forward, Mesh
+    from sebox.typing import Forward, Mesh
 
     class Par_file(tp.TypedDict, total=False):
         """DATA/Par_file in specfem."""
@@ -70,12 +70,12 @@ async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
 
 def xspecfem(ws: Workspace):
     """Add task to call xspecfem3D."""
-    ws.add(_xspecfem, { 'prober': probe_solver })
+    ws.add(_xspecfem, prober=probe_solver)
 
 
 def xmeshfem(ws: Workspace):
     """Add task to call xmeshfem3D."""
-    ws.add(_xmeshfem, { 'prober': probe_mesher })
+    ws.add(_xmeshfem, prober=probe_mesher)
 
 
 def getpars(d: Directory) -> Par_file:

@@ -5,7 +5,6 @@ module_kernel = "ortho"
 module_misfit = "ortho"
 module_optimizer = "gd"
 module_search = "bracket"
-module_trace = "asdf"
 
 # job configuration
 job_name = "greenland"
@@ -16,7 +15,7 @@ job_gap = 1.0
 job_debug = false
 
 # main task
-task = ["sebox.solver", "forward"]
+task = ["sebox.solver", "forward", "module_solver"]
 task_nnodes = 1
 
 # path to external directories

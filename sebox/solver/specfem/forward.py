@@ -6,9 +6,9 @@ from .mesh import setup as setup_mesh
 
 if tp.TYPE_CHECKING:
     from .specfem import Par_file
-    from sebox.solver import Forward as _Forward
+    from sebox import typing
 
-    class Forward(_Forward):
+    class Forward(typing.Forward):
         """Forward simulation with specfem-specific configuraitons."""
         # specfem directory
         path_specfem: str
@@ -49,14 +49,9 @@ def setup(ws: Forward):
     setpars(ws, pars)
 
 
-def finalize(ws: Forward):
-    """Move generated forward traces."""
-    ws.mv('OUTPUT_FILES/synthetic.h5', 'traces.h5')
-
-
 def forward(ws: Forward):
     """Forward simulation."""
     ws.add(setup)
     xmeshfem(ws)
     xspecfem(ws)
-    ws.add(finalize)
+    ws.add(('sebox.dataset.asdf', 'scatter'), path_bundle='OUTPUT_FILES/synthetic.h5', path_mpi='traces')
