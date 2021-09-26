@@ -12,8 +12,8 @@ def gather(ws: Trace):
     from pyasdf import ASDFDataSet
 
 
-def _scatter(stas: tp.List[str]):
-    print(stas)
+def _scatter(src: str, stas: tp.List[str]):
+    print(src, stas)
 
 
 async def scatter(ws: Trace):
