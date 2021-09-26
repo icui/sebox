@@ -47,8 +47,8 @@ class Root(Workspace):
     # module for job scheduler
     module_system: str
 
-    # number of nodes to run MPI tasks
-    task_nnodes: int
+    # number of nodes to run MPI tasks (if task_nnodes is None, task_nprocs must be set)
+    task_nnodes: tp.Optional[int]
 
     # runtime global cache
     _cache: tp.Dict[str, tp.Any] = {}
@@ -67,15 +67,10 @@ class Root(Workspace):
     @property
     def task_nprocs(self) -> int:
         """Number of processors to run MPI tasks."""
-        return self.task_nnodes * (self.cpus_per_node or self.sys.cpus_per_node)
-    
-    def __setattr__(self, key: str, val):
-        """Set workspace data (allow changing data at any time)."""
-        if key.startswith('_'):
-            object.__setattr__(self, key, val)
-        
-        else:
-            self._data[key] = val
+        if 'task_nprocs' in self._data:
+            return self._data['task_nprocs']
+
+        return tp.cast(int, self.task_nnodes) * (self.cpus_per_node or self.sys.cpus_per_node)
 
     def submit(self):
         """Submit job to scheduler."""

@@ -99,9 +99,6 @@ class Workspace(Directory):
         if key.startswith('_'):
             object.__setattr__(self, key, val)
         
-        elif (self._endtime or not self._starttime):
-            raise AttributeError(f'{key} can only be set by its task')
-        
         else:
             self._data[key] = val
     
