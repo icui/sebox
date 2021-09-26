@@ -290,6 +290,14 @@ class Workspace(Directory):
         
         return ws
     
+    def reset(self):
+        """Reset workspace (including child workspaces)."""
+        self._starttime = None
+        self._endtime = None
+        self._err = None
+        self._data.clear()
+        self._ws.clear()
+    
     def stat(self, verbose: bool = False):
         """Structure and execution status."""
         stat = str(self)
