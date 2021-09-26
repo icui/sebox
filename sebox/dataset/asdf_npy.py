@@ -37,13 +37,18 @@ def _scatter(arg: tp.Tuple[str, str, Stats], stas: tp.List[str]):
     src, dst, stats = arg
 
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
-        ncmps = len(stats['cmps'])
-        data = np.zeros([len(stas), ncmps, stats['nt']])
+        data = np.zeros([len(stas), len(stats['cmps']), stats['nt']])
 
         for i, sta in enumerate(stas):
             stream = get_stream(ds, sta)
 
-            for j, trace in enumerate(stream):
+            for j, cmp in enumerate(stats['cmps']):
+                trace = stream[j]
+                
+                assert trace.stats.npts == stats['nt']
+                assert trace.stats.delta == stats['dt']
+                assert trace.stats.component == cmp
+
                 data[i, j, :] = trace.data
         
         Directory(dst).dump(data, f'{pid}.npy', mkdir=False)
@@ -70,17 +75,6 @@ async def scatter(ws: Convert):
 
             for trace in stream:
                 stats['cmps'].append(trace.stats.component)
-
-        # make sure nt, dt and component number are consistent across all traces
-        for sta in stas:
-            stream = get_stream(ds, sta)
-            
-            for i, cmp in enumerate(stats['cmps']):
-                assert cmp == stream[i].stats.component
-            
-            for trace in stream:
-                assert stats['nt'] == trace.stats.npts
-                assert stats['dt'] == trace.stats.delta
 
         ws.dump(stats, path.join(ws.path_mpi, 'stats.pickle'))
         await ws.mpiexec(_scatter, root.task_nprocs, arg=(src, dst, stats), arg_mpi=stas)
