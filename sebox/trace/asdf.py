@@ -28,6 +28,7 @@ def _scatter(path: tp.Tuple[str, str], stas: tp.List[str]):
             data[sta] = wav[wav.get_waveform_tags()[0]]
         
         zeros = '0' * (len(str(size - 1)) - len(str(rank)))
+        print(f'p{zeros}{rank}.pickle')
         Directory(path[1]).dump(data, f'p{zeros}{rank}.pickle')
 
 
