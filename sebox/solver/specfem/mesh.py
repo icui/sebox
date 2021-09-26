@@ -21,8 +21,8 @@ def setup(ws: Forward):
     # link binaries and event files
     ws.ln(d.path('bin'))
     ws.cp(d.path('DATA/Par_file'), 'DATA')
-    ws.cp(ws.rel(ws.path_event) or d.path('DATA/CMTSOLUTION'), 'DATA/CMTSOLUTION')
-    ws.cp(ws.rel(ws.path_stations) or d.path('DATA/STATIONS'), 'DATA/STATIONS')
+    ws.cp(ws.rel(ws.path_event) if ws.path_event else d.path('DATA/CMTSOLUTION'), 'DATA/CMTSOLUTION')
+    ws.cp(ws.rel(ws.path_stations) if ws.path_event else d.path('DATA/STATIONS'), 'DATA/STATIONS')
 
     # link specfem model directories
     for subdir in d.ls('DATA', isdir=True):
