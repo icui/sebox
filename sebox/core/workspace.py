@@ -141,7 +141,12 @@ class Workspace(Directory):
                 delta = int(self._endtime - self._starttime)
 
                 if delta >= 1:
-                    name += f' ({timedelta(seconds=delta)})'
+                    delta = str(timedelta(seconds=delta))
+                    
+                    if delta.startswith('0:'):
+                        delta = delta[2:]
+                    
+                    name += f' ({delta})'
                 
                 else:
                     name += ' (done)'
