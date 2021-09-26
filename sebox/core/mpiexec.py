@@ -90,7 +90,7 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
                 chunk = int(round(len(arg_mpi) / nprocs))
                 
                 # adjust number of processors
-                if nprocs * chunk > nnodes + chunk:
+                if nprocs * chunk > nnodes:
                     nprocs -= (nprocs * chunk - nnodes) // chunk
 
                 for i in range(nprocs - 1):
