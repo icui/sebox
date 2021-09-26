@@ -292,7 +292,7 @@ class Workspace(Directory):
             if self.concurrent:
                 return '- '
 
-            return '0' * (len(str(len(self) + 1)) - len(str(j + 1))) + str(j + 1) + ') '
+            return '0' * (len(str(len(self) - 1)) - len(str(j))) + str(j) + ') '
             
         collapsed = False
 

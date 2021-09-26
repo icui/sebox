@@ -23,5 +23,11 @@ if tp.TYPE_CHECKING:
         # path to MPI data file
         path_mpi: str
 
+        # tag of bundled data file
+        tag_bundle: tp.Optional[str]
+
+        # tag of MPI data file
+        tag_mpi: tp.Optional[str]
+
         # collective data
         stats: tp.Optional[dict]

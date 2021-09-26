@@ -18,6 +18,14 @@ def get_stream(ds: ASDFDataSet, sta: str) -> tp.List[Trace]:
 async def gather(ws: Convert):
     """Convert MPI trace to ASDF trace."""
     from pyasdf import ASDFDataSet
+    from sebox import Directory
+
+    d = Directory(ws.path_mpi)
+
+    with ASDFDataSet(ws.rel(ws.path_bundle), mode='w', mpi=False) as ds:
+        for pid in d.ls():
+            for stream in d.load(pid).values():
+                ds.add_waveforms(stream, ws.tag_bundle or 'sebox')
 
 
 def _scatter(path: tp.Tuple[str, str, dict], stas: tp.List[str]):
@@ -27,7 +35,6 @@ def _scatter(path: tp.Tuple[str, str, dict], stas: tp.List[str]):
     from sebox.core.mpi import pid
 
     with ASDFDataSet(path[0], mode='r', mpi=False) as ds:
-        # data = np.zeros([3 * len(stas), path[2]])
         data = {}
 
         for sta in stas:
