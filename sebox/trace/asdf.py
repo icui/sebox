@@ -18,6 +18,7 @@ def _scatter(path: tp.Tuple[str, str], stas: tp.List[str]):
     from sebox.core.mpi import comm
 
     rank, size = comm()
+    print(path)
 
     with ASDFDataSet(path[0], mode='r', mpi=False) as ds:
         data = {}
