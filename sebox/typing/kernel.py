@@ -8,10 +8,6 @@ if tp.TYPE_CHECKING:
 
     class KernelModule(tp.Protocol):
         """Required functions in a solver module."""
-        # compute misfit
-        misfit: Task[Misfit]
-
-        # compute misfit and kernel
         kernel: Task[Kernel]
 
 
@@ -21,3 +17,5 @@ if tp.TYPE_CHECKING:
 
     class Kernel(Workspace):
         """Compute misfit and kernel."""
+        # compute misfit only (no adjoint simulation)
+        misfit_only: bool

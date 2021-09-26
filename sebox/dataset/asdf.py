@@ -92,7 +92,7 @@ async def scatter(ws: Convert):
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
         stas = ds.waveforms.list()
 
-        if stats := ws.stats:
+        if (stats := ws.stats) is not None:
             # save data as numpy array with a collective stats file
             if 'nt' not in stats or 'dt' not in stats or 'cmps' not in stats:
                 # read nt and dt from the first trace
