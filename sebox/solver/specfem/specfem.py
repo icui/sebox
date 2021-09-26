@@ -62,7 +62,7 @@ async def _xspecfem(ws: Workspace):
 async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
     """Call xmeshfem3D."""
     if ws.path_mesh:
-        ws.ln(ws.abs(ws.path_mesh, 'DATABASES_MPI/*.bp'))
+        ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'))
     
     else:
         await ws.mpiexec('bin/xmeshfem3D', getsize(ws))

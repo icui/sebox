@@ -78,16 +78,16 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
             cwd = None
             d.rm(f'{name}.*')
             d.dump(cmd, f'{name}.pickle')
-            cmd = f'python -m "sebox.core.mpi" {d.rel(name)}'
+            cmd = f'python -m "sebox.core.mpi" {d.path(name)}'
         
         else:
-            cwd = d.rel()
+            cwd = d.path()
         
         # wrap with parallel execution command
         cmd = root.sys.mpiexec(cmd, nprocs, cpus_per_proc, gpus_per_proc)
         
         # create subprocess to execute task
-        with open(d.rel(f'{name}.out'), 'a') as f:
+        with open(d.path(f'{name}.out'), 'a') as f:
             # write command
             f.write(f'{cmd}\n\n')
             time_start = time()

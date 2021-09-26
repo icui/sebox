@@ -19,15 +19,15 @@ def setup(ws: Forward):
     ws.mkdir('DATABASES_MPI')
 
     # link binaries and event files
-    ws.ln(d.abs('bin'))
-    ws.cp(d.abs('DATA/Par_file'), 'DATA')
-    ws.cp(ws.path_event or d.abs('DATA/CMTSOLUTION'), 'DATA/CMTSOLUTION')
-    ws.cp(ws.path_stations or d.abs('DATA/STATIONS'), 'DATA/STATIONS')
+    ws.ln(d.path('bin'))
+    ws.cp(d.path('DATA/Par_file'), 'DATA')
+    ws.cp(ws.rel(ws.path_event) or d.path('DATA/CMTSOLUTION'), 'DATA/CMTSOLUTION')
+    ws.cp(ws.rel(ws.path_stations) or d.path('DATA/STATIONS'), 'DATA/STATIONS')
 
     # link specfem model directories
     for subdir in d.ls('DATA', isdir=True):
         if subdir != 'GLL':
-            ws.ln(d.abs('DATA', subdir), 'DATA')
+            ws.ln(d.path('DATA', subdir), 'DATA')
     
     # link model file to run mesher
     if ws.path_model:

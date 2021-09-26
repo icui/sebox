@@ -62,7 +62,7 @@ class Workspace(Directory):
             if hasattr(func, '__name__'):
                 return func.__name__.lstrip('_')
 
-        return path.basename(self.abs())
+        return path.basename(self.path(abs=True))
 
     @property
     def parent(self) -> tp.Optional[Workspace]:
@@ -279,13 +279,13 @@ class Workspace(Directory):
             if isinstance(data, bool):
                 data = { 'concurrent': data }
 
-            ws = Workspace(self.rel(name), data or {}, self)
+            ws = Workspace(self.path(name), data or {}, self)
         
         else:
             # add a task to current workspace
             data = tp.cast(dict, data or {})
             data['task'] = name
-            ws = Workspace(self.rel(), data, self)
+            ws = Workspace(self.path(), data, self)
         
         self._ws.append(ws)
         
