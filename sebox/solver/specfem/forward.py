@@ -54,4 +54,4 @@ def forward(ws: Forward):
     ws.add(setup)
     xmeshfem(ws)
     xspecfem(ws)
-    ws.add(('sebox.dataset.asdf_npy', 'scatter'), path_bundle='OUTPUT_FILES/synthetic.h5', path_mpi='traces')
+    ws.add(('sebox.dataset.asdf', 'scatter'), path_bundle='OUTPUT_FILES/synthetic.h5', path_mpi='traces')
