@@ -3,6 +3,7 @@ from os import path
 from sys import stderr
 from importlib import import_module
 from time import time
+from datetime import timedelta
 from functools import partial
 import asyncio
 import typing as tp
@@ -131,32 +132,41 @@ class Workspace(Directory):
         
         name = self.name
 
-        if self.done:
-            name += ' (done)'
-        
-        elif self._err:
+        if self._err:
             name += ' (failed)'
         
-        elif self._starttime and not self._endtime:
-            if root.job_paused:
-                name += ' (terminated)'
-            
-            else:
-                if self.prober:
-                    try:
-                        state = self.prober(self)
+        elif self._starttime:
+            if self._endtime:
+                # task done
+                delta = int(self._endtime - self._starttime)
 
-                        if isinstance(state, float):
-                            name += f' ({int(state*100)}%)'
-                        
-                        else:
-                            name += f' ({state})'
-
-                    except:
-                        pass
+                if delta >= 1:
+                    name += f' ({timedelta(seconds=delta)})'
                 
-                if name == self.name:
-                    name += ' (running)'
+                else:
+                    name += ' (done)'
+
+            else:
+                # task started but not finished
+                if root.job_paused:
+                    name += ' (terminated)'
+                
+                else:
+                    if self.prober:
+                        try:
+                            state = self.prober(self)
+
+                            if isinstance(state, float):
+                                name += f' ({int(state*100)}%)'
+                            
+                            else:
+                                name += f' ({state})'
+
+                        except:
+                            pass
+                    
+                    if name == self.name:
+                        name += ' (running)'
         
         return name
 
