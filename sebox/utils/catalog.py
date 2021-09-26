@@ -1,10 +1,10 @@
 import typing as tp
 
-from sebox import root
+from sebox import root, Directory
 
 
-def getname() -> str:
-    """Name of the workspace to process catalog"""
+def getdir() -> Directory:
+    return Directory(tp.cast(str, root.path_catalog))
 
 
 def getevents(group: tp.Optional[int] = None) -> tp.List[str]:

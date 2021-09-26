@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Directory
+from sebox.utils.catalog import getdir
 
 if tp.TYPE_CHECKING:
     from sebox import typing
@@ -18,4 +18,4 @@ def kernel(ws: Kernel):
         pass
 
     else:
-        
+        cdir = getdir()

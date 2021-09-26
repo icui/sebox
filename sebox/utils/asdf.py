@@ -8,7 +8,7 @@ if tp.TYPE_CHECKING:
     from pyasdf import ASDFDataSet
     from obspy import Trace
 
-    from sebox.typing import Convert
+    from sebox import Workspace
 
     class Stats(tp.TypedDict):
         # number of timesteps
@@ -19,6 +19,24 @@ if tp.TYPE_CHECKING:
 
         # trace components
         cmps: tp.List[str]
+    
+
+    class Convert(Workspace):
+        """A workspace to convert dataset from / to MPI format."""
+        # path to bundled data file
+        path_bundle: str
+
+        # path to MPI data file
+        path_mpi: str
+
+        # tag of bundled data file
+        tag_bundle: tp.Optional[str]
+
+        # tag of MPI data file
+        tag_mpi: tp.Optional[str]
+
+        # collective data
+        stats: tp.Optional[dict]
 
 
 def get_stream(ds: ASDFDataSet, sta: str) -> tp.List[Trace]:
