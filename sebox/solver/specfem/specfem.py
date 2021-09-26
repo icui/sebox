@@ -301,4 +301,4 @@ def test_mpi(arg):
 
 async def test(ws: Workspace):
     from sebox import root
-    await ws.mpiexec(test_mpi, root.task_nprocs, arg_mpi=list(range(201)))
+    await ws.mpiexec(test_mpi, root.task_nprocs, arg_mpi=list(range(199)))
