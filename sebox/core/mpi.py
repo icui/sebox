@@ -6,15 +6,23 @@ import asyncio
 from sebox import root
 
 
-def comm() -> tp.Tuple[int, int]:
-    """Get MPI rank and size."""
-    from mpi4py.MPI import COMM_WORLD
+# MPI rank and number of processes
+rank = tp.cast(int, None)
+size = tp.cast(int, None)
 
-    return COMM_WORLD.Get_rank(), COMM_WORLD.Get_size()
+# output file name of current process
+pid = tp.cast(str, None)
 
 
 if __name__ == '__main__':
     try:
+        from mpi4py.MPI import COMM_WORLD as comm
+
+        rank = comm.Get_rank()
+        size = comm.Get_size()
+        pid = f'p{"0" * (len(str(size - 1)) - len(str(rank)))}{rank}'
+
+        # saved function and arguments from main process
         (func, arg, arg_mpi) = root.load(f'{argv[1]}.pickle')
 
         args = []
@@ -22,8 +30,7 @@ if __name__ == '__main__':
         if arg is not None:
             args.append(arg)
 
-        if arg_mpi:
-            rank, _ = comm()
+        if arg_mpi is not None:
             args.append(arg_mpi[rank])
 
         if asyncio.iscoroutine(result := func(*args)):

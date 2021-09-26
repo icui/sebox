@@ -15,22 +15,20 @@ job_gap = 1.0
 job_debug = false
 
 # main task
-task = ["sebox.solver", "forward", "module_solver"]
+task = ["module:solver", "forward"]
 task_nnodes = 1
 
 # path to external directories
 path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
 path_catalog = "/gpfs/alpine/scratch/ccui/geo111/dataset/north_syn"
 path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
-path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m00.bp"
+path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m25_128.bp"
 
 # solver
 duration = 348.0
 transient_duration = 60.0
 lddrk = false
 catalog_range = [85.0, -115.0, 70.0, 90.0]
-
-
 
 # kernel
 dt = 0.16

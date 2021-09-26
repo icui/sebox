@@ -188,11 +188,16 @@ class Workspace(Directory):
 
         try:
             # import task
-            task: tp.Any = self.task
+            task = self.task
 
             if isinstance(task, tuple) or isinstance(task, list):
-                module = import_module(task[0] + '.' + getattr(self, 'module_' + task[0].split('.')[-1]))
-                task = getattr(module, task[1])
+                path = task[0]
+
+                if path.startswith('module:'):
+                    # choice of sebox module
+                    path = f'sebox.{path[7:]}.' + getattr(self, f'module_{path[7:]}')
+
+                task = getattr(import_module(path), task[1])
 
             # call task function
             if task and (result := task(self)) and asyncio.iscoroutine(result):
