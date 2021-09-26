@@ -35,6 +35,7 @@ def scatter(ws: Workspace, name: str, *,
     path_mpi: tp.Optional[str] = None):
     """Convert bundled trace to MPI trace."""
     trace = ws.add(name, { 'task': ('sebox.trace', 'scatter') })
+    print(trace)
 
     if path_trace is not None:
         trace.path_trace = path_trace
