@@ -39,16 +39,16 @@ class Root(Workspace):
     job_paused: bool
 
     # number of CPUs per node
-    cpus_per_node: int
+    cpus_per_node: tp.Optional[int]
 
     # number of GPUs per node
-    gpus_per_node: int
+    gpus_per_node: tp.Optional[int]
 
     # module for job scheduler
     module_system: str
 
-    # default number of nodes to run MPI tasks
-    nnodes: int
+    # number of nodes to run MPI tasks
+    task_nnodes: int
 
     # runtime global cache
     _cache: tp.Dict[str, tp.Any] = {}
@@ -63,6 +63,11 @@ class Root(Workspace):
     @property
     def sys(self) -> System:
         return self._sys
+
+    @property
+    def task_nprocs(self) -> int:
+        """Number of processors to run MPI tasks."""
+        return self.task_nnodes * (self.cpus_per_node or self.sys.cpus_per_node)
 
     def submit(self):
         """Submit job to scheduler."""
