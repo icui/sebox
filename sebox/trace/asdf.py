@@ -20,6 +20,8 @@ async def scatter(ws: Trace):
     """Convert ASDF trace to MPI trace."""
     from pyasdf import ASDFDataSet
 
-    with ASDFDataSet(ws.rel(ws.path_trace), mode='r', mpi=False) as ds:
+    src = ws.rel(ws.path_trace)
+
+    with ASDFDataSet(src, mode='r', mpi=False) as ds:
         stas = ds.waveforms.list()
-        await ws.mpiexec(_scatter, root.task_nprocs, arg_mpi=stas)
+        await ws.mpiexec(_scatter, root.task_nprocs, arg=src, arg_mpi=stas)

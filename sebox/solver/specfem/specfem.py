@@ -298,4 +298,4 @@ def extract_stations(d: Directory, dst: str):
 
 def sss(ws: Workspace):
     from sebox.trace import scatter
-    scatter(ws, path_trace=ws.rel('traces.h5'))
+    scatter(ws, path_trace=ws.rel('traces.h5'), path_mpi='traces_mpi')

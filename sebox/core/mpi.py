@@ -22,7 +22,7 @@ if __name__ == '__main__':
         if arg is not None:
             args.append(arg)
 
-        elif arg_mpi:
+        if arg_mpi:
             rank, _ = comm()
             args.append(arg_mpi[rank])
 

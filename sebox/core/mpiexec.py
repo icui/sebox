@@ -82,9 +82,6 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
         if callable(cmd):
             if arg_mpi:
                 # assign a chunk of arg_mpi to each processor
-                if arg is not None:
-                    raise TypeError('arg and arg_mpi can not be set at the same time')
-
                 arg_mpi = sorted(arg_mpi)
                 args = []
                 chunk = int(ceil(len(arg_mpi) / nprocs))
