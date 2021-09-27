@@ -53,7 +53,7 @@ class Workspace(Directory):
         
         # use function name if workspace does not have a unique directory
         if func and (not self._parent or self._parent._cwd == self._cwd):
-            if isinstance(func, tuple):
+            if isinstance(func, tuple) or isinstance(func, list):
                 return func[1]
 
             while isinstance(func, partial):
