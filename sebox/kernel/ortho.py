@@ -94,7 +94,7 @@ def misfit(ws: Kernel):
 
 def _compute(ws: Kernel, misfit_only: bool):
     # mesher and preprocessing
-    pre = ws.add('preprocess', concurrent=True)
+    pre = ws.add('preprocess', concurrent=True, target=ws)
 
     # run mesher
     pre.add('mesh', ('module:solver', 'mesh'))
