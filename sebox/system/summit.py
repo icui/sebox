@@ -1,6 +1,8 @@
 from os import environ
 from subprocess import check_call
 
+from sebox import root
+
 
 # number of CPUs per node
 cpus_per_node = 42
@@ -11,8 +13,6 @@ gpus_per_node = 6
 
 def submit(cmd: str):
     """Write and submit job script."""
-    from sebox import root
-
     # hours and minutes
     walltime = root.job_walltime
     hh = int(walltime // 60)

@@ -2,13 +2,11 @@ from __future__ import annotations
 from os import path
 import typing as tp
 
-from sebox import root
+from sebox import root, Workspace
 
 if tp.TYPE_CHECKING:
     from pyasdf import ASDFDataSet
     from obspy import Trace
-
-    from sebox import Workspace
 
     class Stats(tp.TypedDict):
         # number of timesteps

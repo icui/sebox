@@ -5,16 +5,7 @@ from .specfem import xmeshfem, xspecfem, setpars
 from .mesh import setup as setup_mesh
 
 if tp.TYPE_CHECKING:
-    from .specfem import Par_file
-    from sebox import typing
-
-    class Forward(typing.Forward):
-        """Forward simulation with specfem-specific configuraitons."""
-        # specfem directory
-        path_specfem: str
-
-        # use LDDRK time scheme
-        lddrk: bool
+    from .typing import Par_file, Forward
 
 
 def setup(ws: Forward):

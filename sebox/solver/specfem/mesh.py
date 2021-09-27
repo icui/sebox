@@ -5,8 +5,7 @@ from sebox import Directory
 from .specfem import xmeshfem, setpars
 
 if tp.TYPE_CHECKING:
-    from .specfem import Par_file
-    from .forward import Forward
+    from .typing import Par_file, Forward
 
 
 def setup(ws: Forward):

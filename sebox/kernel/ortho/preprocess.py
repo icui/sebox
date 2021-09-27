@@ -1,68 +1,11 @@
-from __future__ import annotations
 import typing as tp
 import random
 
-from sebox.utils.catalog import getdir, getevents, getmeasurements, merge_stations
+from sebox.utils.catalog import getdir, getevents, getmeasurements
 
 if tp.TYPE_CHECKING:
-    from sebox import typing
     from numpy import ndarray
-
-    class Kernel(typing.Kernel):
-        """Source encoded kernel computation."""
-        # number of kernel computations per iteration
-        nkernels: tp.Optional[int]
-
-        # number of kernels to randomize frequency per iteration
-        nkernels_rng: tp.Optional[int]
-
-        # alter global randomization
-        seed: int
-
-        # index of current kernel
-        iker: tp.Optional[int]
-
-        # path to encoded observed traces
-        path_encoded: tp.Optional[str]
-
-        # time duration to reach steady state for source encoding
-        transient_duration: float
-
-        # number of frequencies in a frequency band
-        frequency_increment: int
-
-        # index of lowest frequency
-        imin: int
-
-        # index of highest frequency
-        imax: int
-
-        # frequency interval
-        df: float
-
-        # frequency step for observed traces
-        kf: int
-
-        # number of frequency bands
-        nbands: int
-
-        # number of frequency bands actually used
-        nbands_used: int
-
-        # frequency slots assigned to events
-        fslots: tp.Dict[str, tp.List[int]]
-
-        # number of time steps in transient state
-        nt_ts: int
-
-        # number of time steps in stationary state
-        nt_se: int
-
-        # determine frequency bands to by period * reference_velocity = smooth_radius
-        reference_velocity: tp.Optional[float]
-
-        # radius for smoothing kernels
-        smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
+    from .typing import Kernel
 
 
 def getseed(ws: Kernel):
@@ -82,48 +25,7 @@ def getfreq(ws: Kernel) -> ndarray:
     return fftfreq(ws.nt_se, ws.dt)[ws.imin: ws.imax]
 
 
-def kernel(ws: Kernel):
-    """Compute kernels."""
-    _compute(ws, False)
-
-
-def misfit(ws: Kernel):
-    """Compute misfit."""
-    _compute(ws, True)
-
-
-def _compute(ws: Kernel, misfit_only: bool):
-    # mesher and preprocessing
-    pre = ws.add('preprocess', concurrent=True, target=ws)
-
-    # run mesher
-    pre.add('mesh', ('module:solver', 'mesh'))
-
-    # merge stations into a single file
-    if not getdir().has('SUPERSTATION'):
-        pre.add(_merge_stations)
-
-    for iker in range(ws.nkernels or 1):
-        enc = pre.add(f'kl_{iker:02d}', iker=iker)
-
-        # determine frequency range
-        enc.add(_prepare_frequencies, target=enc)
-
-        if ws.path_encoded:
-            # link encoded observed data
-            enc.add(_link_observed, target=enc)
-        
-        else:
-            # encode events
-            enc.add(_encode_events, target=enc)
-
-
-async def _merge_stations(_):
-    cdir = getdir()
-    merge_stations(cdir.subdir('stations'), cdir, True)
-
-
-def _prepare_frequencies(ws: Kernel):
+def prepare_frequencies(ws: Kernel):
     import numpy as np
     from scipy.fft import fftfreq
 
@@ -191,11 +93,11 @@ def _prepare_frequencies(ws: Kernel):
     ]), 'encoding.log')
 
 
-def _link_observed(ws: Kernel):
+def link_observed(ws: Kernel):
     pass
 
 
-def _encode_events(ws: Kernel):
+def encode_events(ws: Kernel):
     # load catalog
     cmt = ''
     cdir = getdir()

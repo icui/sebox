@@ -5,7 +5,7 @@ from sebox import Directory
 from .specfem import xspecfem, setpars
 
 if tp.TYPE_CHECKING:
-    from sebox.solver import Adjoint
+    from sebox.typing import Adjoint
 
 
 def setup(ws: Adjoint):
