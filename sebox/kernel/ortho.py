@@ -106,14 +106,13 @@ def _compute(ws: Kernel, misfit_only: bool):
     
     else:
         # merget stations into a single file
-        pre.add(_merge_stations)
+        pre.add(_merge_stations, target=ws)
 
         # encode events
         enc.add(_encode_events, target=ws)
 
 
 def _merge_stations(ws: Kernel):
-    print(ws.path('SUPERSTATION'))
     merge_stations(getdir('stations'), ws.path('SUPERSTATION'), True)
 
 
