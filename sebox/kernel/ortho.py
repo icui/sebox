@@ -97,7 +97,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     pre = ws.add('preprocess', concurrent=True)
 
     # run mesher
-    pre.add('mesh', ('module:solver', 'mesher'))
+    pre.add('mesh', ('module:solver', 'mesh'))
 
     # merge stations into a single file
     if not getdir().has('SUPERSTATION'):
