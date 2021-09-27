@@ -103,7 +103,7 @@ def _prepare_frequencies(ws: Kernel):
         f'frequency slots: {nbands} x {fincr}',
         f'frequency indices: [{imin}, {imax}] x {kf}',
         f'period range: [{1/freq[imax-1]:.2f}s, {1/freq[imin]:.2f}s]',
-        f'seed: {rng(ws)}'
+        f'rng seed: {rng(ws)}'
         ''
     ]), 'encoding.log')
 
