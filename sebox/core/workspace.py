@@ -267,7 +267,8 @@ class Workspace(Directory):
             if root.job_failed or root.job_aborted:
                 break
 
-    def add(self, name: tp.Union[str, Task[tp.Any]] = None, task: Task[tp.Any] = None, *,
+    def add(self, name: tp.Union[str, Task[tp.Any]] = None, /,
+        task: Task[tp.Any] = None, *,
         concurrent: tp.Optional[bool] = None, prober: Prober = None,
         target: tp.Optional[Workspace] = None, **data) -> Workspace:
         """Add a child workspace or a child task."""

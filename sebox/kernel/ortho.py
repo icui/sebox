@@ -94,8 +94,8 @@ def misfit(ws: Kernel):
 
 def _compute(ws: Kernel, misfit_only: bool):
     # mesher and preprocessing
-    pre = ws.add(concurrent=True)
-    enc = pre.add()
+    pre = ws.add('preprocess', concurrent=True)
+    enc = pre.add('encoding')
 
     # determine frequency range
     enc.add(_prepare_frequencies, target=ws)
