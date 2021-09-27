@@ -32,7 +32,7 @@ class Directory:
         """Convert from a path relative to root directory to a path relative to current directory."""
         src = path.join('.', *paths)
 
-        if path.isabs(src):
+        if path.isabs(src) or path.isabs(self.path()):
             return src
             
         return path.relpath(src, self.path())
