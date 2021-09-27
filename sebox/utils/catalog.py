@@ -260,14 +260,12 @@ def merge_stations(d: Directory, dst: str, use_catalog: bool = False):
 
 def extract_stations(d: Directory, dst: str):
     """Extract STATIONS from ASDFDataSet."""
-    from os.path import join
-
     from pyasdf import ASDFDataSet
 
     for src in d.ls():
         event = src.split('.')[0]
         lines = {}
-        out = join(dst, f'STATIONS.{event}')
+        out = d.rel(dst, f'STATIONS.{event}')
 
         if d.has(out):
             continue
