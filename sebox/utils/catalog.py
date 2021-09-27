@@ -255,7 +255,7 @@ def merge_stations(d: Directory, dst: str, use_catalog: bool = False):
 
                 _format_station(lines, ll)
     
-    d.writelines(lines.values(), dst)
+    d.writelines(lines.values(), d.rel(dst))
 
 
 def extract_stations(d: Directory, dst: str):
