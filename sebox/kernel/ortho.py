@@ -149,7 +149,7 @@ def _prepare_frequencies(ws: Kernel):
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     if ws.reference_velocity is not None and (smooth := ws.smooth_kernels):
         if isinstance(smooth, list):
-            smooth = max(smooth[1], smooth[0] * smooth[2] ** ws.iteration)
+            smooth = max(smooth[1], smooth[0] * smooth[2] ** (ws.iteration or 0))
 
         # exclude band where reference_volocity * period < smooth_radius
         for i in range(ws.nbands):

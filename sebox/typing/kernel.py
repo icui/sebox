@@ -18,7 +18,7 @@ if tp.TYPE_CHECKING:
     class Kernel(Workspace):
         """Compute kernel and / or misfit."""
         # current iteration
-        iteration: int
+        iteration: tp.Optional[int]
 
         # length of a time step
         dt: float
