@@ -49,7 +49,10 @@ class Workspace(Directory):
     @property
     def name(self) -> str:
         """Directory name."""
-        if func := self.task:
+        func = self.task
+        
+        # use function name if workspace does not have a unique directory
+        if func and (not self._parent or self._parent._cwd == self._cwd):
             if isinstance(func, tuple):
                 return func[1]
 
