@@ -75,7 +75,7 @@ def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     cha = stats['cha'] if aux else None
 
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
-        data = np.zeros([len(stas), len(cmps), stats['n']])
+        data = np.zeros([len(stas), len(cmps), stats['n']], dtype=stats.get('dtype') or float)
         
         if cha is not None:
             aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
