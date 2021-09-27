@@ -8,22 +8,28 @@ if tp.TYPE_CHECKING:
     from .typing import Kernel
 
 
-async def merge(_):
+def merge(_):
     cdir = getdir()
     merge_stations(cdir.subdir('stations'), cdir, True)
 
 
-async def scatter_obs(ws: Kernel):
+def scatter_obs(ws: Kernel):
+    """Convert ASDF observed data to MPI format."""
+    _scatter(ws, 'obs')
+
+
+def scatter_diff(ws: Kernel):
+    """Convert ASDF diff data to MPI format."""
+    _scatter(ws, 'diff')
+
+
+def _scatter(ws: Kernel, tag: tp.Literal['obs', 'diff']):
     cdir = getdir()
 
-    for src in cdir.ls('ft_obs'):
+    for src in cdir.ls(f'ft_{tag}'):
         event = src.split('.')[0]
-        dst = f'ft_obs_p{root.task_nprocs}/{event}'
+        dst = f'ft_{tag}_p{root.task_nprocs}/{event}'
         
         if not cdir.has(dst):
             ws.add(event, ('sebox.utils.asdf', 'scatter'), aux=True, dtype=complex,
-                path_bundle=cdir.path(f'ft_obs/{src}'), path_mpi=cdir.path(dst))
-
-
-async def scatter_diff(_):
-    cdir = getdir()
+                path_bundle=cdir.path(f'ft_{tag}/{src}'), path_mpi=cdir.path(dst))
