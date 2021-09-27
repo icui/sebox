@@ -138,12 +138,16 @@ class Workspace(Directory):
         elif self._starttime:
             if self._endtime:
                 # task done
-                delta = str(timedelta(seconds=int(self._endtime - self._starttime)))
-
-                if delta.startswith('0:'):
-                    delta = delta[2:]
+                if len(self) and self.done:
+                    name += ' (done)'
                 
-                name += f' ({delta})'
+                else:
+                    delta = str(timedelta(seconds=int(self._endtime - self._starttime)))
+
+                    if delta.startswith('0:'):
+                        delta = delta[2:]
+                    
+                    name += f' ({delta})'
 
             else:
                 # task started but not finished
