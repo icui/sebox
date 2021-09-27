@@ -104,7 +104,7 @@ def _compute(ws: Kernel, misfit_only: bool):
         pre.add(_merge_stations)
 
     for iker in range(ws.nkernels or 1):
-        enc = pre.add(kl := f'kl_{iker:02d}', iker=iker)
+        enc = pre.add(f'kl_{iker:02d}', iker=iker)
 
         # determine frequency range
         enc.add(_prepare_frequencies)
