@@ -11,7 +11,7 @@ if tp.TYPE_CHECKING:
     class Kernel(typing.Kernel):
         """Source encoded kernel computation."""
         # number of kernel computations per iteration
-        nkernels: int
+        nkernels: tp.Optional[int]
 
         # number of kernels to randomize frequency per iteration
         nkernels_rng: tp.Optional[int]
@@ -137,14 +137,15 @@ def _prepare_frequencies(ws: Kernel):
     imax = imin + nbands * fincr
     nf = nbands * fincr
 
-    # save and print source encoding parameters
-    ws.nt_ts = nt_ts
-    ws.nt_se = nt_se
-    ws.df = df
-    ws.kf = kf
-    ws.nbands = nbands
-    ws.imin = imin
-    ws.imax = imax
+    # save results to parent (kernel) workspace
+    parent = tp.cast(Kernel, ws.parent)
+    parent.nt_ts = nt_ts
+    parent.nt_se = nt_se
+    parent.df = df
+    parent.kf = kf
+    parent.nbands = nbands
+    parent.imin = imin
+    parent.imax = imax
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     if ws.reference_velocity is not None and (smooth := ws.smooth_kernels):
@@ -152,13 +153,13 @@ def _prepare_frequencies(ws: Kernel):
             smooth = max(smooth[1], smooth[0] * smooth[2] ** (ws.iteration or 0))
 
         # exclude band where reference_volocity * period < smooth_radius
-        for i in range(ws.nbands):
+        for i in range(nbands):
             # compare smooth radius with the highest frequency of current band
             if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < smooth:
-                ws.nbands_used = i
+                parent.nbands_used = i
                 break
 
-    # save source encoding parameters to kernel directory
+    # save and print source encoding parameters
     ws.write('\n'.join([
         f'time step length: {ws.dt}',
         f'frequency step length: {ws.df:.2e}',
@@ -195,6 +196,12 @@ def _encode_events(ws: Kernel):
     # set random seed
     random.seed(getseed(ws))
 
+    # get available frequency bands for each event (sumed over tations and components)
+    event_bands = {}
+    print(1)
+    for event in events:
+        event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
+    print(2)
     # fill frequency slots
     len_slots = 0
 
@@ -207,12 +214,10 @@ def _encode_events(ws: Kernel):
             if event not in fslots:
                 fslots[event] = []
 
-            # selected frequency bands of current event (sumed over tations and components)
-            bands = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
             idx = None
 
             for i in range(nbands):
-                m = bands[i]
+                m = event_bands[event][i]
 
                 if m < 1:
                     # no available trace in current band
