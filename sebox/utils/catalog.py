@@ -289,4 +289,4 @@ def extract_stations(d: Directory, dst: str):
 
                 _format_station(lines, ll)
         
-        d.writelines(lines.values(), join(dst, f'STATIONS.{event}'))
+        d.writelines(lines.values(), d.rel(dst, f'STATIONS.{event}'))
