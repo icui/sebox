@@ -8,6 +8,21 @@ if tp.TYPE_CHECKING:
 
     class Kernel(typing.Kernel):
         """Source encoded kernel computation."""
+        # current iteration
+        iteration: int
+
+        # number of kernel computations per iteration
+        nkernels: int
+
+        # number of kernels to randomize frequency per iteration
+        nkernels_rng: tp.Optional[int]
+
+        # alter global randomization
+        seed: int
+
+        # index of current kernel
+        iker: tp.Optional[int]
+
         # path to encoded observed traces
         path_encoded: tp.Optional[str]
 
@@ -28,6 +43,16 @@ if tp.TYPE_CHECKING:
 
         # number of frequencies in a frequency band
         frequency_increment: int
+
+
+def rng(ws: Kernel):
+    if isinstance(ws.nkernels_rng, int):
+        rng_iter = ws.nkernels_rng
+    
+    else:
+        rng_iter = ws.nkernels or 1
+    
+    return (ws.iteration or 0) * rng_iter + (ws.seed or 0) + (ws.iker or 0)
 
 
 def _prepare_frequencies(ws: Kernel):

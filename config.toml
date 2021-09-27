@@ -50,6 +50,7 @@ randomize_frequency = 1
 remove_response = [0.00533, 0.00666, 0.0589, 0.0735]
 seed = 0
 
+# kernel processing
 kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
 hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
 smooth_kernels = [150.0, 70.0, 0.9]
@@ -59,11 +60,13 @@ fixed_preconditioner = false
 precondition = 200.0
 source_mask = true
 
+# misfit
 phase_factor = 1.0
 amplitude_factor = 0.0
 mix_single = 1.0
 double_difference = true
 
+# optimization
 niters = 20
 nsteps = 5
 step_init = 0.01
