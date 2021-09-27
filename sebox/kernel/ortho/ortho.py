@@ -33,11 +33,13 @@ def _compute(ws: Kernel, misfit_only: bool):
 
     # convert observed traces into MPI format
     if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        cat.add(scatter_obs)
+        cat.add(scatter_obs, concurrent=True)
+
     # convert differences between observed and synthetic data into MPI format
     if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
-        cat.add(scatter_diff)
+        cat.add(scatter_diff, concurrent=True)
 
+    return
     # mesher and preprocessing
     pre = ws.add('preprocess', concurrent=True, target=ws)
 
