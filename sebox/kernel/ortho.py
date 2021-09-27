@@ -113,6 +113,7 @@ def _compute(ws: Kernel, misfit_only: bool):
 
 
 def _merge_stations(ws: Kernel):
+    print(ws.path('SUPERSTATION'))
     merge_stations(getdir('stations'), ws.path('SUPERSTATION'), True)
 
 
