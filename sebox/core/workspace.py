@@ -139,9 +139,11 @@ class Workspace(Directory):
             if self._endtime:
                 # task done
                 if len(self) and self.done:
+                    # task with child workspaces
                     name += ' (done)'
                 
                 else:
+                    # task without child workspaces
                     delta = str(timedelta(seconds=int(self._endtime - self._starttime)))
 
                     if delta.startswith('0:'):
