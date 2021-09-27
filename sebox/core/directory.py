@@ -1,5 +1,5 @@
+from __future__ import annotations
 from os import path, fsync
-from functools import partial
 from subprocess import check_call
 from glob import glob
 import pickle
@@ -36,6 +36,10 @@ class Directory:
             return src
             
         return path.relpath(src, self.path())
+    
+    def subdir(self, *paths: str) -> Directory:
+        """Create a subdirectory object."""
+        return Directory(self.path(*paths))
     
     def has(self, src: str = '.'):
         """Check if a file or a directory exists."""

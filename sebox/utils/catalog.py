@@ -1,19 +1,33 @@
 import typing as tp
+from os import path
 
 from sebox import root, Directory
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
+    from sebox.core.root import Root
+
+    class Catalog(Root):
+        """Root directory with catalog configurations."""
+        # path to catalog directory
+        path_catalog: str
+
+        # maximum relative measurement weighting
+        measurement_threshold: tp.Optional[float]
+
+        # maximum relative noise weighting
+        noise_threshold: tp.Optional[float]
+    
+    root = tp.cast(Catalog, root)
 
 
-def getdir() -> Directory:
-    return Directory(tp.cast(str, root.path_catalog))
+def getdir(*paths: str) -> Directory:
+    """Get catalog directory."""
+    return Directory(path.join(tp.cast(str, root.path_catalog), *paths))
 
 
 def getevents(group: tp.Optional[int] = None):
     """Get list of events."""
-    from sebox import root
-
     cache = root.cache
 
     if 'events' not in cache:
@@ -33,8 +47,6 @@ def getevents(group: tp.Optional[int] = None):
 
 def getstations(event: tp.Optional[str] = None, group: tp.Optional[int] = None):
     """Get list of stations."""
-    from sebox import root
-
     cache = root.cache
 
     if 'stations' not in cache:
@@ -54,8 +66,6 @@ def getstations(event: tp.Optional[str] = None, group: tp.Optional[int] = None):
 
 def getcomponents(event: tp.Optional[str] = None, station: tp.Optional[str] = None, group: tp.Optional[int] = None):
     """Get list of components."""
-    from sebox import root
-
     cache = root.cache
 
     if 'components' not in cache:
@@ -89,8 +99,6 @@ def getmeasurements(event: tp.Union[str, int, None] = None, station: tp.Union[st
     component: tp.Union[str, int, None] = None, group: tp.Optional[int] = None,
     categorical: bool = True, geographical: bool = False, noise: bool = False, balance: bool = False) -> ndarray:
     """Get array of measuremnets."""
-    from sebox import root
-
     cache = root.cache
 
     if not categorical and not geographical and not noise:
@@ -185,3 +193,99 @@ def getmeasurements(event: tp.Union[str, int, None] = None, station: tp.Union[st
             out = (out.transpose() * a.transpose()).transpose()
     
     return tp.cast(tp.Any, out)
+
+
+def _format_station(lines: dict, ll: tp.List[str]):
+    """Format a line in STATIONS file."""
+    # location of dots for floating point numbers
+    dots = 28, 41, 55, 62
+
+    # line with station name
+    line = ll[0].ljust(13) + ll[1].ljust(5)
+
+    # add numbers with correct indentation
+    for i in range(4):
+        num = ll[i + 2]
+
+        if '.' in num:
+            nint, _ = num.split('.')
+        
+        else:
+            nint = num
+
+        while len(line) + len(nint) < dots[i]:
+            line += ' '
+        
+        line += num
+    
+    lines['.'.join(ll[:2])] = line
+
+
+def merge_stations(d: Directory, dst: str, use_catalog: bool = False):
+    """Merge multiple stations into one."""
+    lines = {}
+
+    if use_catalog:
+        # exclude events and stations that are not in the catalog
+        from sebox.utils.catalog import getevents, getstations
+        events = getevents()
+        stations = getstations()
+    
+    else:
+        # include all events and stations
+        events = None
+        stations = None
+
+    for src in d.ls():
+        event = src.split('.')[1]
+
+        if events and event not in events:
+            continue
+
+        for line in d.readlines(src):
+            if len(ll := line.split()) == 6:
+                station = ll[1] + '.' + ll[0]
+
+                if station in lines:
+                    continue
+
+                if stations and station not in stations:
+                    continue
+
+                _format_station(lines, ll)
+    
+    d.writelines(lines.values(), dst)
+
+
+def extract_stations(d: Directory, dst: str):
+    """Extract STATIONS from ASDFDataSet."""
+    from os.path import join
+
+    from pyasdf import ASDFDataSet
+
+    for src in d.ls():
+        event = src.split('.')[0]
+        lines = {}
+        out = join(dst, f'STATIONS.{event}')
+
+        if d.has(out):
+            continue
+
+        with ASDFDataSet(src, mode='r', mpi=False) as ds:
+            for station in ds.waveforms.list():
+                if not hasattr(ds.waveforms[station], 'StationXML'):
+                    print('  ' + station)
+                    continue
+
+                sta = ds.waveforms[station].StationXML.networks[0].stations[0] # type: ignore
+
+                ll = station.split('.')
+                ll.reverse()
+                ll.append(f'{sta.latitude:.4f}')
+                ll.append(f'{sta.longitude:.4f}')
+                ll.append(f'{sta.elevation:.1f}')
+                ll.append(f'{sta.channels[0].depth:.1f}')
+
+                _format_station(lines, ll)
+        
+        d.writelines(lines.values(), join(dst, f'STATIONS.{event}'))
