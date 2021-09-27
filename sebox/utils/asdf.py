@@ -80,9 +80,10 @@ def _scatter_npy(arg: tp.Tuple[str, str, Stats], stas: tp.List[str]):
     from sebox.core.mpi import pid
 
     src, dst, stats = arg
+    nt = stats['nt']
 
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
-        data = np.zeros([len(stas), len(stats['cmps']), stats['nt']])
+        data = np.zeros([len(stas), len(stats['cmps']), nt])
 
         for i, sta in enumerate(stas):
             stream = get_stream(ds, sta)
@@ -90,11 +91,11 @@ def _scatter_npy(arg: tp.Tuple[str, str, Stats], stas: tp.List[str]):
             for j, cmp in enumerate(stats['cmps']):
                 trace = stream[j]
                 
-                assert trace.stats.npts == stats['nt']
+                assert trace.stats.npts >= nt
                 assert trace.stats.delta == stats['dt']
                 assert trace.stats.component == cmp
 
-                data[i, j, :] = trace.data
+                data[i, j, :] = trace.data[:nt]
         
         Directory(dst).dump(data, f'{pid}.npy', mkdir=False)
 
