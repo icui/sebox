@@ -107,15 +107,15 @@ def _compute(ws: Kernel, misfit_only: bool):
         enc = pre.add(f'kl_{iker:02d}', iker=iker)
 
         # determine frequency range
-        enc.add(_prepare_frequencies)
+        enc.add(_prepare_frequencies, target=enc)
 
         if ws.path_encoded:
             # link encoded observed data
-            enc.add(_link_observed)
+            enc.add(_link_observed, target=enc)
         
         else:
             # encode events
-            enc.add(_encode_events)
+            enc.add(_encode_events, target=enc)
 
 
 async def _merge_stations(_):
@@ -146,7 +146,6 @@ def _prepare_frequencies(ws: Kernel):
     kf = int(np.ceil(nt_ts / nt_se))
 
     # frequencies to be encoded
-    print(nt_se)
     freq = fftfreq(nt_se, ws.dt)
     fincr = ws.frequency_increment
     imin = int(np.ceil(1 / ws.period_range[1] / df))
