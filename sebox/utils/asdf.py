@@ -42,6 +42,7 @@ if tp.TYPE_CHECKING:
 
 
 def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
+    """Get trace based on station and component."""
     wav = ds.waveforms[sta]
     return tp.cast('Trace', wav[wav.get_waveform_tags()[0]].select(component=cmp)[0])
 
@@ -104,6 +105,7 @@ async def scatter(ws: Convert):
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
         stats = tp.cast('Stats', ws.stats or {})
 
+        # fill stattions and components
         if 'stas' not in stats:
             stats['stas'] = getstations()
         
@@ -113,6 +115,7 @@ async def scatter(ws: Convert):
         stas = stats['stas']
         cmps = stats['cmps']
         
+        # fill length of trace data
         if 'n' not in stats:
             if ws.aux:
                 aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
@@ -122,10 +125,13 @@ async def scatter(ws: Convert):
                 trace = gettrace(ds, stas[0], cmps[0])
                 stats['n'] = trace.stats.npts
 
-        if ws.aux and 'cha' not in stas:
+        if ws.aux and 'cha' not in stats:
             aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
             stats['cha'] = aux.list()[0].split('_')[-1][:-1]
 
+        # save stats
         ws.dump(stats, path.join(ws.path_mpi, 'stats.pickle'))
+
         await ws.mpiexec(_scatter, root.task_nprocs,
-            arg=(src, dst, stats['cha'] if ws.aux else None, stats['n'], cmps), arg_mpi=stas)
+            arg=(src, dst, stats['cha'] if ws.aux else None, stats['n'], cmps),
+            arg_mpi=stas)
