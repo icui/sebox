@@ -146,6 +146,7 @@ def _prepare_frequencies(ws: Kernel):
     kf = int(np.ceil(nt_ts / nt_se))
 
     # frequencies to be encoded
+    print(nt_se)
     freq = fftfreq(nt_se, ws.dt)
     fincr = ws.frequency_increment
     imin = int(np.ceil(1 / ws.period_range[1] / df))
