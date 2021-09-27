@@ -74,6 +74,12 @@ class Workspace(Directory):
 
         return False
     
+    @property
+    def elapsed(self) -> tp.Optional[float]:
+        """Total walltime."""
+        if self.done:
+            return self._endtime - self._starttime + sum(ws.elapsed for ws in self._ws) # type: ignore
+    
     def __init__(self, cwd: str, data: dict, parent: tp.Optional[Workspace]):
         super().__init__(cwd)
         self._init = data
@@ -137,14 +143,9 @@ class Workspace(Directory):
         
         elif self._starttime:
             if self._endtime:
-                # task done
-                if len(self) and self.done:
-                    # task with child workspaces
-                    name += ' (done)'
-                
-                else:
-                    # task without child workspaces
-                    delta = str(timedelta(seconds=int(self._endtime - self._starttime)))
+                if elapsed := self.elapsed:
+                    # task done
+                    delta = str(timedelta(seconds=int(round(elapsed))))
 
                     if delta.startswith('0:'):
                         delta = delta[2:]
