@@ -1,4 +1,4 @@
-from __future__ import annotationso
+from __future__ import annotations
 import typing as tp
 
 from sebox import root
