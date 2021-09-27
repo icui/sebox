@@ -21,6 +21,9 @@ if tp.TYPE_CHECKING:
 
         # station channel
         cha: tp.Optional[str]
+        
+        # data type
+        dtype: tp.Any
     
 
     class Convert(Workspace):
@@ -60,17 +63,19 @@ async def gather(ws: Convert):
                 ds.add_waveforms(stream, ws.output_tag or 'sebox')
 
 
-def _scatter(arg: tp.Tuple[str, str, bool, int, tp.List[str]], stas: tp.List[str]):
+def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     import numpy as np
     from pyasdf import ASDFDataSet
 
     from sebox import Directory
     from sebox.core.mpi import pid
 
-    src, dst, cha, n, cmps = arg
+    src, dst, aux, stats = arg
+    cmps = stats['cmps']
+    cha = stats['cha'] if aux else None
 
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
-        data = np.zeros([len(stas), len(cmps), n])
+        data = np.zeros([len(stas), len(cmps), stats['n']])
         
         if cha is not None:
             aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
@@ -112,26 +117,27 @@ async def scatter(ws: Convert):
         if 'cmps' not in stats:
             stats['cmps'] = getcomponents()
         
-        stas = stats['stas']
-        cmps = stats['cmps']
-        
-        # fill length of trace data
-        if 'n' not in stats:
-            if ws.aux:
-                aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
-                stats['n'] = len(aux[aux.list()[0]].data)
-            
-            else:
-                trace = gettrace(ds, stas[0], cmps[0])
-                stats['n'] = trace.stats.npts
-
-        if ws.aux and 'cha' not in stats:
+        # fill data info
+        if ws.aux:
             aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
-            stats['cha'] = aux.list()[0].split('_')[-1][:-1]
+
+            if 'cha' not in stats:
+                stats['cha'] = aux.list()[0].split('_')[-1][:-1]
+            
+            data = aux[aux.list()[0]].data
+
+            if 'n' not in stats:
+                stats['n'] = len(data)
+            
+            if 'dtype' not in stats:
+                stats['dtype'] = data.dtype
+        
+        elif 'n' not in stats:
+            trace = gettrace(ds, stats['stas'][0], stats['cmps'][0])
+            stats['n'] = trace.stats.npts
 
         # save stats
         ws.dump(stats, path.join(ws.path_mpi, 'stats.pickle'))
 
         await ws.mpiexec(_scatter, root.task_nprocs,
-            arg=(src, dst, stats['cha'] if ws.aux else None, stats['n'], cmps),
-            arg_mpi=stas)
+            arg=(src, dst, ws.aux, stats), arg_mpi=stats['stas'])
