@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Directory
-from .specfem import xmeshfem, setpars
+from .specfem import xmeshfem, setpars, merge_stations
 
 if tp.TYPE_CHECKING:
     from .specfem import Par_file
@@ -11,28 +11,29 @@ if tp.TYPE_CHECKING:
 
 def setup(ws: Forward):
     """Create mesher workspace."""
-    d = Directory(ws.path_specfem)
+    src = ws.path_specfem
+    d = Directory(src)
 
     # specfem directories
     ws.mkdir('DATA')
     ws.mkdir('OUTPUT_FILES')
     ws.mkdir('DATABASES_MPI')
 
-    # link binaries and event files
-    ws.ln(d.path('bin'))
-    ws.cp(d.path('DATA/Par_file'), 'DATA')
-    ws.cp(ws.rel(ws.path_event) if ws.path_event else d.path('DATA/CMTSOLUTION'), 'DATA/CMTSOLUTION')
-    ws.cp(ws.rel(ws.path_stations) if ws.path_event else d.path('DATA/STATIONS'), 'DATA/STATIONS')
+    # link binaries and copy data files
+    ws.ln(ws.rel(src, 'bin'))
+    ws.cp(ws.rel(src, 'DATA/Par_file'), 'DATA')
+    ws.cp(ws.rel(ws.path_event or d.path('DATA/CMTSOLUTION')), 'DATA/CMTSOLUTION')
+    ws.cp(ws.rel(ws.path_stations or d.path('DATA/STATIONS')), 'DATA/STATIONS')
 
     # link specfem model directories
     for subdir in d.ls('DATA', isdir=True):
         if subdir != 'GLL':
-            ws.ln(d.path('DATA', subdir), 'DATA')
+            ws.ln(ws.rel(src, 'DATA', subdir), 'DATA')
     
     # link model file to run mesher
     if ws.path_model:
         ws.mkdir('DATA/GLL')
-        ws.ln(ws.path_model, 'DATA/GLL/model_gll.bp')
+        ws.ln(ws.rel(ws.path_model), 'DATA/GLL/model_gll.bp')
 
     # update Par_file
     pars: Par_file = { 'MODEL': 'GLL' }

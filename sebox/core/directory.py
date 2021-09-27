@@ -30,7 +30,12 @@ class Directory:
     
     def rel(self, *paths: str) -> str:
         """Convert from a path relative to root directory to a path relative to current directory."""
-        return path.relpath(path.join('.', *paths), self.path())
+        src = path.join('.', *paths)
+
+        if path.isabs(src):
+            return src
+            
+        return path.relpath(src, self.path())
     
     def has(self, src: str = '.'):
         """Check if a file or a directory exists."""
@@ -58,26 +63,30 @@ class Directory:
         """Link a file or a directory."""
         if mkdir:
             self.mkdir(path.dirname(dst))
+        
+        srcfile = path.basename(src)
 
-        # relative source path
+        # relative path from source directory to target directory
         if not path.isabs(src):
             src = self.path(src, abs=True)
 
             if not path.isabs(dst):
-                if not path.isdir(dstdir := self.path(dst, abs=True)):
+                srcdir = path.dirname(src)
+                dstdir = self.path(dst, abs=True)
+
+                if not path.isdir(dstdir):
                     dstdir = path.dirname(dstdir)
 
-                src = path.join(path.relpath(path.dirname(src), dstdir), path.basename(src))
+                src = path.join(path.relpath(srcdir, dstdir), srcfile)
 
         # delete existing target file
-        dst = self.path(dst)
+        if self.isdir(dst):
+            self.rm(path.join(dst, srcfile))
 
-        if path.isdir(dst):
-            self.rm(path.join(dst, path.basename(src)))
         else:
             self.rm(dst)
 
-        check_call(f'ln -s {src} {dst}', shell=True)
+        check_call(f'ln -s {src} {self.path(dst)}', shell=True)
     
     def mkdir(self, dst: str = '.'):
         """Create a directory recursively."""
@@ -99,6 +108,10 @@ class Directory:
             entries.append(entry.split('/')[-1])
 
         return entries
+    
+    def isdir(self, src: str = '.'):
+        """Check if src is a directory."""
+        return path.isdir(self.path(src))
 
     def read(self, src: str) -> str:
         """Read text file."""

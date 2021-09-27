@@ -8,9 +8,6 @@ if tp.TYPE_CHECKING:
 
     class Kernel(typing.Kernel):
         """Source encoded kernel computation."""
-        # current iteration
-        iteration: int
-
         # number of kernel computations per iteration
         nkernels: int
 
@@ -29,23 +26,15 @@ if tp.TYPE_CHECKING:
         # indices of lowest and highest frequency
         fidx: tp.Tuple[int, int]
 
-        # simulation duration in minutes
-        duration: float
-
         # time duration to reach steady state for source encoding
         transient_duration: float
-
-        # length of a time step
-        dt: float
-
-        # period range
-        period_range: tp.List[float]
 
         # number of frequencies in a frequency band
         frequency_increment: int
 
 
-def rng(ws: Kernel):
+def seed(ws: Kernel):
+    """Random seed based on kernel configuration."""
     if isinstance(ws.nkernels_rng, int):
         rng_iter = ws.nkernels_rng
     
@@ -53,6 +42,29 @@ def rng(ws: Kernel):
         rng_iter = ws.nkernels or 1
     
     return (ws.iteration or 0) * rng_iter + (ws.seed or 0) + (ws.iker or 0)
+
+
+def kernel(ws: Kernel):
+    """Compute kernels."""
+    _compute(ws, False)
+
+
+def misfit(ws: Kernel):
+    """Compute misfit."""
+    _compute(ws, True)
+
+
+def _compute(ws: Kernel, misfit_only: bool):
+    # determine frequency range
+    ws.add(_prepare_frequencies)
+
+    if ws.path_encoded:
+        # link encoded observed data
+        ws.add(_link_observed)
+    
+    else:
+        # encode events
+        ws.add(_encode_events)
 
 
 def _prepare_frequencies(ws: Kernel):
@@ -95,6 +107,7 @@ def _prepare_frequencies(ws: Kernel):
     ws.nbands = nbands
     ws.fidx = imin, imax
 
+    # save source encoding parameters to kernel directory
     ws.write('\n'.join([
         f'time step length: {ws.dt}',
         f'frequency step length: {ws.df:.2e}',
@@ -103,18 +116,14 @@ def _prepare_frequencies(ws: Kernel):
         f'frequency slots: {nbands} x {fincr}',
         f'frequency indices: [{imin}, {imax}] x {kf}',
         f'period range: [{1/freq[imax-1]:.2f}s, {1/freq[imin]:.2f}s]',
-        f'rng seed: {rng(ws)}'
+        f'random seed: {seed(ws)}'
         ''
     ]), 'encoding.log')
 
 
-def kernel(ws: Kernel):
-    """Compute kernels."""
-    # determine frequency range
-    ws.add(_prepare_frequencies)
+def _link_observed(ws: Kernel):
+    pass
 
-    if ws.path_encoded:
-        pass
 
-    else:
-        cdir = getdir()
+def _encode_events(ws: Kernel):
+    pass

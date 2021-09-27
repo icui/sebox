@@ -28,7 +28,7 @@ path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m25_128.bp"
 duration = 348.0
 transient_duration = 60.0
 lddrk = false
-catalog_range = [85.0, -115.0, 70.0, 90.0]
+catalog_boundary = [85.0, -115.0, 70.0, 90.0]
 
 # kernel
 dt = 0.16

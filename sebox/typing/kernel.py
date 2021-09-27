@@ -8,14 +8,26 @@ if tp.TYPE_CHECKING:
 
     class KernelModule(tp.Protocol):
         """Required functions in a solver module."""
+        # compute kernels
         kernel: Task[Kernel]
 
-
-    class Misfit(Workspace):
-        """Compute misfit only."""
+        # compute misfit
+        misfit: Task[Kernel]
 
 
     class Kernel(Workspace):
-        """Compute misfit and kernel."""
-        # compute misfit only (no adjoint simulation)
-        misfit_only: bool
+        """Compute kernel and / or misfit."""
+        # current iteration
+        iteration: int
+
+        # length of a time step
+        dt: float
+
+        # simulation duration in minutes
+        duration: float
+
+        # period range
+        period_range: tp.List[float]
+
+        # path to current model
+        path_model: str
