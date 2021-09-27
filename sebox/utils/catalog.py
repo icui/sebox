@@ -222,7 +222,7 @@ def _format_station(lines: dict, ll: tp.List[str]):
     lines['.'.join(ll[:2])] = line
 
 
-def merge_stations(d: Directory, dst: str, use_catalog: bool = False):
+def merge_stations(d: Directory, dst: Directory, use_catalog: bool = False):
     """Merge multiple stations into one."""
     lines = {}
 
@@ -255,19 +255,19 @@ def merge_stations(d: Directory, dst: str, use_catalog: bool = False):
 
                 _format_station(lines, ll)
     
-    d.writelines(lines.values(), d.rel(dst))
+    dst.writelines(lines.values(), 'SUPERSTATION')
 
 
-def extract_stations(d: Directory, dst: str):
+def extract_stations(d: Directory, dst: Directory):
     """Extract STATIONS from ASDFDataSet."""
     from pyasdf import ASDFDataSet
 
     for src in d.ls():
         event = src.split('.')[0]
         lines = {}
-        out = d.rel(dst, f'STATIONS.{event}')
+        fname = f'STATIONS.{event}'
 
-        if d.has(out):
+        if dst.has(fname):
             continue
 
         with ASDFDataSet(src, mode='r', mpi=False) as ds:
@@ -287,4 +287,4 @@ def extract_stations(d: Directory, dst: str):
 
                 _format_station(lines, ll)
         
-        d.writelines(lines.values(), d.rel(dst, f'STATIONS.{event}'))
+        dst.writelines(lines.values(), fname)

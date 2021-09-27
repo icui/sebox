@@ -95,25 +95,32 @@ def misfit(ws: Kernel):
 def _compute(ws: Kernel, misfit_only: bool):
     # mesher and preprocessing
     pre = ws.add('preprocess', concurrent=True)
-    enc = pre.add('encoding')
 
-    # determine frequency range
-    enc.add(_prepare_frequencies, target=ws)
+    # run mesher
+    pre.add('mesh', ('module:solver', 'mesher'))
 
-    if ws.path_encoded:
-        # link encoded observed data
-        enc.add(_link_observed, target=ws)
-    
-    else:
-        # merget stations into a single file
-        pre.add(_merge_stations, target=ws)
+    # merge stations into a single file
+    if not getdir().has('SUPERSTATION'):
+        pre.add(_merge_stations)
 
-        # encode events
-        enc.add(_encode_events, target=ws)
+    for iker in range(ws.nkernels or 1):
+        enc = pre.add(kl := f'kl_{iker:02d}', iker=iker)
+
+        # determine frequency range
+        enc.add(_prepare_frequencies)
+
+        if ws.path_encoded:
+            # link encoded observed data
+            enc.add(_link_observed)
+        
+        else:
+            # encode events
+            enc.add(_encode_events)
 
 
-def _merge_stations(ws: Kernel):
-    merge_stations(getdir('stations'), ws.path('SUPERSTATION'), True)
+async def _merge_stations(_):
+    cdir = getdir()
+    merge_stations(cdir.subdir('stations'), cdir, True)
 
 
 def _prepare_frequencies(ws: Kernel):
