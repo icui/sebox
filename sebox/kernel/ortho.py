@@ -138,7 +138,7 @@ def _prepare_frequencies(ws: Kernel):
     nf = nbands * fincr
 
     # save results to parent (kernel) workspace
-    parent = tp.cast(Kernel, ws.parent)
+    parent = tp.cast('Kernel', ws.parent)
     parent.nt_ts = nt_ts
     parent.nt_se = nt_se
     parent.df = df

@@ -193,7 +193,7 @@ def getmeasurements(event: tp.Union[str, int, None] = None, station: tp.Union[st
         else:
             out = (out.transpose() * a.transpose()).transpose()
     
-    return tp.cast(tp.Any, out)
+    return tp.cast('ndarray', out)
 
 
 def _format_station(lines: dict, ll: tp.List[str]):

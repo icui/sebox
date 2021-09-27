@@ -41,7 +41,7 @@ if tp.TYPE_CHECKING:
 
 def get_stream(ds: ASDFDataSet, sta: str) -> tp.List[Trace]:
     wav = ds.waveforms[sta]
-    return tp.cast(tp.Any, wav[wav.get_waveform_tags()[0]])
+    return tp.cast(tp.List['Trace'], wav[wav.get_waveform_tags()[0]])
 
 
 async def gather(ws: Convert):
