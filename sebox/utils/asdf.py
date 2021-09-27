@@ -7,7 +7,7 @@ from sebox.utils.catalog import getstations, getcomponents
 
 if tp.TYPE_CHECKING:
     from pyasdf import ASDFDataSet
-    from obspy import Trace, Stream
+    from obspy import Trace
 
     class Stats(tp.TypedDict, total=False):
         # length of a trace data

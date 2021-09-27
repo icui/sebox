@@ -81,7 +81,13 @@ class Workspace(Directory):
     def elapsed(self) -> tp.Optional[float]:
         """Total walltime."""
         if self.done:
-            return self._endtime - self._starttime + sum(ws.elapsed for ws in self._ws) # type: ignore
+            delta = self._endtime - self._starttime # type: ignore
+            delta_ws = tp.cast(tp.List[float], [ws.elapsed for ws in self._ws])
+
+            if self.concurrent:
+                delta + max(*delta_ws)
+
+            return delta + sum(delta_ws)
     
     def __init__(self, cwd: str, data: dict, parent: tp.Optional[Workspace]):
         super().__init__(cwd)
