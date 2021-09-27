@@ -22,6 +22,9 @@ class Workspace(Directory):
     # whether child workspaces are executed concurrently
     concurrent: tp.Optional[bool]
 
+    # argument passed to self.task
+    target: tp.Optional[Workspace]
+
     # initial data passed to self.__init__
     _init: dict
 
@@ -206,7 +209,7 @@ class Workspace(Directory):
                 task = getattr(import_module(path), task[1])
 
             # call task function
-            if task and (result := task(self)) and asyncio.iscoroutine(result):
+            if task and (result := task(self.target or self)) and asyncio.iscoroutine(result):
                 await result
         
         except Exception as e:
@@ -265,7 +268,8 @@ class Workspace(Directory):
                 break
 
     def add(self, name: tp.Union[str, Task[tp.Any]] = None, task: Task[tp.Any] = None, *,
-        concurrent: tp.Optional[bool] = None, prober: Prober = None, **data) -> Workspace:
+        concurrent: tp.Optional[bool] = None, prober: Prober = None,
+        target: tp.Optional[Workspace] = None, **data) -> Workspace:
         """Add a child workspace or a child task."""
         if name is not None and not isinstance(name, str):
             if task is not None:
@@ -281,6 +285,9 @@ class Workspace(Directory):
         
         if concurrent is not None:
             data['concurrent'] = concurrent
+        
+        if target is not None:
+            data['target'] = target
 
         ws = Workspace(self.path(name) if isinstance(name, str) else self.path(), data, self)
         self._ws.append(ws)

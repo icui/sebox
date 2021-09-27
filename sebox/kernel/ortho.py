@@ -93,16 +93,27 @@ def misfit(ws: Kernel):
 
 
 def _compute(ws: Kernel, misfit_only: bool):
+    # mesher and preprocessing
+    pre = ws.add(concurrent=True)
+    enc = pre.add()
+
     # determine frequency range
-    ws.add(_prepare_frequencies)
+    enc.add(_prepare_frequencies, target=ws)
 
     if ws.path_encoded:
         # link encoded observed data
-        ws.add(_link_observed)
+        enc.add(_link_observed, target=ws)
     
     else:
+        # merget stations into a single file
+        pre.add(_merge_stations)
+
         # encode events
-        ws.add(_encode_events)
+        enc.add(_encode_events, target=ws)
+
+
+def _merge_stations(ws: Kernel):
+    merge_stations(getdir('stations'), ws.path('SUPERSTATION'), True)
 
 
 def _prepare_frequencies(ws: Kernel):
@@ -138,14 +149,13 @@ def _prepare_frequencies(ws: Kernel):
     nf = nbands * fincr
 
     # save results to parent (kernel) workspace
-    parent = tp.cast('Kernel', ws.parent)
-    parent.nt_ts = nt_ts
-    parent.nt_se = nt_se
-    parent.df = df
-    parent.kf = kf
-    parent.nbands = nbands
-    parent.imin = imin
-    parent.imax = imax
+    ws.nt_ts = nt_ts
+    ws.nt_se = nt_se
+    ws.df = df
+    ws.kf = kf
+    ws.nbands = nbands
+    ws.imin = imin
+    ws.imax = imax
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     if ws.reference_velocity is not None and (smooth := ws.smooth_kernels):
@@ -156,7 +166,8 @@ def _prepare_frequencies(ws: Kernel):
         for i in range(nbands):
             # compare smooth radius with the highest frequency of current band
             if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < smooth:
-                parent.nbands_used = i
+                # parent.nbands_used = i #FIXME
+                ws.nbands_used = nbands
                 break
 
     # save and print source encoding parameters
@@ -182,9 +193,6 @@ def _encode_events(ws: Kernel):
     cmt = ''
     cdir = getdir()
 
-    # merge stations into a single station file
-    merge_stations(cdir.subdir('stations'), ws.path('SUPERSTATION'), True)
-
     # randomize frequency
     freq = getfreq(ws)
     fslots = ws.fslots = {}
@@ -198,10 +206,10 @@ def _encode_events(ws: Kernel):
 
     # get available frequency bands for each event (sumed over tations and components)
     event_bands = {}
-    print(1)
+
     for event in events:
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
-    print(2)
+
     # fill frequency slots
     len_slots = 0
 
