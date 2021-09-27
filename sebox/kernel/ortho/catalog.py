@@ -17,10 +17,12 @@ async def scatter_obs(ws: Kernel):
     cdir = getdir()
 
     for src in cdir.ls('ft_obs'):
-        dst = f'ft_obs_p{root.task_nprocs}/{src}'
+        dst = f'ft_obs_p{root.task_nprocs}/{src.split(".")[0]}'
+        print(src, dst)
         
         if not cdir.has(dst):
-            ws.add(('sebox.utils.asdf', 'scatter'), aux=True)
+            ws.add(('sebox.utils.asdf', 'scatter'),
+                aux=True, path_bundle=cdir.path(f'ft_obs/{src}'), path_mpi = dst)
 
 
 async def scatter_diff(_):
