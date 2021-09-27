@@ -84,7 +84,7 @@ class Workspace(Directory):
             delta = self._endtime - self._starttime # type: ignore
             delta_ws = tp.cast(tp.List[float], [ws.elapsed for ws in self._ws])
 
-            if self.concurrent:
+            if self.concurrent and len(delta_ws):
                 delta + max(*delta_ws)
 
             return delta + sum(delta_ws)
