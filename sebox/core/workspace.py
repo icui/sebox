@@ -290,7 +290,8 @@ class Workspace(Directory):
         if target is not None:
             data['target'] = target
 
-        ws = Workspace(self.path(name) if isinstance(name, str) else self.path(), data, self)
+        parent = self.target or self
+        ws = Workspace(parent.path(name) if isinstance(name, str) else parent.path(), data, self)
         self._ws.append(ws)
         
         return ws
