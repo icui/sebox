@@ -66,7 +66,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     if 'II.OBN' in stas:
         i = stas.index('II.OBN')
         print('@', )
-        print(encoded[2])
+        print(encoded[i][2])
 
 
 def _ft_syn(ws: Kernel, data: ndarray):
