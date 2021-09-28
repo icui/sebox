@@ -103,8 +103,7 @@ async def scatter(ws: Convert):
     """Convert ASDF trace to MPI trace."""
     from pyasdf import ASDFDataSet
 
-    dst = ws.rel(ws.path_mpi)
-    ws.mkdir(dst)
+    ws.mkdir(ws.rel(ws.path_mpi))
 
     with ASDFDataSet(ws.path_bundle, mode='r', mpi=False) as ds:
         stats = tp.cast('Stats', ws.stats or {})
@@ -139,4 +138,4 @@ async def scatter(ws: Convert):
         ws.dump(stats, path.join(ws.path_mpi, 'stats.pickle'))
 
         await ws.mpiexec(_scatter, root.task_nprocs,
-            arg=(ws.path_bundle, dst, ws.aux, stats), arg_mpi=stats['stas'])
+            arg=(ws.path_bundle, ws.path_mpi, ws.aux, stats), arg_mpi=stats['stas'])
