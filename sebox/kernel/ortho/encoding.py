@@ -63,6 +63,11 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
+    if 'II.OBN' in stas:
+        i = stas.index('II.OBN')
+        print('@', )
+        print(encoded[2])
+
 
 def _ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
