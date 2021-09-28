@@ -27,7 +27,7 @@ def ft_obs(ws: Kernel, data: ndarray):
     
     else:
         data = data[..., :nt]
-    print(data.shape, ws.kf, ws.imin, ws.imax)
+
     return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
 
 

@@ -47,8 +47,11 @@ def _compute(ws: Kernel, misfit_only: bool):
     # run mesher
     pre.add('mesh', ('module:solver', 'mesh'))
 
+    kls = []
+
     for iker in range(ws.nkernels or 1):
         kl = pre.add(f'kl_{iker:02d}', iker=iker)
+        kls.append(kl)
 
         # determine frequency range
         kl.add(prepare_frequencies, target=kl)
@@ -78,7 +81,7 @@ def _compute(ws: Kernel, misfit_only: bool):
             path_stations= cdir.path('SUPERSTATION'),
             path_mesh= ws.path('mesh'),
             monochromatic_source= True,
-            save_forward= True)
+            save_forward= True, target=kls[iker])
         
         # process traces
-        kl.add(ft)
+        kl.add(ft, target=kls[iker])
