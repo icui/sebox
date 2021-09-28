@@ -11,7 +11,7 @@ if tp.TYPE_CHECKING:
 
     class Stats(tp.TypedDict, total=False):
         # length of a trace data
-        n: int
+        nt: int
 
         # trace components
         cmps: tp.List[str]
@@ -53,19 +53,6 @@ def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
     return tp.cast('Trace', wav[wav.get_waveform_tags()[0]].select(component=cmp)[0])
 
 
-async def gather(ws: Convert):
-    """Convert MPI trace to ASDF trace."""
-    from pyasdf import ASDFDataSet
-    from sebox import Directory
-
-    d = Directory(ws.path_mpi)
-
-    with ASDFDataSet(ws.path_bundle, mode='w', mpi=False) as ds:
-        for pid in d.ls():
-            for stream in d.load(pid).values():
-                ds.add_waveforms(stream, ws.output_tag or 'sebox')
-
-
 def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     import numpy as np
     from pyasdf import ASDFDataSet
@@ -78,7 +65,7 @@ def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     cha = stats['cha'] if aux else None
 
     with ASDFDataSet(src, mode='r', mpi=False) as ds:
-        data = np.zeros([len(stas), len(cmps), stats['n']], dtype=stats.get('dtype') or float)
+        data = np.zeros([len(stas), len(cmps), stats['nt']], dtype=stats.get('dtype') or float)
         
         if cha is not None:
             aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
@@ -127,8 +114,8 @@ async def scatter(ws: Convert):
             
             data = aux[aux.list()[0]].data
 
-            if 'n' not in stats:
-                stats['n'] = len(data)
+            if 'nt' not in stats:
+                stats['nt'] = len(data)
             
             if 'dtype' not in stats:
                 stats['dtype'] = data.dtype
@@ -136,8 +123,8 @@ async def scatter(ws: Convert):
         else:
             trace = gettrace(ds, stats['stas'][0], stats['cmps'][0])
             
-            if 'n' not in stats:
-                stats['n'] = trace.stats.npts
+            if 'nt' not in stats:
+                stats['nt'] = trace.stats.npts
             
             if 'dt' not in stats:
                 stats['dt'] = trace.stats.delta

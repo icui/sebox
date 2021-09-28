@@ -1,12 +1,44 @@
 from __future__ import annotations
 import typing as tp
 
+from sebox import Directory
 from sebox.utils.catalog import getstations
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
-    from sebox.utils.asdf import Stats
     from .typing import Kernel
+
+    class Stats(tp.TypedDict, total=False):
+        """Source encoding data dict."""
+        # length of original trace
+        npts: int
+
+        # time step of original trace
+        delta: float
+
+        # time step
+        dt: float
+
+        # total number of time steps
+        nt: int
+
+        # transient time step
+        nt_ts: int
+
+        # steady state time step
+        nt_se: int
+
+        # minimum frequency index
+        imin: int
+
+        # maximum frequency index
+        imax: int
+
+        # event name
+        event: tp.Optional[str]
+
+        # MPI trace directory
+        path_mpi: str
 
 
 def ft_syn(ws: Kernel, data: ndarray):
@@ -35,68 +67,52 @@ def ft_obs(ws: Kernel, data: ndarray):
 async def ft(ws: Kernel):
     # load trace parameters
     stats: Stats = ws.load('forward/traces/stats.pickle')
-    print(stats['n'], stats['dt'])
+    stats.update({
+        'npts': stats['nt'],
+        'delta': stats['dt'],
+        'dt': ws.dt,
+        'nt_ts': ws.nt_ts,
+        'nt_se': ws.nt_se,
+        'imin': ws.imin,
+        'imax': ws.imax,
+        'event': ws.event
+    })
 
-#     # Time and frequency parameters
-#     params = {
-#         'npts': stats.npts,
-#         'delta': stats.delta,
-#         'nt': len(stream[0].data),
-#         'dt': ws.dt,
-#         'nt_ts': ws.nt_ts,
-#         'nt_se': ws.nt_se,
-#         'fidx': ws.fidx
-#     }
-
-#     await ws.mpiexec(_ft, arg=(ws, event), arg_mpi=getstations())
+    await ws.mpiexec(_ft, arg=stats, arg_mpi=getstations())
 
 
-# def _ft(arg: tp.Tuple[Kernel, tp.Optional[str]], stas: tp.List[str]):
-#     output = {}
+def _ft(stats: Stats, stas: tp.List[str]):
+    import numpy as np
+    from sebox.mpi import pid
 
-#     # process stream
-#     if (stream := acc.stream) is None:
-#         return
-
-#     # save the stats of original trace
-#     station = acc.station
-#     stats = stream[0].stats
-
-#     # Time and frequency parameters
-#     params = {
-#         'npts': stats.npts,
-#         'delta': stats.delta,
-#         'nt': len(stream[0].data),
-#         'dt': self.dt,
-#         'nt_ts': self.nt_ts,
-#         'nt_se': self.nt_se,
-#         'fidx': self.fidx
-#     }
+    data = Directory(stats['path_mpi']).load(f'{pid}.pickle')
+    output = {}
     
-#     # resample if necessary
-#     if not np.isclose(self.dt, stats.delta):
-#         print(f'resample {stats.delta} -> {self.dt}')
-#         stream.resample(sampling_rate=1/self.dt)
+    # resample if necessary
+    if not np.isclose(stats['dt'], stats['delta']):
+        from scipy.signal import resample
+        print('resample:', stats['delta'], '->', stats['dt'])
+        resample(data, int(round(stats['npts'] * stats['delta'] / stats['dt'])), axis=-1)
 
-#     # FFT
-#     if event is None:
-#         if (inv := acc.inventory) is None or station is None:
-#             return
+    # # FFT
+    # if event is None:
+    #     if (inv := acc.inventory) is None or station is None:
+    #         return
         
-#         output_nez = {}
+    #     output_nez = {}
 
-#         for trace in stream:
-#             output_nez[trace.stats.component] = self._ft_syn(trace.data)
+    #     for trace in stream:
+    #         output_nez[trace.stats.component] = self._ft_syn(trace.data)
 
-#         # rotate frequencies
-#         output_rtz = rotate_frequencies(output_nez, self.fslots, params, station, inv)
-#         output = {}
+    #     # rotate frequencies
+    #     output_rtz = rotate_frequencies(output_nez, self.fslots, params, station, inv)
+    #     output = {}
 
-#         for cmp, data in output_rtz.items():
-#             output[f'MX{cmp}'] = data, params
+    #     for cmp, data in output_rtz.items():
+    #         output[f'MX{cmp}'] = data, params
     
-#     else:
-#         for trace in stream:
-#             output[f'MX{trace.stats.component}'] = self._ft_obs(trace.data), params
+    # else:
+    #     for trace in stream:
+    #         output[f'MX{trace.stats.component}'] = self._ft_obs(trace.data), params
 
-#     return output
+    # return output
