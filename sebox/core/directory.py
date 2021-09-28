@@ -87,6 +87,7 @@ class Directory:
         if not path.isabs(src):
             if not path.isabs(dst):
                 # convert to relative path if both src and dst are relative
+                print(src, path.dirname(src), dstdir)
                 src = path.join(path.relpath(path.dirname(src), dstdir), srcfile)
             
             else:
