@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, getcomponents
+from sebox.utils.catalog import getdir, getevents, getstations, getcomponents, getmeasurements
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -57,7 +57,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
 
             # phase shift due to the measurement of observed data
             for i, sta in enumerate(stas):
-                m = getcomponents(event=event, station=sta, group=group)
+                m = getmeasurements(event=event, station=sta, group=group)
 
                 for j in range(3):
                     if m[j]:
