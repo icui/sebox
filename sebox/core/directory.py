@@ -93,6 +93,7 @@ class Directory:
         else:
             self.rm(dst)
 
+        print(f'ln -s {src} {self.path(dst)}')
         check_call(f'ln -s {src} {self.path(dst)}', shell=True)
     
     def mkdir(self, dst: str = '.'):
