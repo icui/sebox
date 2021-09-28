@@ -41,9 +41,12 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
+
+        if len(ws.fslots[event]) == 0:
+            continue
+
         slots = np.array(ws.fslots[event])
         groups = slots // ws.frequency_increment
-        print(groups.dtype, slots.dtype)
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
@@ -57,7 +60,6 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
             m = getmeasurements(event=event, station=sta)
 
             for j in range(3):
-                print('@', groups, j)
                 if m[j, groups].any():
                     idx = slots[np.squeeze(np.where(m[j, groups]))]
                     encoded[i, j, idx] = data[i, j, idx] * pshift[idx]
