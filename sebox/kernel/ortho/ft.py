@@ -42,6 +42,9 @@ def _ft(ws: Kernel, stas: tp.List[str]):
 
     stats = ws.load('forward/traces/stats.pickle')
     data = ws.load(f'forward/traces/{pid}.npy')
+
+    if 'II.OBN' in stas:
+        print(data[stas.index('II.OBN'), 2])
     
     # resample if necessary
     if not np.isclose(stats['dt'], ws.dt):
