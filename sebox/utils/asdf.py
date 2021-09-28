@@ -132,5 +132,4 @@ async def scatter(ws: Convert):
         # save stats
         ws.dump(stats, ws.rel(ws.path_mpi, 'stats.pickle'))
 
-        await ws.mpiexec(_scatter, root.task_nprocs,
-            arg=(ws.path_bundle, ws.path_mpi, ws.aux, stats), arg_mpi=stats['stas'])
+        await ws.mpiexec(_scatter, arg=(ws.path_bundle, ws.path_mpi, ws.aux, stats), arg_mpi=stats['stas'])

@@ -14,7 +14,7 @@ async def encode_obs(ws: Kernel):
     stas = getstations()
     ws.cdir = getdir().path()
     ws.mkdir()
-    await ws.mpiexec(_encode_obs, root.task_nprocs, arg=ws, arg_mpi=stas)
+    await ws.mpiexec(_encode_obs, arg=ws, arg_mpi=stas)
 
 
 async def encode_diff(ws: Kernel):
@@ -23,7 +23,7 @@ async def encode_diff(ws: Kernel):
     ws.cdir = getdir().path()
     ws.mkdir()
     ws.mkdir('../enc_weight')
-    await ws.mpiexec(_encode_diff, root.task_nprocs, arg=ws, arg_mpi=stas)
+    await ws.mpiexec(_encode_diff, arg=ws, arg_mpi=stas)
 
 
 def _encode_obs(ws: Kernel, stas: tp.List[str]):

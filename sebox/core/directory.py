@@ -187,10 +187,14 @@ class Directory:
             raise TypeError(f'unsupported file type {ext}')
     
     async def mpiexec(self, cmd: tp.Union[str, tp.Callable], 
-        nprocs: int = 1, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
+        nprocs: tp.Optional[int] = None, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
         name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None):
         """Run MPI task."""
         from .mpiexec import mpiexec
+
+        if nprocs is None:
+            from sebox import root
+            nprocs = root.task_nprocs
 
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
