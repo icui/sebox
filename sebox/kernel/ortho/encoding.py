@@ -47,7 +47,6 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     
     sidx = np.array(sidx)
 
-
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
