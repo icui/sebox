@@ -35,6 +35,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     cdir = getdir()
     event_data = cdir.load('event_data.pickle')
     encoded = np.zeros([len(stas), ws.imax - ws.imin])
+    cmps = getcomponents()
 
     for event in getevents():
         # read event data
@@ -56,7 +57,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
             # phase shift due to the measurement of observed data
             for i, sta in enumerate(stas):
                 for cmp in getcomponents(event=event, station=sta, group=group):
-                    encoded[i][cmp][idx] = data[i][idx] * pshift
+                    encoded[i][cmps.index(cmp)][idx] = data[i][idx] * pshift
         
         break
     
