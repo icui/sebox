@@ -19,6 +19,11 @@ async def encode_obs(ws: Kernel):
 
 async def encode_diff(ws: Kernel):
     """Encode diff data."""
+    stas = getstations()
+    ws.cdir = getdir().path()
+    ws.mkdir()
+    ws.mkdir('../enc_weight')
+    await ws.mpiexec(_encode_diff, root.task_nprocs, arg=ws, arg_mpi=stas)
 
 
 def _encode_obs(ws: Kernel, stas: tp.List[str]):
@@ -66,12 +71,58 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
 
             # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
-                m = getmeasurements(event=event, component=cmp, group=group)[sidx]
+                m = getmeasurements(event, None, cmp, group)[sidx]
                 i = np.squeeze(np.where(m))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
+
+def _encode_diff(ws: Kernel, stas: tp.List[str]):
+    """Encode diff data."""
+    import numpy as np
+    from sebox.mpi import pid
+
+    # data from catalog
+    root.restore(ws)
+    cdir = getdir()
+    cmps = getcomponents()
+    encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan)
+    weight = np.full([len(stas), 3, ws.imax - ws.imin], np.nan)
+
+    # get global station index
+    sidx = []
+    stations = getstations()
+
+    for sta in stas:
+        sidx.append(stations.index(sta))
+    
+    sidx = np.array(sidx)
+
+    for event in getevents():
+        # read event data
+        data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{pid}.npy')
+        slots = ws.fslots[event]
+
+        # record frequency components
+        for idx in slots:
+            group = idx // ws.frequency_increment
+
+            # phase shift due to the measurement of observed data
+            for j, cmp in enumerate(cmps):
+                m = getmeasurements(event, None, cmp, group)[sidx]
+                w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
+                i = np.squeeze(np.where(m))
+                encoded[i, j, idx] = data[i, j, idx]
+                weight[i, j, idx] = w[i]
+    
+    ws.dump(encoded, f'{pid}.pickle', mkdir=False)
+    ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
+    
+    if 'II.OBN' in stas:
+        i = stas.index('II.OBN')
+        print('@', )
+        print(encoded[i][2])
 
 def _ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
