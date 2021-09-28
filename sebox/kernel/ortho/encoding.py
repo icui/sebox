@@ -76,11 +76,6 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
-    
-    if 'II.OBN' in stas:
-        i = stas.index('II.OBN')
-        print('@', )
-        print(encoded[i][2])
 
 
 def _encode_diff(ws: Kernel, stas: tp.List[str]):
@@ -122,11 +117,6 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
     ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
-    
-    if 'II.OBN' in stas:
-        i = stas.index('II.OBN')
-        print('@', )
-        print(encoded[i][2] + 1j * weight[i][2])
 
 
 def _ft_syn(ws: Kernel, data: ndarray):
