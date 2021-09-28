@@ -52,7 +52,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
         sff = _ft_obs(ws, stf)
-        pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
+        pff = np.exp(2 * np.pi * 1j * freq[slots] * (ws.nt_ts * ws.dt - tshift)) / sff
 
         # record frequency components
         for i, sta in enumerate(stas):
