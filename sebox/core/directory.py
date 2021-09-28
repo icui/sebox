@@ -96,7 +96,7 @@ class Directory:
                 # convert src to abspath if dst is abspath
                 src = self.path(src, abs=True)
         print(f'ln -s {self.path(src)} {dstf}', self.path(dstdir))
-        check_call(f'ln -s {self.path(src)} {dstf}', shell=True, cwd=self.path(dstdir))
+        check_call(f'ln -s {src} {dstf}', shell=True, cwd=self.path(dstdir))
     
     def mkdir(self, dst: str = '.'):
         """Create a directory recursively."""
