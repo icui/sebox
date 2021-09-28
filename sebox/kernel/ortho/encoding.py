@@ -13,6 +13,7 @@ async def encode_obs(ws: Kernel):
     """Encode observed data."""
     stas = getstations()
     ws.cdir = getdir().path()
+    ws.mkdir()
     await ws.mpiexec(_encode_obs, root.task_nprocs, arg=ws, arg_mpi=stas)
 
 
@@ -34,7 +35,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     root.restore(ws)
     cdir = getdir()
     event_data = cdir.load('event_data.pickle')
-    encoded = np.zeros([len(stas), 3, ws.imax - ws.imin], dtype=complex)
+    encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan, dtype=complex)
     cmps = getcomponents()
 
     for event in getevents():
@@ -60,7 +61,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
                     j = cmps.index(cmp)
                     encoded[i][j][idx] = data[i][j][idx] * pshift
     
-    ws.dump(encoded, f'{pid}.pickle')
+    ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
 
 def _ft_syn(ws: Kernel, data: ndarray):
