@@ -38,7 +38,7 @@ if tp.TYPE_CHECKING:
         event: tp.Optional[str]
 
         # MPI trace directory
-        path_mpi: str
+        path: str
 
 
 def ft_syn(ws: Kernel, data: ndarray):
@@ -75,7 +75,8 @@ async def ft(ws: Kernel):
         'nt_se': ws.nt_se,
         'imin': ws.imin,
         'imax': ws.imax,
-        'event': ws.event
+        'event': ws.event,
+        'path': ws.path('forward/traces')
     })
 
     await ws.mpiexec(_ft, arg=stats, arg_mpi=getstations())
@@ -85,7 +86,7 @@ def _ft(stats: Stats, stas: tp.List[str]):
     import numpy as np
     from sebox.mpi import pid
 
-    data = Directory(stats['path_mpi']).load(f'{pid}.pickle')
+    data = Directory(stats['path']).load(f'{pid}.pickle')
     output = {}
     
     # resample if necessary
