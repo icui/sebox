@@ -53,6 +53,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
         slots = ws.fslots[event]
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
+        m = getmeasurements(event=event)
         
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
@@ -66,8 +67,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
 
             # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
-                m = getmeasurements(event=event, component=cmp, group=group)[sidx]
-                i = np.squeeze(np.where(m))
+                i = np.squeeze(np.where(m[sidx, cmp, group]))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
