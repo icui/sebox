@@ -75,7 +75,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
                 i = np.squeeze(np.where(m))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
-    ws.dump(encoded, f'{pid}.pickle', mkdir=False)
+    ws.dump(encoded, f'{pid}.npy', mkdir=False)
 
 
 def _encode_diff(ws: Kernel, stas: tp.List[str]):
@@ -115,13 +115,9 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
                 encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
     
-    ws.dump(encoded, f'{pid}.pickle', mkdir=False)
+    ws.dump(encoded, f'{pid}.npy', mkdir=False)
     ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
-    
-    if 'II.OBN' in stas:
-        i = stas.index('II.OBN')
-        print('@', )
-        print(encoded[i][2], weight[i][2])
+
 
 def _ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
