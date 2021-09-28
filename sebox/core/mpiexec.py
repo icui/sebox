@@ -31,7 +31,7 @@ def _dispatch(lock: asyncio.Lock, nnodes: int) -> bool:
     return False
 
 
-def _name(cmd: tp.Union[str, tp.Callable]):
+def _name(cmd: tp.Union[str, tp.Callable]) -> str:
     """Get file name to store pickled function and / or stdout."""
     if isinstance(cmd, str):
         return 'mpiexec_' + cmd.split('/')[-1]
@@ -101,7 +101,7 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
             cwd = None
             d.rm(f'{name}.*')
             d.dump((cmd, arg, args), f'{name}.pickle')
-            cmd = f'python -m "sebox.core.mpi" {d.path(name)}'
+            cmd = f'python -m "sebox.mpi" {d.path(name)}'
         
         else:
             cwd = d.path()

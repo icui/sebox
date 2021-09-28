@@ -68,7 +68,7 @@ def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     from pyasdf import ASDFDataSet
 
     from sebox import Directory
-    from sebox.core.mpi import pid
+    from sebox.mpi import pid
 
     src, dst, aux, stats = arg
     cmps = stats['cmps']
