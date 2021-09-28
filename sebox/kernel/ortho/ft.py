@@ -44,7 +44,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     data = ws.load(f'forward/traces/{pid}.npy')
 
     if 'II.OBN' in stas:
-        print(data[stas.index('II.OBN'), 2])
+        print(stas.index('II.OBN'), pid)
     
     # resample if necessary
     if not np.isclose(stats['dt'], ws.dt):
@@ -55,7 +55,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     # FFT
     if ws.event is None:
         data_nez = ft_syn(ws, data)
-        print(stats['cmps'])
+        # print(stats['cmps'])
 
     #     # rotate frequencies
     #     output_rtz = rotate_frequencies(output_nez, self.fslots, params, station, inv)
