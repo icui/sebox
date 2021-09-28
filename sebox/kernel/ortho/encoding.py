@@ -40,7 +40,12 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
-        slots = ws.fslots[event]
+        slots = np.array(ws.fslots[event])
+
+        if len(slots) == 0:
+            continue
+
+        groups = slots // ws.frequency_increment
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
@@ -50,17 +55,22 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
         pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
 
         # record frequency components
-        for idx in slots:
-            group = idx // ws.frequency_increment
-            pshift = pff[idx]
+        for i, sta in enumerate(stas):
+            m = np.where(getmeasurements(event=event, station=sta)[:, groups])
+            encoded[i][m] = data[i][m] * pff
 
-            # phase shift due to the measurement of observed data
-            for i, sta in enumerate(stas):
-                m = getmeasurements(event=event, station=sta, group=group)
 
-                for j in range(3):
-                    if m[j]:
-                        encoded[i, j, idx] = data[i, j, idx] * pshift
+        # for idx in slots:
+        #     group = idx // ws.frequency_increment
+        #     pshift = pff[idx]
+
+        #     # phase shift due to the measurement of observed data
+        #     for i, sta in enumerate(stas):
+        #         m = getmeasurements(event=event, station=sta, group=group)
+
+        #         if m.any():
+        #             j = np.squeeze(np.where(m))
+        #             encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
