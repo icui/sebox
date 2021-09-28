@@ -153,22 +153,21 @@ def getmeasurements(event: tp.Union[str, int, None] = None, station: tp.Union[st
             m = m[..., group]
     
     if balance:
-        if m is not None:
-            # normalize categorical weighting (1-5) by multiplying 1/3
-            # m = np.sqrt(m / 3)
+        import numpy as np
 
+        if m is not None:
             # clip by measurement weighting
             m = m.copy()
             mw = root.measurement_threshold
 
             if isinstance(mw, (int, float)):
-                m[m < mw] = 0
+                m[m <= mw] = 0
             
             m[m > 0] = 1
         
         if w is not None:
             # limit the condition number of geographical weighting
-            w = np.sqrt(w) # type: ignore
+            w = np.sqrt(w)
         
         if n is not None:
             # clip by signal to noise ratial
