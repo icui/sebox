@@ -77,6 +77,9 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
 
+    if 'II.OBN' in stas:
+        print(encoded[stas.index('II.OBN'), 2])
+
 
 def _encode_diff(ws: Kernel, stas: tp.List[str]):
     """Encode diff data."""
