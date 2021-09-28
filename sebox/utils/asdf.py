@@ -21,6 +21,9 @@ if tp.TYPE_CHECKING:
 
         # station channel
         cha: tp.Optional[str]
+
+        # length of a timestep
+        dt: float
         
         # data type
         dtype: tp.Any
@@ -130,12 +133,17 @@ async def scatter(ws: Convert):
             if 'dtype' not in stats:
                 stats['dtype'] = data.dtype
         
-        elif 'n' not in stats:
+        else:
             trace = gettrace(ds, stats['stas'][0], stats['cmps'][0])
-            stats['n'] = trace.stats.npts
+            
+            if 'n' not in stats:
+                stats['n'] = trace.stats.npts
+            
+            if 'dt' not in stats:
+                stats['dt'] = trace.stats.delta
 
         # save stats
-        ws.dump(stats, path.join(ws.path_mpi, 'stats.pickle'))
+        ws.dump(stats, ws.rel(ws.path_mpi, 'stats.pickle'))
 
         await ws.mpiexec(_scatter, root.task_nprocs,
             arg=(ws.path_bundle, ws.path_mpi, ws.aux, stats), arg_mpi=stats['stas'])

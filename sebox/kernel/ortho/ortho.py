@@ -6,6 +6,7 @@ from sebox.utils.catalog import getdir
 from .catalog import merge, scatter_obs, scatter_diff
 from .encoding import encode_obs, encode_diff
 from .preprocess import prepare_frequencies, encode_events, link_observed
+from .ft import ft
 
 if tp.TYPE_CHECKING:
     from .typing import Kernel
@@ -80,3 +81,4 @@ def _compute(ws: Kernel, misfit_only: bool):
             save_forward= True)
         
         # process traces
+        kl.add(ft)

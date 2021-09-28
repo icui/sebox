@@ -31,8 +31,22 @@ def ft_obs(ws: Kernel, data: ndarray):
     return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
 
 
-async def ft(ws: Kernel, event: tp.Optional[str]):
-    await ws.mpiexec(_ft, arg=(ws, event), arg_mpi=getstations())
+async def ft(ws: Kernel):
+    # load trace parameters
+    stats = ws.load('forward/traces/stats.pickle')
+
+#     # Time and frequency parameters
+#     params = {
+#         'npts': stats.npts,
+#         'delta': stats.delta,
+#         'nt': len(stream[0].data),
+#         'dt': ws.dt,
+#         'nt_ts': ws.nt_ts,
+#         'nt_se': ws.nt_se,
+#         'fidx': ws.fidx
+#     }
+
+#     await ws.mpiexec(_ft, arg=(ws, event), arg_mpi=getstations())
 
 
 # def _ft(arg: tp.Tuple[Kernel, tp.Optional[str]], stas: tp.List[str]):
