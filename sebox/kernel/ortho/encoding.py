@@ -57,7 +57,8 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
             # phase shift due to the measurement of observed data
             for i, sta in enumerate(stas):
                 for cmp in getcomponents(event=event, station=sta, group=group):
-                    encoded[i][cmps.index(cmp)][idx] = data[i][idx] * pshift
+                    j = cmps.index(cmp)
+                    encoded[i][j][idx] = data[i][j][idx] * pshift
         
         break
     
