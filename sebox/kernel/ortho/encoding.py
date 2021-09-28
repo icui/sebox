@@ -34,7 +34,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     root.restore(ws)
     cdir = getdir()
     event_data = cdir.load('event_data.pickle')
-    encoded = np.zeros([len(stas), ws.imax - ws.imin])
+    encoded = np.zeros([len(stas), 3, ws.imax - ws.imin])
     cmps = getcomponents()
 
     for event in getevents():
