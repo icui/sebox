@@ -68,33 +68,33 @@ class Directory:
     
     def ln(self, src: str, dst: str = '.', mkdir: bool = True):
         """Link a file or a directory."""
-        if mkdir:
-            self.mkdir(path.dirname(dst))
+        if self.isdir(dst):
+            dstdir = self.path(dst)
+            dstfile = '.'
         
+        else:
+            dstdir = path.dirname(dst)
+            dstfile = path.basename(dst)
+
+            if mkdir:
+                self.mkdir(dstdir)
+        
+        # delete existing target file
         srcfile = path.basename(src)
+        self.rm(path.join(dstdir, srcfile))
 
         # relative path from source directory to target directory
         if not path.isabs(src):
-            src = self.path(src, abs=True)
-
             if not path.isabs(dst):
-                srcdir = path.dirname(src)
-                dstdir = self.path(dst, abs=True)
+                # convert to relative path if both src and dst are relative
+                src = path.join(path.relpath(path.dirname(src), dstdir), srcfile)
+            
+            else:
+                # convert src to abspath if dst is abspath
+                src = self.path(src, abs=True)
 
-                if not path.isdir(dstdir):
-                    dstdir = path.dirname(dstdir)
-
-                src = path.join(path.relpath(srcdir, dstdir), srcfile)
-
-        # delete existing target file
-        if self.isdir(dst):
-            self.rm(path.join(dst, srcfile))
-
-        else:
-            self.rm(dst)
-
-        print(f'@ln -s {src} {dst}@', self.path())
-        check_call(f'ln -s {src} {dst}', shell=True, cwd=self.path())
+        print(f'ln -s {src} {dstfile}', dstdir)
+        check_call(f'ln -s {src} {dstfile}', shell=True, cwd=dstdir)
     
     def mkdir(self, dst: str = '.'):
         """Create a directory recursively."""
