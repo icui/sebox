@@ -110,9 +110,8 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
 
             # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
-                m = getmeasurements(event, None, cmp, group)[sidx]
                 w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
-                i = np.squeeze(np.where(m))
+                i = np.squeeze(np.where(w > 0))
                 encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
     
@@ -122,7 +121,7 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
     if 'II.OBN' in stas:
         i = stas.index('II.OBN')
         print('@', )
-        print(encoded[i][2])
+        print(weight[i][2])
 
 def _ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
