@@ -19,10 +19,10 @@ task = ["module:kernel", "kernel"]
 task_nnodes = 1
 
 # path to external directories
-path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf-upstream"
+path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
 path_catalog = "/gpfs/alpine/scratch/ccui/geo111/north_syn"
 path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
-path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m25_128.bp"
+path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m25.bp"
 
 # solver
 duration = 348.0
