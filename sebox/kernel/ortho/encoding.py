@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, getmeasurements
+from sebox.utils.catalog import getdir, getevents, getstations, getcomponents
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -36,6 +36,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     cdir = getdir()
     event_data = cdir.load('event_data.pickle')
     encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan, dtype=complex)
+    cmps = getcomponents()
 
     for event in getevents():
         # read event data
@@ -50,17 +51,15 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
         pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
 
         # record frequency components
-        for i, sta in enumerate(stas):
-            m = getmeasurements(event=event, station=sta)
+        for idx in slots:
+            group = idx // ws.frequency_increment
+            pshift = pff[idx]
 
-            for idx in slots:
-                group = idx // ws.frequency_increment
-                pshift = pff[idx]
-
-                # phase shift due to the measurement of observed data
-                for j in range(3):
-                    if m[j, group]:
-                        encoded[i][j][idx] = data[i][j][idx] * pshift
+            # phase shift due to the measurement of observed data
+            for i, sta in enumerate(stas):
+                for cmp in getcomponents(event=event, station=sta, group=group):
+                    j = cmps.index(cmp)
+                    encoded[i][j][idx] = data[i][j][idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
