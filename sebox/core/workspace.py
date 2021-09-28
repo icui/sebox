@@ -111,7 +111,7 @@ class Workspace(Directory):
             return self._init[key]
         
         if key not in tp.get_type_hints(Workspace):
-            if self._data['inherit']:
+            if self._data.get('inherit'):
                 return self._data['inherit'].__getattr__(key)
 
             if self._parent:
