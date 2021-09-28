@@ -68,14 +68,9 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
             for j, cmp in enumerate(cmps):
                 m = getmeasurements(event=event, component=cmp, group=group)[sidx]
                 i = np.squeeze(np.where(m))
-                encoded[i, j, idx] = data[i, j, idx] * pshift
+                # encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
-
-    if 'II.OBN' in stas:
-        i = stas.index('II.OBN')
-        print('@', )
-        print(encoded[i][2])
 
 
 def _ft_syn(ws: Kernel, data: ndarray):
