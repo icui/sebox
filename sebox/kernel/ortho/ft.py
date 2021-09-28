@@ -45,10 +45,10 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     data = ws.load(f'forward/traces/{pid}.npy')
     
     # resample if necessary
-    if not np.isclose(stats['dt'], stats['delta']):
+    if not np.isclose(stats['dt'], ws.dt):
         from scipy.signal import resample
-        print('resample:', stats['delta'], '->', stats['dt'])
-        resample(data, int(round(stats['npts'] * stats['delta'] / stats['dt'])), axis=-1)
+        print('resample:', stats['dt'], '->', ws.dt)
+        resample(data, int(round(stats['nt'] * stats['dt'] / ws.dt)), axis=-1)
 
     # # FFT
     # if stats['event'] is None:
