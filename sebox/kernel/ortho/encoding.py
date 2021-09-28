@@ -59,9 +59,8 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
                 m = getmeasurements(event=event, station=sta, group=group)
 
                 if m.any():
-                    j = np.squeeze(np.where(m.transpose()))
-                    print(m.shape, j.shape)
-                    encoded[i][j][idx] = data[i][j][idx] * pshift
+                    j = np.squeeze(np.where(m))
+                    encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
