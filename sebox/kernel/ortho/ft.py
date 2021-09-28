@@ -86,7 +86,7 @@ def _ft(stats: Stats, stas: tp.List[str]):
     import numpy as np
     from sebox.mpi import pid
 
-    data = Directory(stats['path']).load(f'{pid}.pickle')
+    data = Directory(stats['path']).load(f'{pid}.npy')
     output = {}
     
     # resample if necessary
