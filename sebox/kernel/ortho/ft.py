@@ -5,6 +5,7 @@ from sebox.utils.catalog import getstations
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
+    from sebox.utils.asdf import Stats
     from .typing import Kernel
 
 
@@ -33,7 +34,8 @@ def ft_obs(ws: Kernel, data: ndarray):
 
 async def ft(ws: Kernel):
     # load trace parameters
-    stats = ws.load('forward/traces/stats.pickle')
+    stats: Stats = ws.load('forward/traces/stats.pickle')
+    print(stats['n'], stats['dt'])
 
 #     # Time and frequency parameters
 #     params = {
