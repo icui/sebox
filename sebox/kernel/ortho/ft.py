@@ -1,7 +1,6 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Directory
 from sebox.utils.catalog import getstations
 
 if tp.TYPE_CHECKING:
@@ -50,9 +49,10 @@ def _ft(ws: Kernel, stas: tp.List[str]):
         print('resample:', stats['dt'], '->', ws.dt)
         resample(data, int(round(stats['nt'] * stats['dt'] / ws.dt)), axis=-1)
 
-    # # FFT
-    # if stats['event'] is None:
-    #     data_ft = _ft_syn(data)
+    # FFT
+    if ws.event is None:
+        data_nez = ft_syn(ws, data)
+        print(data_nez)
 
     #     # rotate frequencies
     #     output_rtz = rotate_frequencies(output_nez, self.fslots, params, station, inv)
