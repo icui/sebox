@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, getmeasurements
+from sebox.utils.catalog import getdir, getevents, getcomponents, getstations, getmeasurements
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -30,6 +30,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     nt = ws.kf * ws.nt_se
     t = np.linspace(0, (nt - 1) * ws.dt, nt)
     freq = getfreq(ws)
+    cmps = getcomponents()
 
     # data from catalog
     root.restore(ws)
@@ -37,40 +38,40 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     event_data = cdir.load('event_data.pickle')
     encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan, dtype=complex)
 
+    # get global station index
+    sidx = []
+    stations = getstations()
+
+    for sta in stas:
+        sidx.append(stations.index(sta))
+    
+    sidx = np.array(sidx)
+
+
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
-        slots = np.array(ws.fslots[event])
-
-        if len(slots) == 0:
-            continue
-
-        groups = slots // ws.frequency_increment
+        slots = ws.fslots[event]
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
         sff = _ft_obs(ws, stf)
-        pff = np.exp(2 * np.pi * 1j * freq[slots] * (ws.nt_ts * ws.dt - tshift)) / sff
+        pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
 
         # record frequency components
-        for i, sta in enumerate(stas):
-            m = np.where(getmeasurements(event=event, station=sta)[:, groups])
-            encoded[i][m] = data[i][m] * pff
+        for idx in slots:
+            group = idx // ws.frequency_increment
+            pshift = pff[idx]
 
+            # phase shift due to the measurement of observed data
+            for j, cmp in enumerate(cmps):
+                m = getmeasurements(event=event, component=cmp, group=group)[sidx]
 
-        # for idx in slots:
-        #     group = idx // ws.frequency_increment
-        #     pshift = pff[idx]
-
-        #     # phase shift due to the measurement of observed data
-        #     for i, sta in enumerate(stas):
-        #         m = getmeasurements(event=event, station=sta, group=group)
-
-        #         if m.any():
-        #             j = np.squeeze(np.where(m))
-        #             encoded[i, j, idx] = data[i, j, idx] * pshift
+                if m.any():
+                    i = np.squeeze(np.where(m))
+                    encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
