@@ -121,7 +121,7 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
     if 'II.OBN' in stas:
         i = stas.index('II.OBN')
         print('@', )
-        print(weight[i][2])
+        print(encoded[i][2], weight[i][2])
 
 def _ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
