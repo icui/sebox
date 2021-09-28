@@ -3,9 +3,9 @@ import typing as tp
 
 from sebox import root
 from sebox.utils.catalog import getdir, getevents, getcomponents, getstations, getmeasurements
+from .ft import ft_obs, ft_syn
 
 if tp.TYPE_CHECKING:
-    from numpy import ndarray
     from .typing import Kernel
 
 
@@ -61,7 +61,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
         
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
-        sff = _ft_obs(ws, stf)
+        sff = ft_obs(ws, stf)
         pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
 
         # record frequency components
@@ -117,21 +117,3 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
     ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
-
-
-def _ft_syn(ws: Kernel, data: ndarray):
-    from scipy.fft import fft
-    return fft(data[ws.nt_ts: ws.nt_ts + ws.nt_se])[ws.imin: ws.imax]
-
-
-def _ft_obs(ws: Kernel, data: ndarray):
-    from scipy.fft import fft
-
-    if (nt := ws.kf * ws.nt_se) > len(data):
-        # expand observed data with zeros
-        data = np.concatenate([data, np.zeros(nt - len(data))]) # type: ignore
-    
-    else:
-        data = data[:nt]
-    
-    return fft(data)[::ws.kf][ws.imin: ws.imax]

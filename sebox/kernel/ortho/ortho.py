@@ -43,8 +43,8 @@ def _compute(ws: Kernel, misfit_only: bool):
     # mesher and preprocessing
     pre = ws.add('preprocess', concurrent=True, target=ws)
 
-    # # run mesher
-    # pre.add('mesh', ('module:solver', 'mesh'))
+    # run mesher
+    pre.add('mesh', ('module:solver', 'mesh'))
 
     for iker in range(ws.nkernels or 1):
         kl = pre.add(f'kl_{iker:02d}', iker=iker)
@@ -64,3 +64,19 @@ def _compute(ws: Kernel, misfit_only: bool):
             enc = kl.add(concurrent=True)
             enc.add('enc_obs', encode_obs)
             enc.add('enc_diff', encode_diff)
+    
+    # kernel computation
+    main = ws.add(concurrent=True)
+
+    for iker in range(ws.nkernels or 1):
+        kl = main.add(f'kl_{iker:02d}', iker=iker)
+
+        # forward simulation
+        kl.add('forward', ('module:solver', 'forward'),
+            path_event= ws.path('SUPERSOURCE'),
+            path_stations= ws.path('SUPERSTATION'),
+            path_model= ws.path_model,
+            monochromatic_source= True,
+            save_forward= True)
+        
+        # process traces
