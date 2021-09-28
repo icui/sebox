@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import root
+from sebox import root, Directory
 from sebox.utils.catalog import getdir, getevents, getstations, getcomponents
 
 if tp.TYPE_CHECKING:
@@ -12,6 +12,7 @@ if tp.TYPE_CHECKING:
 async def encode_obs(ws: Kernel):
     """Encode observed data."""
     stas = getstations()
+    ws.cdir = getdir().path()
     await ws.mpiexec(_encode_obs, root.task_nprocs, arg=ws, arg_mpi=stas)
 
 
@@ -30,6 +31,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     freq = getfreq(ws)
 
     # data from catalog
+    root.path_catalog = ws.cdir
     cdir = getdir()
     event_data = cdir.load('event_data.pickle')
     encoded = np.zeros([len(stas), ws.imax - ws.imin])
