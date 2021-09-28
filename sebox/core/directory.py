@@ -68,6 +68,7 @@ class Directory:
     
     def ln(self, src: str, dst: str = '.', mkdir: bool = True):
         """Link a file or a directory."""
+        print(src, dst)
         if self.isdir(dst):
             dstdir = dst
             dstf = '.'
@@ -87,6 +88,7 @@ class Directory:
         if not path.isabs(src):
             if not path.isabs(dst):
                 # convert to relative path if both src and dst are relative
+                print(path.dirname(src), dstdir)
                 src = path.join(path.relpath(path.dirname(src), dstdir), srcf)
             
             else:
