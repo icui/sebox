@@ -57,10 +57,8 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
 
             for j in range(3):
                 mw = np.squeeze(np.where(m[j, groups]))
-
-                if len(mw):
-                    idx = slots[mw]
-                    encoded[i, j, idx] = data[i, j, idx] * pshift[idx]
+                idx = slots[mw]
+                encoded[i, j, idx] = data[i, j, idx] * pshift[idx]
     
     ws.dump(encoded, f'{pid}.pickle', mkdir=False)
 
