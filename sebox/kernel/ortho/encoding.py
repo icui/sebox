@@ -59,21 +59,21 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
-        # source time function of observed data and its frequency component
-        stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
-        sff = _ft_obs(ws, stf)
-        pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
+        # # source time function of observed data and its frequency component
+        # stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
+        # sff = _ft_obs(ws, stf)
+        # pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
 
-        # record frequency components
-        for idx in slots:
-            group = idx // ws.frequency_increment
-            pshift = pff[idx]
+        # # record frequency components
+        # for idx in slots:
+        #     group = idx // ws.frequency_increment
+        #     pshift = pff[idx]
 
-            # phase shift due to the measurement of observed data
-            for j, cmp in enumerate(cmps):
-                m = getmeasurements(event, None, cmp, group)[sidx]
-                i = np.squeeze(np.where(m))
-                encoded[i, j, idx] = data[i, j, idx] * pshift
+        #     # phase shift due to the measurement of observed data
+        #     for j, cmp in enumerate(cmps):
+        #         m = getmeasurements(event, None, cmp, group)[sidx]
+        #         i = np.squeeze(np.where(m))
+        #         encoded[i, j, idx] = data[i, j, idx] * pshift
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
 
@@ -104,16 +104,16 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
         data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{pid}.npy')
         slots = ws.fslots[event]
 
-        # record frequency components
-        for idx in slots:
-            group = idx // ws.frequency_increment
+        # # record frequency components
+        # for idx in slots:
+        #     group = idx // ws.frequency_increment
 
-            # phase shift due to the measurement of observed data
-            for j, cmp in enumerate(cmps):
-                w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
-                i = np.squeeze(np.where(w > 0))
-                encoded[i, j, idx] = data[i, j, idx]
-                weight[i, j, idx] = w[i]
+        #     # phase shift due to the measurement of observed data
+        #     for j, cmp in enumerate(cmps):
+        #         w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
+        #         i = np.squeeze(np.where(w > 0))
+        #         encoded[i, j, idx] = data[i, j, idx]
+        #         weight[i, j, idx] = w[i]
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
     ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
