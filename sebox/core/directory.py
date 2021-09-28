@@ -146,7 +146,7 @@ class Directory:
     def load(self, src: str, ext: DumpType = None) -> tp.Any:
         """Load a pickle / toml file."""
         if ext is None:
-            ext = src.split('.')[-1] # type: ignore
+            ext = tp.cast(DumpType, src.split('.')[-1])
         
         if ext == 'pickle':
             with open(self.path(src), 'rb') as fb:
@@ -169,7 +169,7 @@ class Directory:
             self.mkdir(path.dirname(dst))
 
         if ext is None:
-            ext = dst.split('.')[-1] # type: ignore
+            ext = tp.cast(DumpType, dst.split('.')[-1])
 
         if ext == 'pickle':
             with open(self.path(dst), 'wb') as fb:

@@ -57,7 +57,7 @@ async def gather(ws: Convert):
 
     d = Directory(ws.path_mpi)
 
-    with ASDFDataSet(ws.rel(ws.path_bundle), mode='w', mpi=False) as ds:
+    with ASDFDataSet(ws.path_bundle, mode='w', mpi=False) as ds:
         for pid in d.ls():
             for stream in d.load(pid).values():
                 ds.add_waveforms(stream, ws.output_tag or 'sebox')
@@ -103,11 +103,10 @@ async def scatter(ws: Convert):
     """Convert ASDF trace to MPI trace."""
     from pyasdf import ASDFDataSet
 
-    src = ws.rel(ws.path_bundle)
     dst = ws.rel(ws.path_mpi)
-    ws.mkdir(ws.path_mpi)
+    ws.mkdir(dst)
 
-    with ASDFDataSet(src, mode='r', mpi=False) as ds:
+    with ASDFDataSet(ws.path_bundle, mode='r', mpi=False) as ds:
         stats = tp.cast('Stats', ws.stats or {})
 
         # fill stattions and components
@@ -140,4 +139,4 @@ async def scatter(ws: Convert):
         ws.dump(stats, path.join(ws.path_mpi, 'stats.pickle'))
 
         await ws.mpiexec(_scatter, root.task_nprocs,
-            arg=(src, dst, ws.aux, stats), arg_mpi=stats['stas'])
+            arg=(ws.path_bundle, dst, ws.aux, stats), arg_mpi=stats['stas'])

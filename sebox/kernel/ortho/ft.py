@@ -10,24 +10,29 @@ if tp.TYPE_CHECKING:
 
 def ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
-    return fft(data[ws.nt_ts: ws.nt_ts + ws.nt_se])[ws.imin: ws.imax]
+    return fft(data[..., ws.nt_ts: ws.nt_ts + ws.nt_se])[..., ws.imin: ws.imax] # type: ignore
 
 
 def ft_obs(ws: Kernel, data: ndarray):
+    import numpy as np
     from scipy.fft import fft
+
+    shape = data.shape
 
     if (nt := ws.kf * ws.nt_se) > len(data):
         # expand observed data with zeros
-        data = np.concatenate([data, np.zeros(nt - len(data))]) # type: ignore
+        pad = list(shape)
+        pad[-1] = nt - len(data)
+        data = np.concatenate([data, pad])
     
     else:
-        data = data[:nt]
+        data = data[..., :nt]
     
-    return fft(data)[::ws.kf][ws.imin: ws.imax]
+    return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
 
 
-# async def ft(ws: Kernel, event: tp.Optional[str]):
-#     await ws.mpiexec(_ft, arg=(ws, event), arg_mpi=getstations())
+async def ft(ws: Kernel, event: tp.Optional[str]):
+    await ws.mpiexec(_ft, arg=(ws, event), arg_mpi=getstations())
 
 
 # def _ft(arg: tp.Tuple[Kernel, tp.Optional[str]], stas: tp.List[str]):
@@ -39,13 +44,13 @@ def ft_obs(ws: Kernel, data: ndarray):
 
 #     # save the stats of original trace
 #     station = acc.station
-#     stats = stream[0].stats # type: ignore
+#     stats = stream[0].stats
 
 #     # Time and frequency parameters
 #     params = {
 #         'npts': stats.npts,
 #         'delta': stats.delta,
-#         'nt': len(stream[0].data), # type: ignore
+#         'nt': len(stream[0].data),
 #         'dt': self.dt,
 #         'nt_ts': self.nt_ts,
 #         'nt_se': self.nt_se,
