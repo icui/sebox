@@ -30,11 +30,11 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     nt = ws.kf * ws.nt_se
     t = np.linspace(0, (nt - 1) * ws.dt, nt)
     freq = getfreq(ws)
-    cmps = getcomponents()
 
     # data from catalog
     root.restore(ws)
     cdir = getdir()
+    cmps = getcomponents()
     event_data = cdir.load('event_data.pickle')
     encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan, dtype=complex)
 
