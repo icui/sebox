@@ -31,7 +31,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     freq = getfreq(ws)
 
     # data from catalog
-    root.path_catalog = ws.cdir
+    root.restore(ws)
     cdir = getdir()
     event_data = cdir.load('event_data.pickle')
     encoded = np.zeros([len(stas), ws.imax - ws.imin])

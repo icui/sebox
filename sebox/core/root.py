@@ -94,12 +94,19 @@ class Root(Workspace):
         """Save state."""
         self.dump(self.__getstate__(), 'root.pickle')
     
-    def restore(self):
+    def restore(self, ws: tp.Optional[Workspace] = None):
         """Restore state."""
         if hasattr(self, '_sys'):
             return
+        
+        if ws:
+            # restore from a saved workspace
+            while ws.parent is not None:
+                ws = ws.parent
+            
+            self.__setstate__(ws.__getstate__())
 
-        if self.has('root.pickle'):
+        elif self.has('root.pickle'):
             # restore previous state
             self.__setstate__(self.load('root.pickle'))
         
