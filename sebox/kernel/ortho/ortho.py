@@ -71,7 +71,7 @@ def _compute(ws: Kernel, misfit_only: bool):
             enc.add('enc_diff', encode_diff)
     
     # kernel computation
-    main = ws.add('main', concurrent=True)
+    main = ws.add('main', concurrent=True, target=ws)
 
     for iker in range(ws.nkernels or 1):
         kl = main.add(f'kl_{iker:02d}', inherit=kls[iker])
