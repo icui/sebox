@@ -66,16 +66,16 @@ def _compute(ws: Kernel, misfit_only: bool):
             enc.add('enc_diff', encode_diff)
     
     # kernel computation
-    main = ws.add(concurrent=True)
+    main = ws.add('main', concurrent=True, target=ws)
 
     for iker in range(ws.nkernels or 1):
         kl = main.add(f'kl_{iker:02d}', iker=iker)
 
         # forward simulation
         kl.add('forward', ('module:solver', 'forward'),
-            path_event= ws.path('SUPERSOURCE'),
-            path_stations= ws.path('SUPERSTATION'),
-            path_model= ws.path_model,
+            path_event= kl.path('SUPERSOURCE'),
+            path_stations= cdir.path('SUPERSTATION'),
+            path_mesh= ws.path('mesh'),
             monochromatic_source= True,
             save_forward= True)
         
