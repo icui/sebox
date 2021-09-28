@@ -47,6 +47,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     # run mesher
     pre.add('mesh', ('module:solver', 'mesh'))
 
+    # kernel workspaces
     kls = []
 
     for iker in range(ws.nkernels or 1):
