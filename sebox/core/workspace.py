@@ -25,6 +25,9 @@ class Workspace(Directory):
     # argument passed to self.task
     target: tp.Optional[Workspace]
 
+    # workspace to inherit properties from
+    inherit: tp.Optional[Workspace]
+
     # initial data passed to self.__init__
     _init: dict
 
@@ -107,8 +110,12 @@ class Workspace(Directory):
         if key in self._init:
             return self._init[key]
         
-        if self._parent and key not in tp.get_type_hints(Workspace):
-            return self._parent.__getattr__(key)
+        if key not in tp.get_type_hints(Workspace):
+            if self._data['inherit']:
+                return self._data['inherit'].__getattr__(key)
+
+            if self._parent:
+                return self._parent.__getattr__(key)
         
         return None
     
@@ -286,7 +293,7 @@ class Workspace(Directory):
     def add(self, name: tp.Union[str, Task[tp.Any]] = None, /,
         task: Task[tp.Any] = None, *,
         concurrent: tp.Optional[bool] = None, prober: Prober = None,
-        target: tp.Optional[Workspace] = None, **data) -> Workspace:
+        target: tp.Optional[Workspace] = None, inherit: tp.Optional[Workspace] = None, **data) -> Workspace:
         """Add a child workspace or a child task."""
         if name is not None and not isinstance(name, str):
             if task is not None:
@@ -305,6 +312,9 @@ class Workspace(Directory):
         
         if target is not None:
             data['target'] = target
+        
+        if inherit is not None:
+            data['inherit'] = inherit
 
         parent = self.target or self
         ws = Workspace(parent.path(name) if isinstance(name, str) else parent.path(), data, self)

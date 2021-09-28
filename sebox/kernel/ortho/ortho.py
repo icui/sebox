@@ -71,10 +71,10 @@ def _compute(ws: Kernel, misfit_only: bool):
             enc.add('enc_diff', encode_diff)
     
     # kernel computation
-    main = ws.add('main', concurrent=True, target=ws)
+    main = ws.add('main', concurrent=True)
 
     for iker in range(ws.nkernels or 1):
-        kl = main.add(f'kl_{iker:02d}', iker=iker)
+        kl = main.add(f'kl_{iker:02d}', inherit=kls[iker])
 
         # forward simulation
         kl.add('forward', ('module:solver', 'forward'),
@@ -82,7 +82,7 @@ def _compute(ws: Kernel, misfit_only: bool):
             path_stations= cdir.path('SUPERSTATION'),
             path_mesh= ws.path('mesh'),
             monochromatic_source= True,
-            save_forward= True, target=kls[iker])
+            save_forward= True)
         
         # process traces
-        kl.add(ft, target=kls[iker])
+        kl.add(ft)
