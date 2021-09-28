@@ -104,16 +104,16 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
         data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{pid}.npy')
         slots = ws.fslots[event]
 
-        # record frequency components
-        for idx in slots:
-            group = idx // ws.frequency_increment
+        # # record frequency components
+        # for idx in slots:
+        #     group = idx // ws.frequency_increment
 
-            # phase shift due to the measurement of observed data
-            for j, cmp in enumerate(cmps):
-                w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
-                i = np.squeeze(np.where(w > 0))
-                encoded[i, j, idx] = data[i, j, idx]
-                weight[i, j, idx] = w[i]
+        #     # phase shift due to the measurement of observed data
+        #     for j, cmp in enumerate(cmps):
+        #         w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
+        #         i = np.squeeze(np.where(w > 0))
+        #         encoded[i, j, idx] = data[i, j, idx]
+        #         weight[i, j, idx] = w[i]
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
     ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
