@@ -44,7 +44,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     data = ws.load(f'forward/traces/{pid}.npy')
 
     if 'II.OBN' in stas:
-        print(stas.index('II.OBN'), pid)
+        ws.dump(data[stas.index('II.OBN'), 2], '../ii_obn.npy')
     
     # resample if necessary
     if not np.isclose(stats['dt'], ws.dt):
