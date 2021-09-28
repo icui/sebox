@@ -52,7 +52,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     # FFT
     if ws.event is None:
         data_nez = ft_syn(ws, data)
-        print(data_nez)
+        print(stats['cmps'])
 
     #     # rotate frequencies
     #     output_rtz = rotate_frequencies(output_nez, self.fslots, params, station, inv)
