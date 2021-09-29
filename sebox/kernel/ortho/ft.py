@@ -70,11 +70,11 @@ def _ft(ws: FT, stas: tp.List[str]):
     # FFT
     if ws.ft_event is None:
         data_nez = ft_syn(ws, data)
-        data_rtz = rotate_frequencies(ws, data_nez, stas, stats['cmps'], True)
+        data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
         ws.dump(data_rtz, f'{ws.path_output}/{pid}.npy', mkdir=False)
 
         ######
-        data_nez2 = rotate_frequencies(ws, data_rtz, stas, stats['cmps'], False)
+        data_nez2 = rotate_frequencies(ws, data_rtz, stats['cmps'], False)
 
         if 'IU.PET' in stas:
             ws.dump(data_nez[stas.index('IU.PET'), 0], '../iu_pet_n.npy')
@@ -100,7 +100,7 @@ def _ft(ws: FT, stas: tp.List[str]):
 
     # return output
 
-def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.Tuple[str, str, str], direction: bool):
+def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
     import numpy as np
     from sebox.mpi import pid
 
@@ -110,14 +110,14 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
 
     if direction:
         # rotate from NE to RT
-        data_rot[:, cmps_rt.index('Z'), :] = data[:, cmps.index('Z'), :]
+        data_rot[:, cmps_rt.index('Z'), :] = data[:, cmps_ne.index('Z'), :]
     
     else:
         # rotate from RT to NE
-        data_rot[:, cmps.index('Z'), :] = data[:, cmps_rt.index('Z'), :]
+        data_rot[:, cmps_ne.index('Z'), :] = data[:, cmps_rt.index('Z'), :]
 
-    n_i = cmps.index('N')
-    e_i = cmps.index('E')
+    n_i = cmps_ne.index('N')
+    e_i = cmps_ne.index('E')
     r_i = cmps_rt.index('R')
     t_i = cmps_rt.index('T')
 

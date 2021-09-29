@@ -25,38 +25,45 @@ def misfit(ws: Kernel):
 def _compute(ws: Kernel, misfit_only: bool):
     # prepare catalog (executed only once for a catalog)
     cdir = getdir()
-    cat = ws.add('catalog', concurrent=True)
+    ws.add('catalog', _catalog, concurrent=True)
+
+    # mesher and preprocessing
+    ws.pre = ws.add('preprocess', _preprocess, concurrent=True, target=ws)
+
+    # kernel computation
+    ws.add('main', _main, concurrent=True, target=ws)
+
+
+def _catalog(ws: Kernel):
+    # prepare catalog (executed only once for a catalog)
+    cdir = getdir()
 
     # merge stations into a single file
     if not cdir.has('SUPERSTATION'):
-        cat.add(merge)
+        ws.add(merge)
     
     #FIXME create_catalog (measurements.npy, weightings.npy, noise.npy, ft_obs, ft_diff)
 
     # convert observed traces into MPI format
     if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        cat.add(scatter_obs, concurrent=True)
+        ws.add(scatter_obs, concurrent=True)
 
     # convert differences between observed and synthetic data into MPI format
     if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
-        cat.add(scatter_diff, concurrent=True)
+        ws.add(scatter_diff, concurrent=True)
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
-        cat.add(scatter_baz, concurrent=True)
+        ws.add(scatter_baz, concurrent=True)
 
-    # mesher and preprocessing
-    pre = ws.add('preprocess', concurrent=True, target=ws)
 
+def _preprocess(ws: Kernel):
     # run mesher
-    pre.add('mesh', ('module:solver', 'mesh'))
-
-    # kernel workspaces
-    kls = []
+    ws.add('mesh', ('module:solver', 'mesh'))
 
     for iker in range(ws.nkernels or 1):
-        kl = pre.add(f'kl_{iker:02d}', iker=iker)
-        kls.append(kl)
+        # create workspace for individual kernels
+        kl = ws.add(f'kl_{iker:02d}', iker=iker)
 
         # determine frequency range
         kl.add(prepare_frequencies, target=kl)
@@ -73,12 +80,13 @@ def _compute(ws: Kernel, misfit_only: bool):
             enc = kl.add(concurrent=True)
             enc.add('enc_obs', encode_obs)
             enc.add('enc_diff', encode_diff)
-    
-    # kernel computation
-    main = ws.add('main', concurrent=True, target=ws)
+
+
+def _main(ws: Kernel):
+    cdir = getdir()
 
     for iker in range(ws.nkernels or 1):
-        kl = main.add(f'kl_{iker:02d}', inherit=kls[iker])
+        kl = ws.add(f'kl_{iker:02d}', inherit=tp.cast(tp.Any, ws.pre)[iker])
 
         # forward simulation
         kl.add('forward', ('module:solver', 'forward'),
@@ -89,4 +97,4 @@ def _compute(ws: Kernel, misfit_only: bool):
             save_forward= True)
         
         # process traces
-        kl.add(ft, path_input=ws.path('forward/traces'), path_output=ws.path('ft_syn'), ft_event=None)
+        kl.add(ft, path_input=kl.path('forward/traces'), path_output=kl.path('ft_syn'), ft_event=None)

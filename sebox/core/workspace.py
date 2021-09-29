@@ -114,7 +114,7 @@ class Workspace(Directory):
             if self.inherit:
                 return self.inherit.__getattr__(key)
 
-            if self._parent:
+            elif self._parent:
                 return self._parent.__getattr__(key)
         
         return None
