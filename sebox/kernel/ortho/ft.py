@@ -45,7 +45,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
 
     root.restore(ws)
     stats = ws.load('forward/traces/stats.pickle')
-    data = ws.load(f'forward/traces{pid}.npy')
+    data = ws.load(f'forward/traces/{pid}.npy')
     
     # resample if necessary
     if not np.isclose(stats['dt'], ws.dt):
