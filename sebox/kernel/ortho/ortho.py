@@ -69,7 +69,7 @@ def _preprocess(ws: Kernel):
 def _main(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=ws.encoding[iker])
+        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=tp.cast('Kernel', ws.parent).encoding[iker])
 
 
 def _compute_kernel(ws: Kernel):
