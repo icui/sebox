@@ -64,3 +64,6 @@ class Kernel(typing.Kernel):
 
     # radius for smoothing kernels
     smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
+
+    # attempt to unwrap phases
+    unwrap_phase: bool

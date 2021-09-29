@@ -14,8 +14,20 @@ async def diff(ws: Kernel):
 
 
 async def _diff(ws: Kernel, stas: tp.List[str]):
+    import numpy as np
     from sebox.mpi import pid
+    from mpi4py.MPI import COMM_WORLD as comm
 
-    obs = ws.load(f'../enc_obs/{pid}.pickle')
-    diff = ws.load(f'../enc_diff/{pid}.pickle')
+    if 'II.OBN' in stas:
+        print(pid, stas.index('II.OBN'))
+
+    # read data
     syn = ws.load(f'enc_syn/{pid}.pickle')
+    obs = ws.load(f'enc_obs/{pid}.pickle')
+    ref = ws.load(f'enc_diff/{pid}.pickle')
+    weight = ws.load(f'enc_weight/{pid}.pickle')
+
+    # compute diff
+    phase_diff = np.angle(syn / obs) * weight
+    amp_diff = np.abs(syn) / np.abs(obs) * weight
+
