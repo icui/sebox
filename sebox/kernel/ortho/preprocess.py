@@ -2,7 +2,9 @@ from __future__ import annotations
 import typing as tp
 import random
 
-from sebox.utils.catalog import getdir, getevents, getmeasurements
+from sebox import root
+from sebox.utils.catalog import getdir, getevents, getstations, getcomponents, getmeasurements
+from .ft import ft_obs
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -26,7 +28,28 @@ def getfreq(ws: Kernel) -> ndarray:
     return fftfreq(ws.nt_se, ws.dt)[ws.imin: ws.imax]
 
 
-def prepare_frequencies(ws: Kernel):
+def prepare_encoding(ws: Kernel):
+    """Prepare source encoding data."""
+    if ws.path_encoded:
+        # link existing encoding workspace
+        ws.add(_link_observed)
+    
+    else:
+        # determine frequencies
+        ws.add(_prepare_frequencies)
+
+        # create SUPERSOURCE
+        ws.add(_encode_events)
+
+        # encode observed traces and diffs
+        ws.add(_encode, concurrent=True)
+
+
+def _link_observed(ws: Kernel):
+    pass
+
+
+def _prepare_frequencies(ws: Kernel):
     import numpy as np
     from scipy.fft import fftfreq
 
@@ -57,15 +80,6 @@ def prepare_frequencies(ws: Kernel):
     nbands = nf // fincr
     imax = imin + nbands * fincr
     nf = nbands * fincr
-
-    # save results to parent (kernel) workspace
-    ws.nt_ts = nt_ts
-    ws.nt_se = nt_se
-    ws.df = df
-    ws.kf = kf
-    ws.nbands = nbands
-    ws.imin = imin
-    ws.imax = imax
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     if ws.reference_velocity is not None and (smooth := ws.smooth_kernels):
@@ -80,39 +94,35 @@ def prepare_frequencies(ws: Kernel):
                 ws.nbands_used = nbands
                 break
 
-    # save and print source encoding parameters
-    ws.write('\n'.join([
-        f'time step length: {ws.dt}',
-        f'frequency step length: {ws.df:.2e}',
-        f'transient state: {nt_ts} steps, {nt_ts * ws.dt / 60:.2f}min',
-        f'steady state duration: {nt_se}steps, {nt_se * ws.dt / 60:.2f}min',
-        f'frequency slots: {nbands} x {fincr}',
-        f'frequency indices: [{imin}, {imax}] x {kf}',
-        f'period range: [{1/freq[imax-1]:.2f}s, {1/freq[imin]:.2f}s]',
-        f'random seed: {getseed(ws)}'
-        ''
-    ]), 'encoding.log')
+    # save results to parent workspace
+    ws.parent.update({
+        'df': df,
+        'kf': kf,
+        'nt_ts': nt_ts,
+        'nt_se': nt_se,
+        'nbands': nbands,
+        'nbands_used': nbands,
+        'imin': imin,
+        'imax': imax,
+        'seed_used': getseed(ws)
+    })
 
 
-def link_observed(ws: Kernel):
-    pass
-
-
-def encode_events(ws: Kernel):
+def _encode_events(ws: Kernel):
     # load catalog
     cmt = ''
     cdir = getdir()
 
     # randomize frequency
     freq = getfreq(ws)
-    fslots = ws.fslots = {}
+    fslots = {}
     events = getevents()
     nbands = ws.nbands_used
     fincr = ws.frequency_increment
     slots = set(range(nbands * fincr))
 
     # set random seed
-    random.seed(getseed(ws))
+    random.seed(ws.seed_used)
 
     # get available frequency bands for each event (sumed over tations and components)
     event_bands = {}
@@ -182,6 +192,110 @@ def encode_events(ws: Kernel):
             if cmt[-1] != '\n':
                 cmt += '\n'
 
-    # save fslots and CMTSOLUTION
-    ws.dump(ws.fslots, 'fslots.pickle')
+    # save frequency slots and encoded source
+    ws.parent.fslots = fslots
     ws.write(cmt, 'SUPERSOURCE')
+
+
+async def _encode(ws: Kernel):
+    from functools import partial
+
+    stas = getstations()
+    ws.mkdir('enc_obs')
+    ws.mkdir('enc_syn')
+
+    ws.add('enc_obs', partial(ws.mpiexec, _encode_obs, arg=ws, arg_mpi=stas))
+    ws.add('enc_syn', partial(ws.mpiexec, _encode_diff, arg=ws, arg_mpi=stas))
+
+
+def _encode_obs(ws: Kernel, stas: tp.List[str]):
+    import numpy as np
+    from sebox.mpi import pid
+    from .preprocess import getfreq
+
+    # kernel configuration
+    nt = ws.kf * ws.nt_se
+    t = np.linspace(0, (nt - 1) * ws.dt, nt)
+    freq = getfreq(ws)
+
+    # data from catalog
+    root.restore(ws)
+    cdir = getdir()
+    cmps = getcomponents()
+    event_data = cdir.load('event_data.pickle')
+    encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan, dtype=complex)
+
+    # get global station index
+    sidx = []
+    stations = getstations()
+
+    for sta in stas:
+        sidx.append(stations.index(sta))
+    
+    sidx = np.array(sidx)
+
+    for event in getevents():
+        # read event data
+        data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
+        slots = ws.fslots[event]
+        hdur = event_data[event][-1]
+        tshift = 1.5 * hdur
+        
+        # source time function of observed data and its frequency component
+        stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
+        sff = ft_obs(ws, stf)
+        pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
+
+        # record frequency components
+        for idx in slots:
+            group = idx // ws.frequency_increment
+            pshift = pff[idx]
+
+            # phase shift due to the measurement of observed data
+            for j, cmp in enumerate(cmps):
+                m = getmeasurements(event, None, cmp, group)[sidx]
+                i = np.squeeze(np.where(m))
+                encoded[i, j, idx] = data[i, j, idx] * pshift
+    
+    ws.dump(encoded, f'{pid}.npy', mkdir=False)
+
+
+def _encode_diff(ws: Kernel, stas: tp.List[str]):
+    """Encode diff data."""
+    import numpy as np
+    from sebox.mpi import pid
+
+    # data from catalog
+    root.restore(ws)
+    cdir = getdir()
+    cmps = getcomponents()
+    encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan)
+    weight = np.full([len(stas), 3, ws.imax - ws.imin], np.nan)
+
+    # get global station index
+    sidx = []
+    stations = getstations()
+
+    for sta in stas:
+        sidx.append(stations.index(sta))
+    
+    sidx = np.array(sidx)
+
+    for event in getevents():
+        # read event data
+        data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{pid}.npy')
+        slots = ws.fslots[event]
+
+        # record frequency components
+        for idx in slots:
+            group = idx // ws.frequency_increment
+
+            # phase shift due to the measurement of observed data
+            for j, cmp in enumerate(cmps):
+                w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
+                i = np.squeeze(np.where(w > 0))
+                encoded[i, j, idx] = data[i, j, idx]
+                weight[i, j, idx] = w[i]
+    
+    ws.dump(encoded, f'{pid}.npy', mkdir=False)
+    ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)

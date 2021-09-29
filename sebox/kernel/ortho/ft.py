@@ -19,12 +19,12 @@ if tp.TYPE_CHECKING:
         ft_event: tp.Optional[str]
 
 
-def ft_syn(ws: FT, data: ndarray):
+def ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
     return fft(data[..., ws.nt_ts: ws.nt_ts + ws.nt_se])[..., ws.imin: ws.imax] # type: ignore
 
 
-def ft_obs(ws: FT, data: ndarray):
+def ft_obs(ws: Kernel, data: ndarray):
     import numpy as np
     from scipy.fft import fft
 

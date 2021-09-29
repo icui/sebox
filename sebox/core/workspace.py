@@ -22,9 +22,6 @@ class Workspace(Directory):
     # whether child workspaces are executed concurrently
     concurrent: tp.Optional[bool]
 
-    # argument passed to self.task
-    target: tp.Optional[Workspace]
-
     # workspace to inherit properties from
     inherit: tp.Optional[Workspace]
 
@@ -68,9 +65,9 @@ class Workspace(Directory):
         return path.basename(self.path(abs=True))
 
     @property
-    def parent(self) -> tp.Optional[Workspace]:
+    def parent(self) -> Workspace:
         """Parent workspace."""
-        return self._parent
+        return tp.cast(Workspace, self._parent)
 
     @property
     def done(self) -> bool:
@@ -232,7 +229,7 @@ class Workspace(Directory):
                 task = getattr(import_module(path), task[1])
 
             # call task function
-            if task and (result := task(self.target or self)) and asyncio.iscoroutine(result):
+            if task and (result := task(self)) and asyncio.iscoroutine(result):
                 await result
         
         except Exception as e:
@@ -289,11 +286,15 @@ class Workspace(Directory):
             # exit if any error occurs
             if root.job_failed or root.job_aborted:
                 break
+    
+    def update(self, items: dict):
+        """Update properties from dict."""
+        self._data.update(items)
 
     def add(self, name: tp.Union[str, Task[tp.Any]] = None, /,
         task: Task[tp.Any] = None, *,
         concurrent: tp.Optional[bool] = None, prober: Prober = None,
-        target: tp.Optional[Workspace] = None, inherit: tp.Optional[Workspace] = None, **data) -> Workspace:
+        inherit: tp.Optional[Workspace] = None, **data) -> Workspace:
         """Add a child workspace or a child task."""
         if name is not None and not isinstance(name, str):
             if task is not None:
@@ -310,14 +311,10 @@ class Workspace(Directory):
         if concurrent is not None:
             data['concurrent'] = concurrent
         
-        if target is not None:
-            data['target'] = target
-        
         if inherit is not None:
             data['inherit'] = inherit
 
-        parent = self.target or self
-        ws = Workspace(parent.path(name) if isinstance(name, str) else parent.path(), data, self)
+        ws = Workspace(self.path(name) if isinstance(name, str) else self.path(), data, self)
         self._ws.append(ws)
         
         return ws

@@ -1,3 +1,4 @@
+from __future__ import annotations
 import typing as tp
 
 from sebox import typing
@@ -10,8 +11,11 @@ class Kernel(typing.Kernel):
     # number of kernels to randomize frequency per iteration
     nkernels_rng: tp.Optional[int]
 
-    # alter global randomization
+    # alter global random seed
     seed: int
+
+    # random seed actually used
+    seed_used: int
 
     # index of current kernel
     iker: tp.Optional[int]

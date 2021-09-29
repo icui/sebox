@@ -4,8 +4,7 @@ import typing as tp
 from sebox import root
 from sebox.utils.catalog import getdir
 from .catalog import merge, scatter_obs, scatter_diff, scatter_baz
-from .encoding import encode_obs, encode_diff
-from .preprocess import prepare_frequencies, encode_events, link_observed
+from .preprocess import prepare_encoding
 from .ft import ft
 
 if tp.TYPE_CHECKING:
@@ -27,7 +26,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add('catalog', _catalog, concurrent=True)
 
     # mesher and preprocessing
-    ws.pre = ws.add(_preprocess, concurrent=True, kls={})
+    ws.pre = ws.add(_preprocess, concurrent=True)
 
     # kernel computation
     ws.add(_main, concurrent=True)
@@ -57,47 +56,32 @@ def _catalog(ws: Kernel):
 
 
 def _preprocess(ws: Kernel):
+    for iker in range(ws.nkernels or 1):
+        # create workspace for individual kernels
+        ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker)
+
     # run mesher
     ws.add('mesh', ('module:solver', 'mesh'))
 
-    for iker in range(ws.nkernels or 1):
-        # create workspace for individual kernels
-        kl = ws.add(f'kl_{iker:02d}', iker=iker)
-        tp.cast(tp.Any, ws.kls)[iker] = kl
-
-        # determine frequency range
-        kl.add(prepare_frequencies, target=kl)
-
-        if ws.path_encoded:
-            # link encoded observed data
-            kl.add(link_observed, target=kl)
-        
-        else:
-            # encode events
-            kl.add(encode_events, target=kl)
-
-            # encode observed data
-            enc = kl.add(_encode, concurrent=True)
-
 
 def _main(ws: Kernel):
+    for iker in range(ws.nkernels or 1):
+        # add steps to run forward and adjoint simulation
+        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=ws.parent[1][iker])
+
+
+def _compute_kernel(ws: Kernel):
     cdir = getdir()
 
-    for iker in range(ws.nkernels or 1):
-        kl = ws.add(f'kl_{iker:02d}', inherit=tp.cast(tp.Any, ws.pre).kls[iker])
-
-        # forward simulation
-        kl.add('forward', ('module:solver', 'forward'),
-            path_event= kl.path('SUPERSOURCE'),
-            path_stations= cdir.path('SUPERSTATION'),
-            path_mesh= ws.path('mesh'),
-            monochromatic_source= True,
-            save_forward= True)
-        
-        # process traces
-        kl.add(ft, path_input=kl.path('forward/traces'), path_output=kl.path('ft_syn'), ft_event=None)
-
-
-def _encode(ws: Kernel):
-    ws.add('enc_obs', encode_obs)
-    ws.add('enc_diff', encode_diff)
+    # forward simulation
+    ws.add('forward', ('module:solver', 'forward'),
+        path_event= ws.path('SUPERSOURCE'),
+        path_stations= cdir.path('SUPERSTATION'),
+        path_mesh= ws.path('mesh'),
+        monochromatic_source= True,
+        save_forward= True)
+    
+    # process traces
+    ws.add(ft, ft_event=None,
+        path_input=ws.path('forward/traces'),
+        path_output=ws.path('ft_syn'))
