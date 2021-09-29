@@ -60,7 +60,7 @@ def _preprocess(ws: Kernel):
     
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        ws.encoding[iker] = tp.cast(Kernel, ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
+        ws.encoding[iker] = tp.cast('Kernel', ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
 
     # run mesher
     ws.add('mesh', ('module:solver', 'mesh'))
