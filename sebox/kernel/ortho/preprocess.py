@@ -307,4 +307,4 @@ def _encode_diff(ws: Kernel, stas: tp.List[str]):
                 weight[i, j, idx] = w[i]
     
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
-    ws.dump(weight, f'../enc_weight/{pid}.pickle', mkdir=False)
+    ws.dump(weight, f'../enc_weight/{pid}.npy', mkdir=False)
