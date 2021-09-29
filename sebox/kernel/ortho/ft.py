@@ -85,6 +85,7 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
 
     cmps_rt = getcomponents()
     data_rot = np.zeros(data.shape, dtype=complex)
+    data_rot[:, 2, :] = data[:, 2, :]
     baz = getdir().load(f'baz_p{root.task_nprocs}/{pid}.pickle')
 
     n_i = cmps.index('N')
