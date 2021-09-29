@@ -30,9 +30,9 @@ def getfreq(ws: Kernel) -> ndarray:
 
 def prepare_encoding(ws: Kernel):
     """Prepare source encoding data."""
-    if ws.path_encoded:
+    if ws.inherit_encoding:
         # link existing encoding workspace
-        ws.add(_link_observed)
+        ws.add(_link_encoded)
     
     else:
         # determine frequencies
@@ -45,7 +45,7 @@ def prepare_encoding(ws: Kernel):
         ws.add(_encode, concurrent=True)
 
 
-def _link_observed(ws: Kernel):
+def _link_encoded(ws: Kernel):
     pass
 
 
@@ -95,7 +95,7 @@ def _prepare_frequencies(ws: Kernel):
                 break
 
     # save results to parent workspace
-    ws.parent.update({
+    encoding = {
         'df': df,
         'kf': kf,
         'nt_ts': nt_ts,
@@ -105,7 +105,10 @@ def _prepare_frequencies(ws: Kernel):
         'imin': imin,
         'imax': imax,
         'seed_used': getseed(ws)
-    })
+    }
+
+    ws.parent.update(encoding)
+    ws.dump(encoding, 'encoding.pickle')
 
 
 def _encode_events(ws: Kernel):
@@ -194,6 +197,7 @@ def _encode_events(ws: Kernel):
 
     # save frequency slots and encoded source
     ws.parent.fslots = fslots
+    ws.dump(fslots, 'fslots.pickle')
     ws.write(cmt, 'SUPERSOURCE')
 
 

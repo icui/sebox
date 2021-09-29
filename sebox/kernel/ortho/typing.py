@@ -20,8 +20,11 @@ class Kernel(typing.Kernel):
     # index of current kernel
     iker: tp.Optional[int]
 
-    # path to encoded observed traces
-    path_encoded: tp.Optional[str]
+    # workspace with source encoding paremeters
+    encoding: tp.Dict[int, Kernel]
+
+    # inherit from an existing kernel workspace
+    inherit_encoding: tp.Optional[Kernel]
 
     # time duration to reach steady state for source encoding
     transient_duration: float

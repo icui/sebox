@@ -68,20 +68,20 @@ class Directory:
     
     def ln(self, src: str, dst: str = '.', mkdir: bool = True):
         """Link a file or a directory."""
+        srcf = path.basename(src)
+
         if self.isdir(dst):
             dstdir = dst
             dstf = '.'
+            self.rm(path.join(dstdir, srcf))
         
         else:
+            self.rm(dst)
             dstdir = path.dirname(dst)
             dstf = path.basename(dst)
 
             if mkdir:
                 self.mkdir(dstdir)
-        
-        # delete existing target file
-        srcf = path.basename(src)
-        self.rm(path.join(dstdir, srcf))
 
         # relative path from source directory to target directory
         if not path.isabs(src):

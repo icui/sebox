@@ -29,13 +29,13 @@ if tp.TYPE_CHECKING:
         dtype: tp.Any
     
 
-    class Convert(Workspace):
+    class Scatter(Workspace):
         """A workspace to convert dataset from / to MPI format."""
         # path to bundled data file
-        path_bundle: str
+        path_input: str
 
         # path to MPI data file
-        path_mpi: str
+        path_output: str
 
         # tag of output file
         output_tag: tp.Optional[str]
@@ -90,13 +90,13 @@ def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
         d.dump(data, f'{pid}.npy', mkdir=False)
 
 
-async def scatter(ws: Convert):
+async def scatter(ws: Scatter):
     """Convert ASDF trace to MPI trace."""
     from pyasdf import ASDFDataSet
 
-    ws.mkdir(ws.rel(ws.path_mpi))
+    ws.mkdir(ws.rel(ws.path_output))
 
-    with ASDFDataSet(ws.path_bundle, mode='r', mpi=False) as ds:
+    with ASDFDataSet(ws.path_input, mode='r', mpi=False) as ds:
         stats = tp.cast('Stats', ws.stats or {})
 
         # fill stattions and components
@@ -131,6 +131,7 @@ async def scatter(ws: Convert):
                 stats['dt'] = trace.stats.delta
 
         # save stats
-        ws.dump(stats, ws.rel(ws.path_mpi, 'stats.pickle'))
-
-        await ws.mpiexec(_scatter, arg=(ws.path_bundle, ws.path_mpi, ws.aux, stats), arg_mpi=stats['stas'])
+        ws.dump(stats, ws.rel(ws.path_output, 'stats.pickle'))
+        await ws.mpiexec(_scatter,
+            arg=(ws.path_input, ws.path_output, ws.aux, stats),
+            arg_mpi=stats['stas'])

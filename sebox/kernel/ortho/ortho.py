@@ -26,7 +26,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add('catalog', _catalog, concurrent=True)
 
     # mesher and preprocessing
-    ws.pre = ws.add(_preprocess, concurrent=True)
+    ws.add(_preprocess, concurrent=True)
 
     # kernel computation
     ws.add(_main, concurrent=True)
@@ -56,9 +56,11 @@ def _catalog(ws: Kernel):
 
 
 def _preprocess(ws: Kernel):
+    ws.encoding = {}
+    
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker)
+        ws.encoding[iker] = tp.cast(Kernel, ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
 
     # run mesher
     ws.add('mesh', ('module:solver', 'mesh'))
@@ -67,7 +69,7 @@ def _preprocess(ws: Kernel):
 def _main(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=ws.parent[1][iker])
+        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=ws.encoding[iker])
 
 
 def _compute_kernel(ws: Kernel):
@@ -77,7 +79,7 @@ def _compute_kernel(ws: Kernel):
     ws.add('forward', ('module:solver', 'forward'),
         path_event= ws.path('SUPERSOURCE'),
         path_stations= cdir.path('SUPERSTATION'),
-        path_mesh= ws.path('mesh'),
+        path_mesh= ws.path('../mesh'),
         monochromatic_source= True,
         save_forward= True)
     

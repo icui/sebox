@@ -46,5 +46,5 @@ def forward(ws: Forward):
     xmeshfem(ws)
     xspecfem(ws)
     ws.add(('sebox.utils.asdf', 'scatter'),
-        path_bundle=ws.path('OUTPUT_FILES/synthetic.h5'), path_mpi=ws.path('traces'),
+        path_input=ws.path('OUTPUT_FILES/synthetic.h5'), path_output=ws.path('traces'),
         stats={'cmps': ['N', 'E', 'Z']})
