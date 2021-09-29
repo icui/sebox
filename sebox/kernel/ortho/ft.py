@@ -111,21 +111,21 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
         if len(slots) == 0:
             continue
         
-        ba = baz[event]
+        if direction:
+            # rotate from NE to RT
+            ba = baz[event]
 
-        if not direction:
-            ba = 2 * np.pi - ba
-
-        for slot in slots:
-            if direction:
-                # rotate from NE to RT
+            for slot in slots:
                 n = data[:, n_i, slot]
                 e = data[:, e_i, slot]
                 data_rot[:, r_i, slot] = - e * np.sin(ba) - n * np.cos(ba)
                 data_rot[:, t_i, slot] = - e * np.cos(ba) + n * np.sin(ba)
-            
-            else:
-                # rotate from RT to NE
+        
+        else:
+            # rotate from RT to NE
+            ba = 2 * np.pi - baz[event]
+
+            for slot in slots:
                 r = data[:, r_i, slot]
                 t = data[:, t_i, slot]
                 data_rot[:, n_i, slot] = - t * np.sin(ba) - r * np.cos(ba)
