@@ -71,9 +71,9 @@ class Directory:
         srcf = path.basename(src)
 
         if self.isdir(dst):
+            self.rm(path.join(dst, srcf))
             dstdir = dst
             dstf = '.'
-            self.rm(path.join(dstdir, srcf))
         
         else:
             self.rm(dst)
