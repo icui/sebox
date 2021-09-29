@@ -36,5 +36,5 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
     phase_gather = comm.allgather(phase_diff)
 
     if 'II.OBN' in stas:
-        print('@', phase_gather[9] == phase_diff)
+        print('@', phase_gather[9] - phase_diff)
 
