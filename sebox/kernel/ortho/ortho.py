@@ -77,9 +77,7 @@ def _preprocess(ws: Kernel):
             kl.add(encode_events, target=kl)
 
             # encode observed data
-            enc = kl.add(concurrent=True)
-            enc.add('enc_obs', encode_obs)
-            enc.add('enc_diff', encode_diff)
+            enc = kl.add(_encode, concurrent=True)
 
 
 def _main(ws: Kernel):
@@ -98,3 +96,8 @@ def _main(ws: Kernel):
         
         # process traces
         kl.add(ft, path_input=kl.path('forward/traces'), path_output=kl.path('ft_syn'), ft_event=None)
+
+
+def _encode(ws: Kernel):
+    ws.add('enc_obs', encode_obs)
+    ws.add('enc_diff', encode_diff)
