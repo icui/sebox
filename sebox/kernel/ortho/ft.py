@@ -87,6 +87,8 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
     data_rot = np.zeros(data.shape, dtype=complex)
 
     for i, sta in enumerate(stas):
+        if 'II.OBN' in stas:
+            print('@', i)
         for event, slots in ws.fslots.items():
             if len(slots) == 0:
                 continue
