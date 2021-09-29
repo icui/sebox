@@ -1,7 +1,8 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox.utils.catalog import getstations, getcomponents, locate_event, locate_station
+from sebox import root
+from sebox.utils.catalog import getdir, getstations, getcomponents, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -82,29 +83,29 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
     import numpy as np
     from obspy.signal.rotate import rotate_ne_rt, rotate_rt_ne
     from obspy.geodetics import gps2dist_azimuth
+    from sebox.mpi import pid
 
     cmps_rt = getcomponents()
     data_rot = np.zeros(data.shape, dtype=complex)
+    baz = getdir().load(f'baz_p{root.task_nprocs}/{pid}.pickle')
 
-    for i, sta in enumerate(stas):
-        if 'II.OBN' in stas:
-            print('@', i)
-        for event, slots in ws.fslots.items():
-            if len(slots) == 0:
-                continue
-            
-            # location events and stations
-            elat, elon = locate_event(event)
-            slat, slon = locate_station(sta)
-            _, _, baz = gps2dist_azimuth(elat, elon, slat, slon)
+    n_i = cmps.index('N')
+    e_i = cmps.index('E')
+    r_i = cmps_rt.index('R')
+    t_i = cmps_rt.index('T')
 
+    for event, slots in ws.fslots.items():
+        if len(slots) == 0:
+            continue
+        
+        for slot in slots:
             if direction:
                 # rotate from NE to RT
-                n = data[i, cmps.index('N'), slots]
-                e = data[i, cmps.index('E'), slots]
+                n = data[:, n_i, slot]
+                e = data[:, e_i, slot]
                 r, t = rotate_ne_rt(n, e, baz)
-                data_rot[i, cmps_rt.index('R'), slots] = r
-                data_rot[i, cmps_rt.index('T'), slots] = t
+                data_rot[:, r_i, slot] = r
+                data_rot[:, t_i, slot] = t
             
             else:
                 # rotate from RT to NE
