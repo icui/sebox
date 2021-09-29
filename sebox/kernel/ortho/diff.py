@@ -88,8 +88,8 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
 
         # fill full frequency band
         ft_adstf = np.zeros([len(stas), 3, ws.nt_se], dtype=complex)
-        ft_adstf[ws.imin: ws.imax] = ft_adj
-        ft_adstf[-ws.imin: -ws.imax: -1] = np.conj(ft_adj)
+        ft_adstf[..., ws.imin: ws.imax] = ft_adj
+        ft_adstf[..., -ws.imin: -ws.imax: -1] = np.conj(ft_adj)
 
         # stationary adjoint source
         adstf_tau = -ifft(ft_adstf).real # type: ignore
@@ -97,7 +97,7 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
         # repeat to fill entrie adjoint duration
         nt = stats['npts']
         adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / ws.nt_se)))
-        adstf = adstf_tile[-nt:]
+        adstf = adstf_tile[..., -nt:]
 
         if ws.taper:
             ntaper = int(ws.taper * 60 / ws.dt)
