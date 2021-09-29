@@ -16,7 +16,7 @@ async def diff(ws: Kernel):
     exit()
 
 
-async def _diff(arg: tp.Tuple['Kernel', int], stas: tp.List[str]):
+async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from scipy.signal import resample
@@ -50,7 +50,7 @@ async def _diff(arg: tp.Tuple['Kernel', int], stas: tp.List[str]):
     
         if 'II.OBN' in stas:
             print('II.OBN', nsta)
-            print(npairs.shape, phase_sum.shape, amp_sum.shape, phase_sum.max(), amp_sum.max())
+            print(np.nanmax(phase_sum), np.nanmax(amp_sum))
             print(npairs.max())
             print(npairs.sum(axis=0))
 
@@ -60,7 +60,7 @@ async def _diff(arg: tp.Tuple['Kernel', int], stas: tp.List[str]):
     amp_diff *= ws.amplitude_factor
 
     # misfit values and adjoint sources
-    nan = np.squeeze(np.where(np.isnan(phase_diff)))
+    nan = np.where(np.isnan(phase_diff))
     syn[nan] = 1.0
 
     # misfit value
