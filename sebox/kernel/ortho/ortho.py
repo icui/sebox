@@ -27,10 +27,10 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add('catalog', _catalog, concurrent=True)
 
     # mesher and preprocessing
-    ws.pre = ws.add('preprocess', _preprocess, concurrent=True, kls={})
+    ws.pre = ws.add(_preprocess, concurrent=True, kls={})
 
     # kernel computation
-    ws.add('main', _main, concurrent=True, target=ws)
+    ws.add(_main, concurrent=True)
 
 
 def _catalog(ws: Kernel):
@@ -62,7 +62,7 @@ def _preprocess(ws: Kernel):
 
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        kl = ws.add(f'../kl_{iker:02d}', iker=iker)
+        kl = ws.add(f'kl_{iker:02d}', iker=iker)
         tp.cast(tp.Any, ws.kls)[iker] = kl
 
         # determine frequency range
