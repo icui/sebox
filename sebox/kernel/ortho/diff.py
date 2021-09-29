@@ -95,7 +95,7 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
         adstf_tau = -ifft(ft_adstf).real # type: ignore
 
         # repeat to fill entrie adjoint duration
-        nt = stats['npts']
+        nt = stats['nt']
         adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / ws.nt_se)))
         adstf = adstf_tile[..., -nt:]
 
