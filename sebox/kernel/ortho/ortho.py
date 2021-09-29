@@ -86,4 +86,4 @@ def _compute_kernel(ws: Kernel):
     # process traces
     ws.add(ft, ft_event=None,
         path_input=ws.path('forward/traces'),
-        path_output=ws.path('ft_syn'))
+        path_output=ws.path('enc_syn'))

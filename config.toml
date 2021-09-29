@@ -2,7 +2,6 @@
 module_system = "summit"
 module_solver = "specfem"
 module_kernel = "ortho"
-module_misfit = "ortho"
 module_optimizer = "gd"
 module_search = "bracket"
 
