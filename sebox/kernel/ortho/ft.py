@@ -92,8 +92,15 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
 
     cmps_rt = getcomponents()
     data_rot = np.zeros(data.shape, dtype=complex)
-    data_rot[:, 2, :] = data[:, 2, :]
     baz = getdir().load(f'baz_p{root.task_nprocs}/{pid}.pickle')
+
+    if direction:
+        # rotate from NE to RT
+        data_rot[:, cmps_rt.index('Z'), :] = data[:, cmps.index('Z'), :]
+    
+    else:
+        # rotate from RT to NE
+        data_rot[:, cmps.index('Z'), :] = data[:, cmps_rt.index('Z'), :]
 
     n_i = cmps.index('N')
     e_i = cmps.index('E')
@@ -121,7 +128,7 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
                 ba = 2 * np.pi - ba
                 r = data[:, r_i, slot]
                 t = data[:, t_i, slot]
-                data_rot[:, n_i, slot] = - r * np.sin(ba) - t * np.cos(ba)
-                data_rot[:, e_i, slot] = - r * np.cos(ba) + t * np.sin(ba)
+                data_rot[:, n_i, slot] = - t * np.sin(ba) - r * np.cos(ba)
+                data_rot[:, e_i, slot] = - t * np.cos(ba) + r * np.sin(ba)
             
     return data_rot
