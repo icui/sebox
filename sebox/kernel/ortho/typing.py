@@ -67,3 +67,18 @@ class Kernel(typing.Kernel):
 
     # attempt to unwrap phases
     unwrap_phase: bool
+    
+    # use double difference measurement
+    double_difference: bool
+
+    # global phase weighting
+    phase_factor: float
+
+    # global amplitude weighting
+    amplitude_factor: float
+
+    # skip computing adjoint kernels
+    misfit_only: bool
+
+    # taper adjoint source
+    taper: tp.Optional[float]

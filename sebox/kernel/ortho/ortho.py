@@ -30,7 +30,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add(_preprocess, concurrent=True)
 
     # kernel computation
-    ws.add(_main, concurrent=True)
+    ws.add(_main, concurrent=True, misfit_only=misfit_only)
 
 
 def _catalog(ws: Kernel):

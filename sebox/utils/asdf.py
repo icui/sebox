@@ -10,8 +10,11 @@ if tp.TYPE_CHECKING:
     from obspy import Trace
 
     class Stats(tp.TypedDict, total=False):
-        # length of a trace data
+        # total number of timesteps
         nt: int
+
+        # length of a timestep
+        dt: float
 
         # trace components
         cmps: tp.List[str]
@@ -21,9 +24,6 @@ if tp.TYPE_CHECKING:
 
         # station channel
         cha: tp.Optional[str]
-
-        # length of a timestep
-        dt: float
         
         # data type
         dtype: tp.Any
