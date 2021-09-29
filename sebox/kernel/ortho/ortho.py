@@ -56,11 +56,11 @@ def _catalog(ws: Kernel):
 
 
 def _preprocess(ws: Kernel):
-    ws.encoding = {}
+    ws.parent.encoding = {}
     
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        ws.encoding[iker] = tp.cast('Kernel', ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
+        ws.parent.encoding[iker] = tp.cast('Kernel', ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
 
     # run mesher
     ws.add('mesh', ('module:solver', 'mesh'))
@@ -69,7 +69,7 @@ def _preprocess(ws: Kernel):
 def _main(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=tp.cast('Kernel', ws.parent).encoding[iker])
+        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=tp.cast('Kernel', ws.parent[1].encoding[iker])
 
 
 def _compute_kernel(ws: Kernel):
