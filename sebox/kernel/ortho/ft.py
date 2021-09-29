@@ -60,7 +60,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
         data_rtz = rotate_frequencies(ws, data_nez, stas, stats['cmps'], True)
 
         if 'II.OBN' in stas:
-            ws.dump(data_nez[stas.index('II.OBN'), 2], '../ii_obn_rot.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 2], '../ii_obn_rot.npy')
         # print(stats['cmps'])
 
     #     # rotate frequencies
