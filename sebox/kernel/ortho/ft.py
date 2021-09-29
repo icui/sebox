@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox.utils.catalog import getstations, getcomponents, locate_event, locate_station
+from sebox.utils.catalog import getstations, getcomponents, locate_event
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -79,10 +79,11 @@ def _ft(ws: Kernel, stas: tp.List[str]):
 def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.Tuple[str, str, str], direction: bool = True):
     import numpy as np
     from obspy import Stream, Trace
-    from obspy.core.inventory import Inventory, Network, Station, Channel
     from pytomo3d.signal.process import rotate_stream
+    from sebox.mpi import pid
 
     data_rot = np.zeros(data.shape)
+    invs = ws.load(f'forward/traces/{pid}_inv.pickle')
 
     if direction:
         mode = 'NE->RT'
@@ -98,18 +99,10 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
         for event, slots in ws.fslots.items():
             if len(slots) == 0:
                 continue
-        
-            # create station inventory
-            loc = locate_station(sta)
-            n, s = sta.split('.')
-            inv = Inventory(networks=[])
-            network = Network(code=n, stations=[])
-            station = Station(code=s, latitude=loc[0], longitude=loc[1], elevation=0.0)
-            network.stations.append(station)
-            inv.networks.append(network)
 
             # frequency domain traces of current event
             traces = []
+            n, s = sta.split('.')
             
             for j, cmp in enumerate(cmps_from):
                 traces.append(Trace(data[i, j, slots], {
@@ -117,12 +110,9 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
                     'network': n, 'station': s, 'location': 'S3'
                 }))
 
-                channel = Channel(code=f'MX{cmp}', latitude=loc[0], longitude=loc[1], elevation=0.0, location_code='S3', depth=0.0)
-                station.channels.append(channel)
-
             # rotate frequencies
             lat, lon = locate_event(event)
-            stream = rotate_stream(Stream(traces), lat, lon, inv, mode=mode)
+            stream = rotate_stream(Stream(traces), lat, lon, invs[i], mode=mode)
 
             for j, cmp in enumerate(cmps_to):
                 data_rot[i, j, slots] = stream.select(component=cmp)[0].data # type: ignore
