@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import root
+from sebox import root, Directory
 from sebox.utils.catalog import getdir, getstations, getcomponents, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
@@ -43,8 +43,9 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     from sebox.mpi import pid
 
     root.restore(ws)
-    stats = ws.load('forward/traces/stats.pickle')
-    data = ws.load(f'forward/traces/{pid}.npy')
+    d = Directory(tp.cast(str, ws.path_traces))
+    stats = d.load('stats.pickle')
+    data = d.load(f'{pid}.npy')
 
     if 'II.OBN' in stas:
         ws.dump(data[stas.index('II.OBN'), 2], '../ii_obn.npy')
@@ -59,18 +60,17 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     if ws.ft_event is None:
         data_nez = ft_syn(ws, data)
         data_rtz = rotate_frequencies(ws, data_nez, stas, stats['cmps'], True)
-
         data_nez2 = rotate_frequencies(ws, data_rtz, stas, stats['cmps'], False)
 
-        if 'II.OBN' in stas:
-            ws.dump(data_nez[stas.index('II.OBN'), 0], '../ii_obn_n.npy')
-            ws.dump(data_nez[stas.index('II.OBN'), 1], '../ii_obn_e.npy')
-            ws.dump(data_nez2[stas.index('II.OBN'), 0], '../ii_obn_n2.npy')
-            ws.dump(data_nez2[stas.index('II.OBN'), 1], '../ii_obn_e2.npy')
-
-            ws.dump(data_rtz[stas.index('II.OBN'), 0], '../ii_obn_r.npy')
-            ws.dump(data_rtz[stas.index('II.OBN'), 1], '../ii_obn_t.npy')
-            ws.dump(data_rtz[stas.index('II.OBN'), 2], '../ii_obn_z.npy')
+        if 'IU.PET' in stas:
+            ws.dump(data_nez[stas.index('IU.PET'), 0], '../iu_pet_n.npy')
+            ws.dump(data_nez[stas.index('IU.PET'), 1], '../iu_pet_e.npy')
+            ws.dump(data_nez2[stas.index('IU.PET'), 0], '../iu_petn2.npy')
+            ws.dump(data_nez2[stas.index('IU.PET'), 1], '../iu_pete2.npy')
+            ws.dump(data_nez2[stas.index('IU.PET'), 2], '../iu_petz2.npy')
+            ws.dump(data_rtz[stas.index('IU.PET'), 0], '../iu_pet_r.npy')
+            ws.dump(data_rtz[stas.index('IU.PET'), 1], '../iu_pet_t.npy')
+            ws.dump(data_rtz[stas.index('IU.PET'), 2], '../iu_pet_z.npy')
         # print(stats['cmps'])
 
     #     # rotate frequencies
