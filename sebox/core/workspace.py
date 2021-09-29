@@ -237,9 +237,16 @@ class Workspace(Directory):
             
             self._starttime = None
             self._err = e
-            root.job_failed = True
 
             print(format_exc(), file=stderr)
+
+            if err or root.job_debug:
+                # job failed twice or job in debug mode
+                root.job_aborted = True
+            
+            else:
+                # job failed in its first attempt
+                root.job_failed = True
         
         else:
             self._endtime = time()
@@ -277,7 +284,7 @@ class Workspace(Directory):
                 await wss[0].run()
 
             # exit if any error occurs
-            if root.job_failed:
+            if root.job_failed or root.job_aborted:
                 break
     
     def update(self, items: dict):

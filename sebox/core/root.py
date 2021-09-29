@@ -33,7 +33,7 @@ class Root(Workspace):
     job_failed: bool
 
     # any task failed twice during execution
-    job_resumed: bool
+    job_aborted: bool
 
     # paused due to insuffcient time
     job_paused: bool
@@ -78,10 +78,8 @@ class Root(Workspace):
     async def run(self):
         """Run main task."""
         self.restore()
-
-        if self.job_failed:
-            self.job_resumed = True
-            self.job_failed = False
+        self.job_failed = False
+        self.job_aborted = False
 
         # requeue before job gets killed
         if not self.job_debug:
@@ -91,7 +89,7 @@ class Root(Workspace):
         await super().run()
 
         # requeue job if task failed
-        if self.job_failed and not self.job_resumed and not self.job_debug:
+        if self.job_failed and not self.job_aborted and not self.job_debug:
             self.sys.requeue()
     
     def save(self):
@@ -126,9 +124,10 @@ class Root(Workspace):
     
     def _signal(self, *_):
         """Requeue due to insufficient time."""
-        self.job_paused = True
-        self.save()
-        self.sys.requeue()
+        if not self.job_aborted:
+            self.job_paused = True
+            self.save()
+            self.sys.requeue()
 
 
 # create root workspace
