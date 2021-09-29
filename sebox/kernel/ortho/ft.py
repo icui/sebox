@@ -79,9 +79,9 @@ def _ft(ws: FT, stas: tp.List[str]):
         if 'IU.PET' in stas:
             ws.dump(data_nez[stas.index('IU.PET'), 0], '../iu_pet_n.npy')
             ws.dump(data_nez[stas.index('IU.PET'), 1], '../iu_pet_e.npy')
-            ws.dump(data_nez2[stas.index('IU.PET'), 0], '../iu_petn2.npy')
-            ws.dump(data_nez2[stas.index('IU.PET'), 1], '../iu_pete2.npy')
-            ws.dump(data_nez2[stas.index('IU.PET'), 2], '../iu_petz2.npy')
+            ws.dump(data_nez2[stas.index('IU.PET'), 0], '../iu_pet_n2.npy')
+            ws.dump(data_nez2[stas.index('IU.PET'), 1], '../iu_pet_e2.npy')
+            ws.dump(data_nez2[stas.index('IU.PET'), 2], '../iu_pet_z2.npy')
             ws.dump(data_rtz[stas.index('IU.PET'), 0], '../iu_pet_r.npy')
             ws.dump(data_rtz[stas.index('IU.PET'), 1], '../iu_pet_t.npy')
             ws.dump(data_rtz[stas.index('IU.PET'), 2], '../iu_pet_z.npy')
