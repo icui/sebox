@@ -198,8 +198,8 @@ def _encode_events(ws: Kernel):
 
 
 def _encode(ws: Kernel):
-    ws.add(_enc_obs)
-    ws.add(_enc_diff)
+    ws.add('enc_obs', _enc_obs)
+    ws.add('enc_diff', _enc_diff)
 
 
 async def _enc_obs(ws: Kernel):
