@@ -30,6 +30,7 @@ async def scatter_baz(ws: Kernel):
 
 def _compute_baz(ws: Kernel, stas: tp.List[str]):
     import numpy as np
+    from math import radians
     from obspy.geodetics import gps2dist_azimuth
     from sebox.mpi import pid
 
@@ -42,7 +43,7 @@ def _compute_baz(ws: Kernel, stas: tp.List[str]):
 
         for i, sta in enumerate(stas):
             slat, slon = locate_station(sta)
-            baz[event][i] = gps2dist_azimuth(elat, elon, slat, slon)[2]
+            baz[event][i] = radians(gps2dist_azimuth(elat, elon, slat, slon)[2])
 
     getdir().dump(baz, f'baz_p{root.task_nprocs}/{pid}.pickle')
 
