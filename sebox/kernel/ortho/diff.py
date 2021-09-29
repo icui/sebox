@@ -39,7 +39,6 @@ async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
 
     if ws.double_difference:
         # unwrap or clip phases
-        nsta = len(getstations())
         phase_sum = sum(comm.allgather(phase_diff.sum(axis=0)))
         amp_sum = sum(comm.allgather(amp_diff.sum(axis=0)))
         npairs = sum(comm.allgather(np.invert(np.isnan(phase_diff)).astype(int).sum(axis=0)))
