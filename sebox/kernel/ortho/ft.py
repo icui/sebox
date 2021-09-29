@@ -71,7 +71,7 @@ def _ft(ws: FT, stas: tp.List[str]):
     if ws.ft_event is None:
         data_nez = ft_syn(ws, data)
         data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
-        ws.dump(data_rtz, f'{ws.path_output}/{pid}.npy', mkdir=False)
+        ws.dump(data_rtz, ws.rel(f'{ws.path_output}/{pid}.npy'), mkdir=False)
 
 def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
     import numpy as np
