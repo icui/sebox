@@ -22,10 +22,10 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
         print(pid, stas.index('II.OBN'))
 
     # read data
-    syn = ws.load(f'enc_syn/{pid}.pickle')
-    obs = ws.load(f'enc_obs/{pid}.pickle')
-    ref = ws.load(f'enc_diff/{pid}.pickle')
-    weight = ws.load(f'enc_weight/{pid}.pickle')
+    syn = ws.load(f'enc_syn/{pid}.npy')
+    obs = ws.load(f'enc_obs/{pid}.npy')
+    ref = ws.load(f'enc_diff/{pid}.npy')
+    weight = ws.load(f'enc_weight/{pid}.npy')
 
     # compute diff
     phase_diff = np.angle(syn / obs) * weight
