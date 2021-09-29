@@ -13,6 +13,7 @@ async def diff(ws: Kernel):
     ws.mkdir('adjoint')
     stas = getstations()
     await ws.mpiexec(_diff, arg=(ws, len(stas)), arg_mpi=stas)
+    ws.add(_gather)
     exit()
 
 
@@ -39,8 +40,8 @@ async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
 
     if ws.double_difference:
         # unwrap or clip phases
-        phase_sum = sum(comm.allgather(phase_diff.sum(axis=0)))
-        amp_sum = sum(comm.allgather(amp_diff.sum(axis=0)))
+        phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
+        amp_sum = sum(comm.allgather(np.nansum(amp_diff, axis=0)))
         npairs = sum(comm.allgather(np.invert(np.isnan(phase_diff)).astype(int).sum(axis=0)))
 
         # sum of phase and amplitude differences
@@ -51,8 +52,6 @@ async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
         if 'II.OBN' in stas:
             print('II.OBN', nsta)
             print(np.nanmax(phase_sum), np.nanmax(amp_sum))
-            print(npairs.max())
-            print(npairs.sum(axis=0))
 
     # apply measurement weightings
     omega = np.arange(ws.imin, ws.imax) / ws.imin
@@ -104,3 +103,7 @@ async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
         ws.dump(adstf, f'adjoint/{pid}.npy', mkdir=False)
+
+
+def _gather(ws: Kernel):
+    pass
