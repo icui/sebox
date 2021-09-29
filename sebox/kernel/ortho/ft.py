@@ -60,7 +60,14 @@ def _ft(ws: Kernel, stas: tp.List[str]):
         data_nez = ft_syn(ws, data)
         data_rtz = rotate_frequencies(ws, data_nez, stas, stats['cmps'], True)
 
+        data_nez2 = rotate_frequencies(ws, data_rtz, stas, stats['cmps'], False)
+
         if 'II.OBN' in stas:
+            ws.dump(data_nez[stas.index('II.OBN'), 0], '../ii_obn_n.npy')
+            ws.dump(data_nez[stas.index('II.OBN'), 1], '../ii_obn_e.npy')
+            ws.dump(data_nez2[stas.index('II.OBN'), 0], '../ii_obn_n2.npy')
+            ws.dump(data_nez2[stas.index('II.OBN'), 1], '../ii_obn_e2.npy')
+
             ws.dump(data_rtz[stas.index('II.OBN'), 0], '../ii_obn_r.npy')
             ws.dump(data_rtz[stas.index('II.OBN'), 1], '../ii_obn_t.npy')
             ws.dump(data_rtz[stas.index('II.OBN'), 2], '../ii_obn_z.npy')
@@ -79,7 +86,7 @@ def _ft(ws: Kernel, stas: tp.List[str]):
 
     # return output
 
-def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.Tuple[str, str, str], direction: bool = True):
+def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.Tuple[str, str, str], direction: bool):
     import numpy as np
     from sebox.mpi import pid
 
@@ -105,7 +112,7 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
                 n = data[:, n_i, slot]
                 e = data[:, e_i, slot]
                 data_rot[:, r_i, slot] = - e * np.sin(ba) - n * np.cos(ba)
-                data_rot[:, t_i, slot] = - e * np.sin(ba) - n * np.cos(ba)
+                data_rot[:, t_i, slot] = - e * np.cos(ba) + n * np.sin(ba)
             
             else:
                 # rotate from RT to NE
@@ -113,6 +120,6 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
                 r = data[:, r_i, slot]
                 t = data[:, t_i, slot]
                 data_rot[:, n_i, slot] = - r * np.sin(ba) - t * np.cos(ba)
-                data_rot[:, e_i, slot] = - r * np.sin(ba) - t * np.cos(ba)
+                data_rot[:, e_i, slot] = - r * np.cos(ba) + t * np.cos(ba)
             
     return data_rot
