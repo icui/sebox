@@ -209,6 +209,7 @@ async def _enc_obs(ws: Kernel):
 
 async def _enc_diff(ws: Kernel):
     ws.mkdir()
+    ws.mkdir('enc_weight')
     await ws.mpiexec(_encode_diff, arg=ws, arg_mpi=getstations())
 
 
