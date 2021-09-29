@@ -110,39 +110,30 @@ def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, st
 
     if direction:
         # rotate from NE to RT
-        data_rot[:, cmps_rt.index('Z'), :] = data[:, cmps_ne.index('Z'), :]
+        cmps_from = cmps_ne
+        cmps_to = cmps_rt
+        c1, c2 = cmps_ne.index('N'), cmps_ne.index('E')
+        c3, c4 = cmps_rt.index('R'), cmps_rt.index('T')
     
     else:
         # rotate from RT to NE
-        data_rot[:, cmps_ne.index('Z'), :] = data[:, cmps_rt.index('Z'), :]
+        cmps_from = cmps_rt
+        cmps_to = cmps_ne
+        c1, c2 = cmps_rt.index('R'), cmps_rt.index('T')
+        c3, c4 = cmps_ne.index('N'), cmps_ne.index('E')
 
-    n_i = cmps_ne.index('N')
-    e_i = cmps_ne.index('E')
-    r_i = cmps_rt.index('R')
-    t_i = cmps_rt.index('T')
+    data_rot[:, cmps_from.index('Z'), :] = data[:, cmps_to.index('Z'), :]
 
     for event, slots in ws.fslots.items():
         if len(slots) == 0:
             continue
         
-        if direction:
-            # rotate from NE to RT
-            ba = baz[event]
+        ba = baz[event] if direction else 2 * np.pi - baz[event]
 
-            for slot in slots:
-                n = data[:, n_i, slot]
-                e = data[:, e_i, slot]
-                data_rot[:, r_i, slot] = - e * np.sin(ba) - n * np.cos(ba)
-                data_rot[:, t_i, slot] = - e * np.cos(ba) + n * np.sin(ba)
-        
-        else:
-            # rotate from RT to NE
-            ba = 2 * np.pi - baz[event]
-
-            for slot in slots:
-                r = data[:, r_i, slot]
-                t = data[:, t_i, slot]
-                data_rot[:, n_i, slot] = - t * np.sin(ba) - r * np.cos(ba)
-                data_rot[:, e_i, slot] = - t * np.cos(ba) + r * np.sin(ba)
+        for slot in slots:
+            a = data[:, c1, slot]
+            b = data[:, c2, slot]
+            data_rot[:, c3, slot] = - b * np.sin(ba) - a * np.cos(ba)
+            data_rot[:, c4, slot] = - b * np.cos(ba) + a * np.sin(ba)
             
     return data_rot
