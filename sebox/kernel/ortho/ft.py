@@ -44,7 +44,7 @@ def ft_obs(ws: Kernel, data: ndarray):
 
 async def ft(ws: FT):
     # load trace parameters
-    ws.mkdir(ws.path_output)
+    ws.mkdir(ws.rel(ws.path_output))
     await ws.mpiexec(_ft, arg=ws, arg_mpi=getstations())
 
 
@@ -72,33 +72,6 @@ def _ft(ws: FT, stas: tp.List[str]):
         data_nez = ft_syn(ws, data)
         data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
         ws.dump(data_rtz, f'{ws.path_output}/{pid}.npy', mkdir=False)
-
-        ######
-        data_nez2 = rotate_frequencies(ws, data_rtz, stats['cmps'], False)
-
-        if 'II.OBN' in stas:
-            ws.dump(data_nez[stas.index('II.OBN'), 0], '../iu_pet_n.npy')
-            ws.dump(data_nez[stas.index('II.OBN'), 1], '../iu_pet_e.npy')
-            ws.dump(data_nez2[stas.index('II.OBN'), 0], '../iu_pet_n2.npy')
-            ws.dump(data_nez2[stas.index('II.OBN'), 1], '../iu_pet_e2.npy')
-            ws.dump(data_nez2[stas.index('II.OBN'), 2], '../iu_pet_z2.npy')
-            ws.dump(data_rtz[stas.index('II.OBN'), 0], '../iu_pet_r.npy')
-            ws.dump(data_rtz[stas.index('II.OBN'), 1], '../iu_pet_t.npy')
-            ws.dump(data_rtz[stas.index('II.OBN'), 2], '../iu_pet_z.npy')
-        # print(stats['cmps'])
-
-    #     # rotate frequencies
-    #     output_rtz = rotate_frequencies(output_nez, self.fslots, params, station, inv)
-    #     output = {}
-
-    #     for cmp, data in output_rtz.items():
-    #         output[f'MX{cmp}'] = data, params
-    
-    # else:
-    #     for trace in stream:
-    #         output[f'MX{trace.stats.component}'] = self._ft_obs(trace.data), params
-
-    # return output
 
 def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
     import numpy as np
