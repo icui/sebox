@@ -16,7 +16,7 @@ async def diff(ws: Kernel):
     exit()
 
 
-async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
+async def _diff(arg: tp.Tuple['Kernel', int], stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from scipy.signal import resample
