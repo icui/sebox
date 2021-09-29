@@ -3,7 +3,7 @@ import typing as tp
 
 from sebox import root
 from sebox.utils.catalog import getdir
-from .catalog import merge, scatter_obs, scatter_diff
+from .catalog import merge, scatter_obs, scatter_diff, scatter_baz
 from .encoding import encode_obs, encode_diff
 from .preprocess import prepare_frequencies, encode_events, link_observed
 from .ft import ft
@@ -40,6 +40,10 @@ def _compute(ws: Kernel, misfit_only: bool):
     # convert differences between observed and synthetic data into MPI format
     if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
         cat.add(scatter_diff, concurrent=True)
+    
+    # compute back-azimuth
+    if not cdir.has(f'baz_p{root.task_nprocs}'):
+        cat.add(scatter_baz, concurrent=True)
 
     # mesher and preprocessing
     pre = ws.add('preprocess', concurrent=True, target=ws)

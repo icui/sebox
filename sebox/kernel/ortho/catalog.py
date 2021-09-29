@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, merge_stations
+from sebox.utils.catalog import getdir, getevents, getstations, merge_stations, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
     from .typing import Kernel
@@ -21,6 +21,30 @@ def scatter_obs(ws: Kernel):
 def scatter_diff(ws: Kernel):
     """Convert ASDF diff data to MPI format."""
     _scatter(ws, 'diff')
+
+
+async def scatter_baz(ws: Kernel):
+    """Compute back azimuth."""
+    await ws.mpiexec(_compute_baz, arg=ws, arg_mpi=getstations())
+
+
+def _compute_baz(ws: Kernel, stas: tp.List[str]):
+    import numpy as np
+    from obspy.geodetics import gps2dist_azimuth
+    from sebox.mpi import pid
+
+    root.restore(ws)
+    baz = {}
+
+    for event in getevents():
+        elat, elon = locate_event(event)
+        baz[event] = np.zeros(len(stas))
+
+        for i, sta in enumerate(stas):
+            slat, slon = locate_station(sta)
+            baz[event][i] = gps2dist_azimuth(elat, elon, slat, slon)[2]
+
+    getdir().dump(baz, f'baz_p{root.task_nprocs}/{pid}.pickle')
 
 
 def _scatter(ws: Kernel, tag: tp.Literal['obs', 'diff']):
