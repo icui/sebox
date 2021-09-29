@@ -8,16 +8,6 @@ if tp.TYPE_CHECKING:
     from numpy import ndarray
     from .typing import Kernel
 
-    class FT(Kernel):
-        # input time domain trace data
-        path_input: str
-
-        # output frequencies
-        path_output: str
-
-        # event being processed (none for source-encoded event)
-        ft_event: tp.Optional[str]
-
 
 def ft_syn(ws: Kernel, data: ndarray):
     from scipy.fft import fft
@@ -42,24 +32,20 @@ def ft_obs(ws: Kernel, data: ndarray):
     return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
 
 
-async def ft(ws: FT):
+async def ft(ws: Kernel):
     # load trace parameters
-    ws.mkdir(ws.rel(ws.path_output))
+    ws.mkdir('enc_syn')
     await ws.mpiexec(_ft, arg=ws, arg_mpi=getstations())
 
 
-def _ft(ws: FT, stas: tp.List[str]):
+def _ft(ws: Kernel, stas: tp.List[str]):
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
 
     root.restore(ws)
-    d = Directory(ws.path_input)
-    stats = d.load('stats.pickle')
-    data = d.load(f'{pid}.npy')
-
-    if 'II.OBN' in stas:
-        ws.dump(data[stas.index('II.OBN'), 2], '../ii_obn.npy')
+    stats = ws.load('forward/traces/stats.pickle')
+    data = ws.load(f'forward/traces{pid}.npy')
     
     # resample if necessary
     if not np.isclose(stats['dt'], ws.dt):
@@ -68,10 +54,10 @@ def _ft(ws: FT, stas: tp.List[str]):
         resample(data, int(round(stats['nt'] * stats['dt'] / ws.dt)), axis=-1)
 
     # FFT
-    if ws.ft_event is None:
-        data_nez = ft_syn(ws, data)
-        data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
-        ws.dump(data_rtz, ws.rel(f'{ws.path_output}/{pid}.npy'), mkdir=False)
+    data_nez = ft_syn(ws, data)
+    data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
+    ws.dump(data_rtz, f'enc_syn/{pid}.npy', mkdir=False)
+
 
 def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
     import numpy as np

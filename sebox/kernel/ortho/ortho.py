@@ -6,6 +6,7 @@ from sebox.utils.catalog import getdir
 from .catalog import merge, scatter_obs, scatter_diff, scatter_baz
 from .preprocess import prepare_encoding
 from .ft import ft
+from .diff import diff
 
 if tp.TYPE_CHECKING:
     from .typing import Kernel
@@ -84,6 +85,12 @@ def _compute_kernel(ws: Kernel):
         save_forward= True)
     
     # process traces
-    ws.add(ft, ft_event=None,
-        path_input=ws.path('forward/traces'),
-        path_output=ws.path('enc_syn'))
+    ws.add(ft)
+    
+    # process traces
+    ws.add(diff)
+
+    # forward simulation
+    ws.add('adjoint', ('module:solver', 'adjoint'),
+        path_forward = ws.path('forward'),
+        path_misfit = ws.path('adjoint.h5'))
