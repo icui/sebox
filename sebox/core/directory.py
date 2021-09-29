@@ -199,6 +199,6 @@ class Directory:
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
         
-        print(arg, arg_mpi)
+        print(nprocs)
         
         await mpiexec(self, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi)
