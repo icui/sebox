@@ -38,8 +38,10 @@ async def ft(ws: Kernel):
 
 def _ft(ws: Kernel, stas: tp.List[str]):
     import numpy as np
+    from sebox import root
     from sebox.mpi import pid
 
+    root.restore(ws)
     stats = ws.load('forward/traces/stats.pickle')
     data = ws.load(f'forward/traces/{pid}.npy')
 
