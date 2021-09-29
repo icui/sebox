@@ -81,8 +81,6 @@ def _ft(ws: Kernel, stas: tp.List[str]):
 
 def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.Tuple[str, str, str], direction: bool = True):
     import numpy as np
-    from obspy.signal.rotate import rotate_ne_rt, rotate_rt_ne
-    from obspy.geodetics import gps2dist_azimuth
     from sebox.mpi import pid
 
     cmps_rt = getcomponents()
@@ -95,6 +93,8 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
     t_i = cmps_rt.index('T')
 
     for event, slots in ws.fslots.items():
+        ba = baz[event]
+
         if len(slots) == 0:
             continue
         
@@ -103,12 +103,15 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
                 # rotate from NE to RT
                 n = data[:, n_i, slot]
                 e = data[:, e_i, slot]
-                r, t = rotate_ne_rt(n, e, baz[event])
-                data_rot[:, r_i, slot] = r
-                data_rot[:, t_i, slot] = t
+                data_rot[:, r_i, slot] = - e * np.sin(ba) - n * np.cos(ba)
+                data_rot[:, t_i, slot] = - e * np.sin(ba) - n * np.cos(ba)
             
             else:
                 # rotate from RT to NE
-                pass
+                ba = 2 * np.pi - ba
+                r = data[:, r_i, slot]
+                t = data[:, t_i, slot]
+                data_rot[:, n_i, slot] = - r * np.sin(ba) - t * np.cos(ba)
+                data_rot[:, e_i, slot] = - r * np.sin(ba) - t * np.cos(ba)
             
     return data_rot
