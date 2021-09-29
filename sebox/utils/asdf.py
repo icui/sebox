@@ -75,13 +75,7 @@ def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
             aux = None
             tags = ds.waveforms.list()
 
-        # stationXML data
-        invs = []
-
         for i, sta in enumerate(stas):
-            if cha is None:
-                invs.append(ds.waveforms[sta].StationXML)
-
             for j, cmp in enumerate(cmps):
                 if cha is not None:
                     tag = sta.replace('.', '_') + f'_{cha}{cmp}'
@@ -94,9 +88,6 @@ def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
         
         d = Directory(dst)
         d.dump(data, f'{pid}.npy', mkdir=False)
-
-        if cha is None:
-            d.dump(invs, f'{pid}_inv.pickle', mkdir=False)
 
 
 async def scatter(ws: Convert):

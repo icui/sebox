@@ -1,7 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox.utils.catalog import getstations, getcomponents, locate_event
+from sebox.utils.catalog import getstations, getcomponents, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -60,7 +60,9 @@ def _ft(ws: Kernel, stas: tp.List[str]):
         data_rtz = rotate_frequencies(ws, data_nez, stas, stats['cmps'], True)
 
         if 'II.OBN' in stas:
-            ws.dump(data_rtz[stas.index('II.OBN'), 2], '../ii_obn_rot.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 0], '../ii_obn_r.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 1], '../ii_obn_t.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 2], '../ii_obn_z.npy')
         # print(stats['cmps'])
 
     #     # rotate frequencies
@@ -78,43 +80,33 @@ def _ft(ws: Kernel, stas: tp.List[str]):
 
 def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.Tuple[str, str, str], direction: bool = True):
     import numpy as np
-    from obspy import Stream, Trace
-    from pytomo3d.signal.process import rotate_stream
-    from sebox.mpi import pid
+    from obspy.signal.rotate import rotate_ne_rt, rotate_rt_ne
+    from obspy.geodetics import gps2dist_azimuth
 
-    data_rot = np.zeros(data.shape)
-    invs = ws.load(f'forward/traces/{pid}_inv.pickle')
-
-    if direction:
-        mode = 'NE->RT'
-        cmps_from = cmps
-        cmps_to = getcomponents()
-    
-    else:
-        mode = 'RT->NE'
-        cmps_from = getcomponents()
-        cmps_to = cmps
+    cmps_rt = getcomponents()
+    data_rot = np.zeros(data.shape, dtype=complex)
 
     for i, sta in enumerate(stas):
         for event, slots in ws.fslots.items():
             if len(slots) == 0:
                 continue
-
-            # frequency domain traces of current event
-            traces = []
-            n, s = sta.split('.')
             
-            for j, cmp in enumerate(cmps_from):
-                traces.append(Trace(data[i, j, slots], {
-                    'component': cmp, 'channel': f'MX{cmp}', 'delta': ws.dt,
-                    'network': n, 'station': s, 'location': 'S3'
-                }))
+            # location events and stations
+            elat, elon = locate_event(event)
+            slat, slon = locate_station(sta)
+            _, _, baz = gps2dist_azimuth(elat, elon, slat, slon)
 
-            # rotate frequencies
-            lat, lon = locate_event(event)
-            stream = rotate_stream(Stream(traces), lat, lon, invs[i], mode=mode)
-
-            for j, cmp in enumerate(cmps_to):
-                data_rot[i, j, slots] = stream.select(component=cmp)[0].data # type: ignore
+            if direction:
+                # rotate from NE to RT
+                n = data[i, cmps.index('N'), slots]
+                e = data[i, cmps.index('E'), slots]
+                r, t = rotate_ne_rt(n, e, baz)
+                data_rot[i, cmps_rt.index('R'), slots] = r
+                data_rot[i, cmps_rt.index('T'), slots] = t
+            
+            else:
+                # rotate from RT to NE
+                pass
+            
 
     return data_rot
