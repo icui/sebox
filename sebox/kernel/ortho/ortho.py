@@ -24,11 +24,10 @@ def misfit(ws: Kernel):
 
 def _compute(ws: Kernel, misfit_only: bool):
     # prepare catalog (executed only once for a catalog)
-    cdir = getdir()
     ws.add('catalog', _catalog, concurrent=True)
 
     # mesher and preprocessing
-    ws.pre = ws.add('preprocess', _preprocess, concurrent=True, target=ws)
+    ws.pre = ws.add('preprocess', _preprocess, concurrent=True, kls={})
 
     # kernel computation
     ws.add('main', _main, concurrent=True, target=ws)
@@ -63,7 +62,8 @@ def _preprocess(ws: Kernel):
 
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        kl = ws.add(f'kl_{iker:02d}', iker=iker)
+        kl = ws.add(f'../kl_{iker:02d}', iker=iker)
+        tp.cast(tp.Any, ws.kls)[iker] = kl
 
         # determine frequency range
         kl.add(prepare_frequencies, target=kl)
@@ -86,7 +86,7 @@ def _main(ws: Kernel):
     cdir = getdir()
 
     for iker in range(ws.nkernels or 1):
-        kl = ws.add(f'kl_{iker:02d}', inherit=tp.cast(tp.Any, ws.pre)[iker])
+        kl = ws.add(f'kl_{iker:02d}', inherit=tp.cast(tp.Any, ws.pre).kls[iker])
 
         # forward simulation
         kl.add('forward', ('module:solver', 'forward'),
