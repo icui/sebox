@@ -4,6 +4,7 @@ import typing as tp
 if tp.TYPE_CHECKING:
     from .typing import Kernel
 
+from sebox import root
 from sebox.utils.catalog import getstations
 from .ft import rotate_frequencies
 
@@ -11,20 +12,18 @@ from .ft import rotate_frequencies
 async def diff(ws: Kernel):
     ws.mkdir('misfit')
     ws.mkdir('adjoint')
-    stas = getstations()
-    await ws.mpiexec(_diff, arg=(ws, len(stas)), arg_mpi=stas)
+    await ws.mpiexec(_diff, arg=ws, arg_mpi=getstations())
     ws.add(_gather)
     exit()
 
 
-async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
+async def _diff(ws: Kernel, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
-    from scipy.signal import resample
     from sebox.mpi import pid
     from mpi4py.MPI import COMM_WORLD as comm
 
-    ws, nsta = arg
+    root.restore(ws)
 
     # read data
     stats = ws.load('forward/traces/stats.pickle')
@@ -39,6 +38,8 @@ async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
     amp_diff = np.log(np.abs(syn) / np.abs(obs) * weight)
 
     if ws.double_difference:
+        nsta = len(getstations())
+        
         # unwrap or clip phases
         phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
         amp_sum = sum(comm.allgather(np.nansum(amp_diff, axis=0)))
