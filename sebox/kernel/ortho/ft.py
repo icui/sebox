@@ -100,6 +100,8 @@ def rotate_frequencies(ws: Kernel, data: ndarray, stas: tp.List[str], cmps: tp.T
     r_i = cmps_rt.index('R')
     t_i = cmps_rt.index('T')
 
+    print(n_i, e_i, r_i, t_i)
+
     for event, slots in ws.fslots.items():
         ba = baz[event]
 
