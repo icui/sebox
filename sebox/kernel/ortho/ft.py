@@ -2,19 +2,29 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root, Directory
-from sebox.utils.catalog import getdir, getstations, getcomponents, locate_event, locate_station
+from sebox.utils.catalog import getdir, getstations, getcomponents
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
     from .typing import Kernel
 
+    class FT(Kernel):
+        # input time domain trace data
+        path_input: str
 
-def ft_syn(ws: Kernel, data: ndarray):
+        # output frequencies
+        path_output: str
+
+        # event being processed (none for source-encoded event)
+        ft_event: tp.Optional[str]
+
+
+def ft_syn(ws: FT, data: ndarray):
     from scipy.fft import fft
     return fft(data[..., ws.nt_ts: ws.nt_ts + ws.nt_se])[..., ws.imin: ws.imax] # type: ignore
 
 
-def ft_obs(ws: Kernel, data: ndarray):
+def ft_obs(ws: FT, data: ndarray):
     import numpy as np
     from scipy.fft import fft
 
@@ -32,18 +42,19 @@ def ft_obs(ws: Kernel, data: ndarray):
     return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
 
 
-async def ft(ws: Kernel):
+async def ft(ws: FT):
     # load trace parameters
+    ws.mkdir(ws.path_output)
     await ws.mpiexec(_ft, arg=ws, arg_mpi=getstations())
 
 
-def _ft(ws: Kernel, stas: tp.List[str]):
+def _ft(ws: FT, stas: tp.List[str]):
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
 
     root.restore(ws)
-    d = Directory(tp.cast(str, ws.path_traces))
+    d = Directory(ws.path_input)
     stats = d.load('stats.pickle')
     data = d.load(f'{pid}.npy')
 
@@ -60,6 +71,9 @@ def _ft(ws: Kernel, stas: tp.List[str]):
     if ws.ft_event is None:
         data_nez = ft_syn(ws, data)
         data_rtz = rotate_frequencies(ws, data_nez, stas, stats['cmps'], True)
+        ws.dump(data_rtz, f'{ws.path_output}/{pid}.npy', mkdir=False)
+
+        ######
         data_nez2 = rotate_frequencies(ws, data_rtz, stas, stats['cmps'], False)
 
         if 'IU.PET' in stas:
