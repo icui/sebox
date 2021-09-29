@@ -197,15 +197,19 @@ def _encode_events(ws: Kernel):
     ws.write(cmt, 'SUPERSOURCE')
 
 
-async def _encode(ws: Kernel):
-    from functools import partial
+def _encode(ws: Kernel):
+    ws.add(_enc_obs)
+    ws.add(_enc_diff)
 
-    stas = getstations()
-    ws.mkdir('enc_obs')
-    ws.mkdir('enc_syn')
 
-    ws.add('enc_obs', partial(ws.mpiexec, _encode_obs, arg=ws, arg_mpi=stas))
-    ws.add('enc_syn', partial(ws.mpiexec, _encode_diff, arg=ws, arg_mpi=stas))
+async def _enc_obs(ws: Kernel):
+    ws.mkdir()
+    await ws.mpiexec(_encode_obs, arg=ws, arg_mpi=getstations())
+
+
+async def _enc_diff(ws: Kernel):
+    ws.mkdir()
+    await ws.mpiexec(_encode_diff, arg=ws, arg_mpi=getstations())
 
 
 def _encode_obs(ws: Kernel, stas: tp.List[str]):
