@@ -33,12 +33,9 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
     amp_diff = np.abs(syn) / np.abs(obs) * weight
 
     # unwrap or clip phases
-    shape = phase_diff.shape
-    nsta = len(getstations())
-    phase_gather = np.zeros([nsta, shape[1], shape[2]], dtype=phase_diff.dtype)
-    comm.allgather(phase_diff, phase_gather)
+    phase_gather = comm.allgather(phase_diff)
 
     if 'II.OBN' in stas:
         print('@', phase_diff.shape)
-        print('@', phase_gather.shape)
+        print('@', phase_gather)
 
