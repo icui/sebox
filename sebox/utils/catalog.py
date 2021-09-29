@@ -287,3 +287,28 @@ def extract_stations(d: Directory, dst: Directory):
                 _format_station(lines, ll)
         
         dst.writelines(lines.values(), fname)
+
+
+def locate_event(event: str, depth: bool = False) -> tp.List[float]:
+    """Get event latitude and longitide."""
+    cache = root.cache
+
+    if 'event_locations' not in cache:
+        cache['event_locations'] = getdir().load('event_data.pickle')
+    
+    loc = cache['event_locations'][event]
+
+    if depth:
+        return loc
+    
+    return loc[:2]
+
+
+def locate_station(station: str) -> tp.Tuple[float, float]:
+    """Get station latitude and longitide."""
+    cache = root.cache
+
+    if 'station_locations' not in cache:
+        cache['station_locations'] = getdir().load('station_locations.pickle')
+
+    return cache['station_locations'][station]

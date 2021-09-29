@@ -85,4 +85,4 @@ def _compute(ws: Kernel, misfit_only: bool):
             save_forward= True)
         
         # process traces
-        kl.add(ft)
+        kl.add(ft, ft_event=None)
