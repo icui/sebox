@@ -11,16 +11,19 @@ from .ft import rotate_frequencies
 async def diff(ws: Kernel):
     ws.mkdir('misfit')
     ws.mkdir('adjoint')
-    await ws.mpiexec(_diff, arg=ws, arg_mpi=getstations())
+    stas = getstations()
+    await ws.mpiexec(_diff, arg=(ws, len(stas)), arg_mpi=stas)
     exit()
 
 
-async def _diff(ws: Kernel, stas: tp.List[str]):
+async def _diff(arg: tp.Tuple[Kernel, int], stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from scipy.signal import resample
     from sebox.mpi import pid
     from mpi4py.MPI import COMM_WORLD as comm
+
+    ws, nsta = arg
 
     # read data
     stats = ws.load('forward/traces/stats.pickle')
