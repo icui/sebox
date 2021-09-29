@@ -77,14 +77,14 @@ def _ft(ws: FT, stas: tp.List[str]):
         data_nez2 = rotate_frequencies(ws, data_rtz, stats['cmps'], False)
 
         if 'IU.PET' in stas:
-            ws.dump(data_nez[stas.index('IU.PET'), 0], '../iu_pet_n.npy')
-            ws.dump(data_nez[stas.index('IU.PET'), 1], '../iu_pet_e.npy')
-            ws.dump(data_nez2[stas.index('IU.PET'), 0], '../iu_pet_n2.npy')
-            ws.dump(data_nez2[stas.index('IU.PET'), 1], '../iu_pet_e2.npy')
-            ws.dump(data_nez2[stas.index('IU.PET'), 2], '../iu_pet_z2.npy')
-            ws.dump(data_rtz[stas.index('IU.PET'), 0], '../iu_pet_r.npy')
-            ws.dump(data_rtz[stas.index('IU.PET'), 1], '../iu_pet_t.npy')
-            ws.dump(data_rtz[stas.index('IU.PET'), 2], '../iu_pet_z.npy')
+            ws.dump(data_nez[stas.index('II.OBN'), 0], '../iu_pet_n.npy')
+            ws.dump(data_nez[stas.index('II.OBN'), 1], '../iu_pet_e.npy')
+            ws.dump(data_nez2[stas.index('II.OBN'), 0], '../iu_pet_n2.npy')
+            ws.dump(data_nez2[stas.index('II.OBN'), 1], '../iu_pet_e2.npy')
+            ws.dump(data_nez2[stas.index('II.OBN'), 2], '../iu_pet_z2.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 0], '../iu_pet_r.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 1], '../iu_pet_t.npy')
+            ws.dump(data_rtz[stas.index('II.OBN'), 2], '../iu_pet_z.npy')
         # print(stats['cmps'])
 
     #     # rotate frequencies
