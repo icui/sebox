@@ -51,7 +51,7 @@ async def _xsmooth(kl: str, hess: bool, ws: Sum):
         rad = max(rad[1], rad[0] * rad[2] ** (ws.iteration or 0))
 
     if rad:
-        await ws.mpiexec(f'bin/xsmooth_laplacian_sem_adios  {rad} {rad*(ws.smooth_vertical or 1)} {kl} kernels.bp DATABASES_MPI/ {kl}_smooth.bp 1 660 > OUTPUT_FILES/smooth_{kl}.txt', getsize(ws))
+        await ws.mpiexec(f'bin/xsmooth_laplacian_sem_adios  {rad} {rad*(ws.smooth_vertical or 1)} {kl} kernels.bp DATABASES_MPI/ {kl}_smooth.bp 0 660 > OUTPUT_FILES/smooth_{kl}.txt', getsize(ws))
 
 
 def probe_smoother(kl: str, ws: Sum):
