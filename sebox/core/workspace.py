@@ -56,11 +56,21 @@ class Workspace(Directory):
             if isinstance(func, tuple) or isinstance(func, list):
                 return func[1]
 
+            args = []
+
             while isinstance(func, partial):
+                args = func.args
                 func = func.func
             
             if hasattr(func, '__name__'):
-                return func.__name__.lstrip('_')
+                if hasattr(func, '__name__'):
+                    pf = ''
+                    for arg in args:
+                        if isinstance(arg, str):
+                            pf = '_' + arg
+                            break
+
+                return func.__name__.lstrip('_') + pf
 
         return path.basename(self.path(abs=True))
 

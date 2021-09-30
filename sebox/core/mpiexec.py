@@ -34,14 +34,13 @@ def _dispatch(lock: asyncio.Lock, nnodes: int) -> bool:
 def _name(cmd: tp.Union[str, tp.Callable]) -> str:
     """Get file name to store pickled function and / or stdout."""
     if isinstance(cmd, str):
-        return 'mpiexec_' + cmd.split('/')[-1].split(' ')[0]
+        return 'mpiexec_' + cmd.split(' ')[0].split('/')[-1]
 
     func = cmd
 
     while isinstance(func, partial):
         func = func.func
-    
-    if hasattr(func, '__name__'):
+
         return 'mpiexec_' + func.__name__.lstrip('_')
     
     return 'mpiexec'
