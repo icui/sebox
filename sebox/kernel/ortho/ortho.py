@@ -93,4 +93,4 @@ def _compute_kernel(ws: Kernel):
     # forward simulation
     ws.add('adjoint', ('module:solver', 'adjoint'),
         path_forward = ws.path('forward'),
-        path_adjoint = ws.path('adjoint.h5'))
+        path_misfit = ws.path('adjoint.h5'))

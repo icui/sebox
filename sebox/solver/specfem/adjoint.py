@@ -14,7 +14,7 @@ def setup(ws: Adjoint):
     if not ws.path_forward:
         raise ValueError('forward solver not specified')
     
-    if not ws.path_adjoint:
+    if not ws.path_misfit:
         raise ValueError('adjoint source not specified')
 
     d = Directory(ws.path_forward)
