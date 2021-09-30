@@ -108,7 +108,7 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
 def _gather(ws: Kernel):
     from pyasdf import ASDFDataSet
 
-    with ASDFDataSet(ws.path('adjoint.h5'), mode='r', mpi=False) as ds:
+    with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
         for pid in ws.ls('adjoint'):
             adstf, stas, cmps = ws.load(f'adjoint/{pid}.pickle')
 
