@@ -99,5 +99,5 @@ def _compute_kernel(ws: Kernel):
         path_misfit = ws.path('adjoint.h5'))
 
 def _postprocess(ws: Kernel):
-    ws.add('sum', ('module:solver', 'sum'), path_kernels=[
+    ws.add('sum', ('module:solver', 'xsum'), path_kernels=[
         ws.path(f'kl_{iker:02d}/kernels.bp') for iker in range(ws.nkernels or 1)])
