@@ -20,7 +20,7 @@ def setup(ws: Sum):
     ws.write(f'{len(ws.path_kernels)}\n', 'path.txt')
 
     for kl in ws.path_kernels:
-        ws.write('1.0\n' + kl + '\n', 'path.txt', 'a')
+        ws.write('1.0\n' + ws.rel(kl) + '\n', 'path.txt', 'a')
 
 
 def xsum(ws: Sum):
