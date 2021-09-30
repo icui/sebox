@@ -14,6 +14,7 @@ def setup(ws: Sum):
     ws.ln(ws.rel(ws.path_mesh, 'DATA'))
     ws.ln(ws.rel(ws.path_mesh, 'OUTPUT_FILES'))
     ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI'))
+    ws.ln(ws.rel(ws.path_adios, 'bin'), 'bin_adios')
 
     # create text file with kernel paths
     ws.write(f'{len(ws.path_kernels)}\n', 'path.txt')
@@ -40,7 +41,7 @@ def _smooth(ws: Sum):
 
 
 async def _xsum(ws: Sum):
-    await ws.mpiexec(f'bin/xsum_kernels path.txt kernels.bp', getsize(ws))
+    await ws.mpiexec(f'bin_adios/xsum_kernels path.txt kernels.bp', getsize(ws))
 
 
 async def _xsmooth(ws: Sum, kl: str, hess: bool):
