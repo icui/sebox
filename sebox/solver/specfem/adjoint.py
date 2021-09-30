@@ -28,7 +28,7 @@ def setup(ws: Adjoint):
     # link files
     ws.ln(ws.rel(d.path('bin')))
     ws.ln(ws.rel(d.path('DATABASES_MPI')))
-    ws.ln(ws.rel(d.path('DATA/*'), 'DATA'))
+    ws.ln(ws.rel(d.path('DATA/*')), 'DATA')
     ws.ln(ws.rel(ws.path_misfit), 'SEM/adjoint.h5')
     ws.ln('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
 
