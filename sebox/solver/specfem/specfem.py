@@ -9,12 +9,10 @@ if tp.TYPE_CHECKING:
 
 
 async def _xspecfem(ws: Workspace):
-    """Call xspecfem3D."""
     await ws.mpiexec('bin/xspecfem3D', getsize(ws), 1)
 
 
 async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
-    """Call xmeshfem3D."""
     if ws.path_mesh:
         ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI')
     
@@ -152,25 +150,3 @@ def probe_solver(d: Directory) -> float:
                     return ceil(float(word)) / 100
 
     return 0.0
-
-
-def probe_smoother(d: Directory, hess: bool, ntotal: int):
-    """Prober of smoother progress."""
-    kind = 'smooth_' + ('hess' if hess else 'kl')
-
-    if ntotal and d.has(out := f'OUTPUT_FILES/{kind}.txt'):
-        n = 0
-
-        lines = d.readlines(out)
-        niter = '0'
-
-        for line in lines:
-            if 'Initial residual:' in line:
-                n += 1
-            
-            elif 'Iterations' in line:
-                niter = line.split()[1]
-        
-        n = max(1, n)
-
-        return f'{n}/{ntotal*2} iter{niter}'

@@ -82,14 +82,14 @@ def _prepare_frequencies(ws: Kernel):
     nf = nbands * fincr
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
-    if ws.reference_velocity is not None and (smooth := ws.smooth_kernels):
-        if isinstance(smooth, list):
-            smooth = max(smooth[1], smooth[0] * smooth[2] ** (ws.iteration or 0))
+    if ws.reference_velocity is not None and (rad := ws.smooth_kernels):
+        if isinstance(rad, list):
+            rad = max(rad[1], rad[0] * rad[2] ** (ws.iteration or 0))
 
         # exclude band where reference_volocity * period < smooth_radius
         for i in range(nbands):
             # compare smooth radius with the highest frequency of current band
-            if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < smooth:
+            if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < rad:
                 # parent.nbands_used = i #FIXME
                 ws.nbands_used = nbands
                 break

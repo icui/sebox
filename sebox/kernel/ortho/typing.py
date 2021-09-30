@@ -82,3 +82,6 @@ class Kernel(typing.Kernel):
 
     # taper adjoint source
     taper: tp.Optional[float]
+
+    # normalize source magnitudes
+    normalize_source: bool

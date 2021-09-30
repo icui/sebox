@@ -22,6 +22,33 @@ class Mesh(Workspace):
     path_model: str
 
 
+class Sum(Workspace):
+    """A workspace to generate mesh."""
+    # current iteration
+    iteration: tp.Optional[int]
+    
+    # path to mesher directory
+    path_mesh: str
+
+    # path to kernels to be summed
+    path_kernels: tp.List[str]
+
+    # radius for smoothing kernels
+    smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
+
+    # radius for smoothing hessian
+    smooth_hessian: tp.Optional[tp.Union[float, tp.List[float]]]
+
+    # ratio between vertival and horizontal smoothing length
+    smooth_vertical: tp.Optional[float]
+
+    # names of the kernels to be smoothed
+    kernel_names: tp.List[str]
+
+    # names of the hessian to be smoothed
+    hessian_names: tp.List[str]
+
+
 class Forward(Workspace):
     """A workspace to run forward simulation."""
     # path to CMTSOLUTION
