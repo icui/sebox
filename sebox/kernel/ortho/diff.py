@@ -102,15 +102,15 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
             ntaper = int(ws.taper * 60 / ws.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        ws.dump((adstf, stas, stats['cmps']), f'adjoint/{pid}.pickle', mkdir=False)
+        ws.dump((adstf, stas, stats['cmps']), f'misfit/{pid}.pickle', mkdir=False)
 
 
 def _gather(ws: Kernel):
     from pyasdf import ASDFDataSet
 
     with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
-        for pid in ws.ls('adjoint'):
-            adstf, stas, cmps = ws.load(f'adjoint/{pid}')
+        for pid in ws.ls('misfit', '*.pickle'):
+            adstf, stas, cmps = ws.load(f'misfit/{pid}')
 
             for i, sta in enumerate(stas):
                 for j, cmp in enumerate(cmps):

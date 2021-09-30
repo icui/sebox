@@ -23,6 +23,7 @@ def setup(ws: Adjoint):
     ws.mkdir('SEM')
     ws.mkdir('DATA')
     ws.mkdir('OUTPUT_FILES')
+    print(ws.isdir('DATA'))
     
     # link files
     ws.ln(ws.rel(d.path('bin')))
