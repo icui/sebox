@@ -101,4 +101,4 @@ def _compute_kernel(ws: Kernel):
 def _postprocess(ws: Kernel):
     ws.add('sum', ('module:solver', 'xsum'),
         path_kernels=[ws.path(f'kl_{iker:02d}/adjoint/kernels.bp') for iker in range(ws.nkernels or 1)],
-        path_mesh= ws.path('../mesh'))
+        path_mesh= ws.path('mesh'))
