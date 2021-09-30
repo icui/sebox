@@ -14,7 +14,6 @@ async def diff(ws: Kernel):
     ws.mkdir('adjoint')
     await ws.mpiexec(_diff, arg=ws, arg_mpi=getstations())
     ws.add(_gather)
-    exit()
 
 
 async def _diff(ws: Kernel, stas: tp.List[str]):
@@ -103,8 +102,16 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
             ntaper = int(ws.taper * 60 / ws.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        ws.dump(adstf, f'adjoint/{pid}.npy', mkdir=False)
+        ws.dump((adstf, stas, stats['cmps']), f'adjoint/{pid}.pickle', mkdir=False)
 
 
 def _gather(ws: Kernel):
-    pass
+    from pyasdf import ASDFDataSet
+
+    with ASDFDataSet(ws.path('adjoint.h5'), mode='r', mpi=False) as ds:
+        for pid in ws.ls('adjoint'):
+            adstf, stas, cmps = ws.load(f'adjoint/{pid}.pickle')
+
+            for i, sta in enumerate(stas):
+                for j, cmp in enumerate(cmps):
+                    ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
