@@ -44,7 +44,7 @@ async def _xsum(ws: Sum):
     await ws.mpiexec(f'bin_adios/xsum_kernels path.txt kernels.bp', getsize(ws))
 
 
-async def _xsmooth(ws: Sum, kl: str, hess: bool):
+async def _xsmooth(kl: str, hess: bool, ws: Sum):
     rad = ws.smooth_hessian if hess else ws.smooth_kernels
 
     if isinstance(rad, list):
