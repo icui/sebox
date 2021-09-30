@@ -110,7 +110,7 @@ def _gather(ws: Kernel):
 
     with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
         for pid in ws.ls('adjoint'):
-            adstf, stas, cmps = ws.load(f'adjoint/{pid}.pickle')
+            adstf, stas, cmps = ws.load(f'adjoint/{pid}')
 
             for i, sta in enumerate(stas):
                 for j, cmp in enumerate(cmps):
