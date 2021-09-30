@@ -23,7 +23,6 @@ def setup(ws: Adjoint):
     ws.mkdir('SEM')
     ws.mkdir('DATA')
     ws.mkdir('OUTPUT_FILES')
-    print(ws.isdir('DATA'))
     
     # link files
     ws.ln(ws.rel(d.path('bin')))
@@ -33,7 +32,7 @@ def setup(ws: Adjoint):
     ws.ln('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
 
     #  update Par_file
-    ws.cp(d.path('DATA/Par_file'), 'DATA')
+    ws.cp(ws.rel(d.path('DATA/Par_file')), 'DATA')
     setpars(ws, { 'SIMULATION_TYPE': 3, 'SAVE_FORWARD': False })
 
 
