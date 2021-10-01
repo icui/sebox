@@ -21,8 +21,6 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
     from sebox.mpi import pid
     from mpi4py.MPI import COMM_WORLD as comm
 
-    root.restore(ws)
-
     # read data
     stats = ws.load('forward/traces/stats.pickle')
     syn = ws.load(f'enc_syn/{pid}.npy')
@@ -30,32 +28,32 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
     ref = ws.load(f'enc_diff/{pid}.npy')
     weight = ws.load(f'enc_weight/{pid}.npy')
 
+    # clip phases
+    weight[np.where(abs(ref) > np.pi)] = 0.0
+
     # compute diff
     phase_diff = np.angle(syn / obs) * weight
-    phase_diff[np.where(abs(ref) > np.pi)] = 0.0
     amp_diff = np.log(np.abs(syn) / np.abs(obs) * weight)
 
     if ws.double_difference:
-        nsta = len(getstations())
-        
         # unwrap or clip phases
         phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
         amp_sum = sum(comm.allgather(np.nansum(amp_diff, axis=0)))
-        npairs = sum(comm.allgather(np.invert(np.isnan(phase_diff)).astype(int).sum(axis=0)))
+        weight_sum = sum(comm.allgather(np.nansum(weight, axis=0)))
 
         # sum of phase and amplitude differences
-        phase_diff = (nsta * phase_diff - phase_sum) / npairs
-        amp_diff = (nsta * amp_diff - amp_sum) / npairs
+        phase_diff = phase_diff - phase_sum / weight_sum
+        amp_diff = amp_diff - amp_sum / weight_sum
 
     
         if 'II.OBN' in stas:
-            print('II.OBN', nsta)
-            print(np.nanmax(phase_sum), np.nanmax(amp_sum))
+            print('II.OBN')
+            print(np.nanmax(phase_sum), np.nanmax(amp_sum), np.nanmax(weight_sum))
 
     # apply measurement weightings
     omega = np.arange(ws.imin, ws.imax) / ws.imin
-    phase_diff *= ws.phase_factor / omega
-    amp_diff *= ws.amplitude_factor
+    phase_diff *= weight * ws.phase_factor / omega
+    amp_diff *= weight * ws.amplitude_factor
 
     # misfit values and adjoint sources
     nan = np.where(np.isnan(phase_diff))
