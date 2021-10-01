@@ -33,7 +33,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add(_main, concurrent=True, misfit_only=misfit_only)
 
     # sum and smooth kernels
-    ws.add('sum', ('module:solver', 'xsum'),
+    ws.add('postprocess', ('module:solver', 'postprocess'),
         path_kernels=[ws.path(f'kl_{iker:02d}/adjoint/kernels.bp') for iker in range(ws.nkernels or 1)],
         path_mesh= ws.path('mesh'))
 
