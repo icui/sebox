@@ -10,6 +10,7 @@ if tp.TYPE_CHECKING:
 def setup(ws: Sum):
     """Create mesher workspace."""
     # link directories
+    ws.mkdir('smooth')
     ws.ln(ws.rel(ws.path_mesh, 'bin'))
     ws.ln(ws.rel(ws.path_mesh, 'DATA'))
     ws.ln(ws.rel(ws.path_mesh, 'OUTPUT_FILES'))
@@ -28,6 +29,7 @@ def xsum(ws: Sum):
     ws.add(setup)
     ws.add(_xsum)
     ws.add(_smooth, concurrent=True)
+    ws.add(_merge)
 
 
 def _smooth(ws: Sum):
@@ -44,6 +46,10 @@ async def _xsum(ws: Sum):
     await ws.mpiexec(f'bin_adios/xsum_kernels path.txt kernels.bp', getsize(ws))
 
 
+async def _merge(ws: Sum):
+    await ws.mpiexec(f'bin_adios/xmerge_kernels smooth kernels_smooth.bp', getsize(ws))
+
+
 async def _xsmooth(kl: str, hess: bool, ws: Sum):
     rad = ws.smooth_hessian if hess else ws.smooth_kernels
 
@@ -51,7 +57,7 @@ async def _xsmooth(kl: str, hess: bool, ws: Sum):
         rad = max(rad[1], rad[0] * rad[2] ** (ws.iteration or 0))
 
     if rad:
-        await ws.mpiexec(f'bin/xsmooth_laplacian_sem_adios  {rad} {rad*(ws.smooth_vertical or 1)} {kl} kernels.bp DATABASES_MPI/ {kl}_smooth.bp 0 660 > OUTPUT_FILES/smooth_{kl}.txt', getsize(ws))
+        await ws.mpiexec(f'bin/xsmooth_laplacian_sem_adios  {rad} {rad*(ws.smooth_vertical or 1)} {kl} kernels.bp DATABASES_MPI/ smooth/kernels_smooth_{kl}_crust_mantle.bp > OUTPUT_FILES/smooth_{kl}.txt', getsize(ws))
 
 
 def probe_smoother(kl: str, ws: Sum):
