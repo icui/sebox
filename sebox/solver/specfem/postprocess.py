@@ -24,7 +24,7 @@ def setup(ws: Sum):
         ws.write('1.0\n' + ws.rel(kl) + '\n', 'path.txt', 'a')
 
 
-def xsum(ws: Sum):
+def postprocess(ws: Sum):
     """Generate mesh."""
     ws.add(setup)
     ws.add(xsum)
