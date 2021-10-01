@@ -48,7 +48,7 @@ def _name(cmd: tp.Union[str, tp.Callable]) -> str:
 
 async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
     nprocs: int, cpus_per_proc: int, gpus_per_proc: int,
-    name: tp.Optional[str], arg: tp.Any, arg_mpi: tp.Optional[list]):
+    name: tp.Optional[str], arg: tp.Any, arg_mpi: tp.Optional[list]) -> str:
     """Schedule the execution of MPI task"""
     # task queue controller
     lock = asyncio.Lock()
@@ -148,3 +148,5 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
 
     if err:
         raise err
+
+    return tp.cast(str, name)

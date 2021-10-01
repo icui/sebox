@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
+from sebox.utils.adios import xsum, xmerge
 from .specfem import getsize
 
 if tp.TYPE_CHECKING:
@@ -15,7 +16,6 @@ def setup(ws: Sum):
     ws.ln(ws.rel(ws.path_mesh, 'DATA'))
     ws.ln(ws.rel(ws.path_mesh, 'OUTPUT_FILES'))
     ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI'))
-    ws.ln(ws.rel(ws.path_adios, 'bin'), 'bin_adios')
 
     # create text file with kernel paths
     ws.write(f'{len(ws.path_kernels)}\n', 'path.txt')
@@ -27,9 +27,9 @@ def setup(ws: Sum):
 def xsum(ws: Sum):
     """Generate mesh."""
     ws.add(setup)
-    ws.add(_xsum)
+    ws.add(xsum)
     ws.add(_smooth, concurrent=True)
-    ws.add(_merge)
+    ws.add(xmerge)
 
 
 def _smooth(ws: Sum):
@@ -40,14 +40,6 @@ def _smooth(ws: Sum):
     
     for kl in ws.hessian_names:
         ws.add(partial(_xsmooth, kl, True), prober=partial(probe_smoother, kl))
-
-
-async def _xsum(ws: Sum):
-    await ws.mpiexec(f'bin_adios/xsum_kernels path.txt kernels.bp', getsize(ws))
-
-
-async def _merge(ws: Sum):
-    await ws.mpiexec(f'bin_adios/xmerge_kernels smooth kernels_smooth.bp', getsize(ws))
 
 
 async def _xsmooth(kl: str, hess: bool, ws: Sum):

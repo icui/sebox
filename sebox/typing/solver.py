@@ -33,9 +33,6 @@ class Sum(Workspace):
     # path to kernels to be summed
     path_kernels: tp.List[str]
 
-    # path to adios processing directory
-    path_adios: str
-
     # radius for smoothing kernels
     smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
 
