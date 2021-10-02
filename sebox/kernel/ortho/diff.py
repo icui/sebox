@@ -22,6 +22,7 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
     from mpi4py.MPI import COMM_WORLD as comm
 
     # read data
+    root.restore(ws)
     stats = ws.load('forward/traces/stats.pickle')
     syn = ws.load(f'enc_syn/{pid}.npy')
     obs = ws.load(f'enc_obs/{pid}.npy')
