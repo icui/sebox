@@ -63,12 +63,11 @@ class Workspace(Directory):
                 func = func.func
             
             if hasattr(func, '__name__'):
-                if hasattr(func, '__name__'):
-                    pf = ''
-                    for arg in args:
-                        if isinstance(arg, str):
-                            pf = '_' + arg
-                            break
+                pf = ''
+                for arg in args:
+                    if isinstance(arg, str):
+                        pf = '_' + arg
+                        break
 
                 return func.__name__.lstrip('_') + pf
 

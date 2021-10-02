@@ -37,11 +37,20 @@ def _name(cmd: tp.Union[str, tp.Callable]) -> str:
         return 'mpiexec_' + cmd.split(' ')[0].split('/')[-1]
 
     func = cmd
+    args = []
 
     while isinstance(func, partial):
         func = func.func
+        args = func.args
 
-        return 'mpiexec_' + func.__name__.lstrip('_')
+    if hasattr(func, '__name__'):
+        pf = ''
+        for arg in args:
+            if isinstance(arg, str):
+                pf = '_' + arg
+                break
+
+        return 'mpiexec_' + func.__name__.lstrip('_') + pf
     
     return 'mpiexec'
 
