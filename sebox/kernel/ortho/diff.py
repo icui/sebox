@@ -100,7 +100,7 @@ def gather(ws: Kernel):
     from pyasdf import ASDFDataSet
 
     with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
-        for pid in ws.ls('enc_mf', '*.pickle'):
+        for pid in ws.ls('enc_mf', 'p*.pickle'):
             adstf, stas, cmps = ws.load(f'enc_mf/{pid}')
 
             for i, sta in enumerate(stas):
