@@ -11,6 +11,7 @@ from .ft import rotate_frequencies
 
 async def diff(ws: Kernel):
     ws.mkdir('misfit')
+    print('???')
     await ws.mpiexec(_diff, arg=ws, arg_mpi=getstations())
     ws.add(_gather)
 
@@ -33,7 +34,7 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
 
     # compute diff
     phase_diff = np.angle(syn / obs) * weight
-    amp_diff = np.log(np.abs(syn) / np.abs(obs) * weight)
+    amp_diff = np.log(np.abs(syn) / np.abs(obs)) * weight
 
     if ws.double_difference:
         # unwrap or clip phases
