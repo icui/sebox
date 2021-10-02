@@ -40,6 +40,9 @@ class Workspace(Directory):
     # time when task started
     _starttime: tp.Optional[float] = None
 
+    # time when MPI task started
+    _dispatchtime: tp.Optional[float] = None
+
     # time when task ended
     _endtime: tp.Optional[float] = None
 
@@ -88,7 +91,7 @@ class Workspace(Directory):
     def elapsed(self) -> tp.Optional[float]:
         """Total walltime."""
         if self.done:
-            delta = self._endtime - self._starttime # type: ignore
+            delta = self._endtime - (self._dispatchtime or self._starttime) # type: ignore
             delta_ws = tp.cast(tp.List[float], [ws.elapsed for ws in self._ws])
 
             if self.concurrent and len(delta_ws) > 1:
@@ -217,6 +220,7 @@ class Workspace(Directory):
 
         # backup data and reset state before execution
         self._starttime = time()
+        self._dispatchtime = None
         self._endtime = None
         self._err = None
         self._data.clear()
@@ -243,6 +247,7 @@ class Workspace(Directory):
             from traceback import format_exc
             
             self._starttime = None
+            self._dispatchtime = None
             self._err = e
 
             print(format_exc(), file=stderr)
@@ -361,6 +366,7 @@ class Workspace(Directory):
     def reset(self):
         """Reset workspace (including child workspaces)."""
         self._starttime = None
+        self._dispatchtime = None
         self._endtime = None
         self._err = None
         self._data.clear()

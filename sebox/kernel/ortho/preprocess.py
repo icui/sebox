@@ -261,7 +261,7 @@ def _enc_obs(ws: Kernel, stas: tp.List[str]):
                 i = np.squeeze(np.where(m))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
-    ws.dump(encoded, f'{pid}.npy', mkdir=False)
+    ws.dump(encoded, f'enc_obs/{pid}.npy', mkdir=False)
 
 
 def _enc_diff(ws: Kernel, stas: tp.List[str]):
@@ -301,5 +301,5 @@ def _enc_diff(ws: Kernel, stas: tp.List[str]):
                 encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
     
-    ws.dump(encoded, f'{pid}.npy', mkdir=False)
-    ws.dump(weight, f'../enc_weight/{pid}.npy', mkdir=False)
+    ws.dump(encoded, f'enc_diff/{pid}.npy', mkdir=False)
+    ws.dump(weight, f'enc_weight/{pid}.npy', mkdir=False)

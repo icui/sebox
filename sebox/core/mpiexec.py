@@ -79,6 +79,10 @@ async def mpiexec(cmd: tp.Union[str, tp.Callable],
         if not _dispatch(lock, nnodes):
             _pending[lock] = nnodes
             await lock.acquire()
+        
+        # set dispatchtime for workspace
+        if hasattr(d, '_dispatchtime'):
+            setattr(d, '_dispatchtime', time())
 
         # save function as pickle to run in parallel
         if name is None:
