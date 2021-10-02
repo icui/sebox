@@ -15,10 +15,14 @@ def xspecfem(ws: Specfem):
 def xmeshfem(ws: Specfem):
     """Add task to call xmeshfem3D."""
     if ws.path_mesh:
-        ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI')
+        ws.add(_link_mesh)
     
     else:
         ws.add_mpi('bin/xmeshfem3D', getsize, data={'prober': probe_mesher})
+
+
+def _link_mesh(ws: Specfem):
+    ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI')
 
 
 def getsize(d: Directory):

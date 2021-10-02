@@ -42,7 +42,6 @@ def setup(ws: Specfem):
 
 def forward(ws: Specfem):
     """Forward simulation."""
-    print(ws.path())
     ws.add(setup)
     xmeshfem(ws)
     xspecfem(ws)
