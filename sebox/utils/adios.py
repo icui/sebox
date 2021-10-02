@@ -5,9 +5,9 @@ from sebox.solver.specfem.specfem import getsize
 
 
 async def _adios(ws: Workspace, cmd: str):
-    name = await ws.mpiexec(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd + ' > '), getsize(ws))
+    name = await ws.mpiexec(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize(ws))
 
-    if 'ERROR' in ws.read(name):
+    if 'ERROR' in ws.read(name + '.out'):
         raise RuntimeError('adios execution failed')
 
 
