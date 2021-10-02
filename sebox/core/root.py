@@ -110,6 +110,7 @@ class Root(Workspace):
 
         elif self.has('root.pickle'):
             # restore previous state
+            exit()
             self.__setstate__(self.load('root.pickle'))
         
         elif self.has('config.toml'):

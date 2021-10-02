@@ -38,7 +38,7 @@ async def ft(ws: Kernel):
     await ws.mpiexec(_ft, arg=ws, arg_mpi=getstations())
 
 
-def _ft(ws: Kernel, stas: tp.List[str]):
+def _ft(ws: Kernel, _):
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
