@@ -11,7 +11,6 @@ from .ft import rotate_frequencies
 
 async def diff(ws: Kernel):
     ws.mkdir('misfit')
-    print('???')
     await ws.mpiexec(_diff, arg=ws, arg_mpi=getstations())
     ws.add(_gather)
 

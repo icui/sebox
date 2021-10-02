@@ -86,7 +86,6 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
         # save function as pickle to run in parallel
         if name is None:
             name = _name(cmd)
-            print('>>>', cmd, (name))
 
         if callable(cmd):
             if arg_mpi:
