@@ -25,6 +25,9 @@ class Workspace(Directory):
     # workspace to inherit properties from
     inherit: tp.Optional[Workspace]
 
+    # display name
+    _name: tp.Optional[str] = None
+
     # initial data passed to self.__init__
     _init: dict
 
@@ -49,28 +52,23 @@ class Workspace(Directory):
     @property
     def name(self) -> str:
         """Directory name."""
+        if self._name is not None:
+            return self._name
+
         func = self.task
         
-        # use function name if workspace does not have a unique directory
-        if func and (not self._parent or self._parent._cwd == self._cwd):
+        if func:
+            # use task function name as workspace name
             if isinstance(func, tuple) or isinstance(func, list):
                 return func[1]
 
-            args = []
-
             while isinstance(func, partial):
-                args = func.args
                 func = func.func
             
             if hasattr(func, '__name__'):
-                pf = ''
-                for arg in args:
-                    if isinstance(arg, str):
-                        pf = '_' + arg
-                        break
+                return func.__name__.lstrip('_')
 
-                return func.__name__.lstrip('_') + pf
-
+        # use directory name as workspace name
         return path.basename(self.path(abs=True))
 
     @property
@@ -323,8 +321,38 @@ class Workspace(Directory):
         if inherit is not None:
             data['inherit'] = inherit
 
-        ws = Workspace(self.path(name) if isinstance(name, str) else self.path(), data, self)
+        if isinstance(name, str):
+            ws = Workspace(self.path(name), data, self)
+            ws._name = name
+        
+        else:
+            ws = Workspace(self.path(), data, self)
+        
         self._ws.append(ws)
+
+        return ws
+    
+    def add_mpi(self, cmd: tp.Union[str, tp.Callable], 
+        nprocs: tp.Optional[int] = None, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
+        name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None,
+        check_output: tp.Optional[tp.Callable[[str], None]] = None):
+        """Run MPI task."""
+        from .mpiexec import mpiexec, getname
+
+        if nprocs is None:
+            from sebox import root
+            nprocs = root.task_nprocs
+
+        if isinstance(per_proc, int):
+            per_proc = (per_proc, per_proc)
+        
+        ws = self.add(partial(mpiexec, self, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output))
+
+        if name is not None:
+            ws._name = name
+
+        else:
+            ws._name = getname(cmd)
         
         return ws
     

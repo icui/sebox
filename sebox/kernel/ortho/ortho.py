@@ -2,11 +2,11 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir
+from sebox.utils.catalog import getdir, getstations
 from .catalog import merge, scatter_obs, scatter_diff, scatter_baz
 from .preprocess import prepare_encoding
 from .ft import ft
-from .diff import diff
+from .diff import diff, gather
 
 if tp.TYPE_CHECKING:
     from .typing import Kernel
@@ -58,7 +58,7 @@ def _catalog(ws: Kernel):
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
-        ws.add(scatter_baz, concurrent=True)
+        ws.add_mpi(scatter_baz, arg=ws, arg_mpi=getstations())
 
 
 def _preprocess(ws: Kernel):
@@ -79,23 +79,35 @@ def _main(ws: Kernel):
 
 
 def _compute_kernel(ws: Kernel):
-    cdir = getdir()
-
     # forward simulation
     ws.add('forward', ('module:solver', 'forward'),
         path_event= ws.path('SUPERSOURCE'),
-        path_stations= cdir.path('SUPERSTATION'),
+        path_stations= getdir().path('SUPERSTATION'),
         path_mesh= ws.path('../mesh'),
         monochromatic_source= True,
         save_forward= True)
     
-    # process traces
-    ws.add(ft)
-    
-    # process traces
-    ws.add(diff)
+    # compute misfit
+    ws.add(_compute_misfit)
 
     # forward simulation
     ws.add('adjoint', ('module:solver', 'adjoint'),
         path_forward = ws.path('forward'),
         path_misfit = ws.path('adjoint.h5'))
+
+
+def _compute_misfit(ws: Kernel):
+    stas = getstations()
+
+    ws.mkdir('enc_syn')
+    ws.mkdir('enc_mf')
+    ws.mkdir('adstf')
+
+    # process traces
+    ws.add_mpi(ft, arg=ws, arg_mpi=stas)
+    
+    # compute misfit
+    ws.add_mpi(diff, arg=ws, arg_mpi=stas)
+
+    # convert adjoint sources to ASDF format
+    ws.add(gather)

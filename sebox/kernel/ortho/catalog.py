@@ -23,12 +23,7 @@ def scatter_diff(ws: Kernel):
     _scatter(ws, 'diff')
 
 
-async def scatter_baz(ws: Kernel):
-    """Compute back azimuth."""
-    await ws.mpiexec(_compute_baz, arg=ws, arg_mpi=getstations())
-
-
-def _compute_baz(ws: Kernel, stas: tp.List[str]):
+def scatter_baz(ws: Kernel, stas: tp.List[str]):
     import numpy as np
     from math import radians
     from obspy.geodetics import gps2dist_azimuth

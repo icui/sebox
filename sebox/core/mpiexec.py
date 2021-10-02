@@ -31,33 +31,26 @@ def _dispatch(lock: asyncio.Lock, nnodes: int) -> bool:
     return False
 
 
-def _name(cmd: tp.Union[str, tp.Callable]) -> str:
+def getname(cmd: tp.Union[str, tp.Callable]) -> str:
     """Get file name to store pickled function and / or stdout."""
     if isinstance(cmd, str):
         return 'mpiexec_' + cmd.split(' ')[0].split('/')[-1]
 
     func = cmd
-    args = []
 
     while isinstance(func, partial):
         func = func.func
-        args = func.args
 
     if hasattr(func, '__name__'):
-        pf = ''
-        for arg in args:
-            if isinstance(arg, str):
-                pf = '_' + arg
-                break
-
-        return 'mpiexec_' + func.__name__.lstrip('_') + pf
+        return 'mpiexec_' + func.__name__.lstrip('_')
     
     return 'mpiexec'
 
 
 async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
     nprocs: int, cpus_per_proc: int, gpus_per_proc: int,
-    name: tp.Optional[str], arg: tp.Any, arg_mpi: tp.Optional[list]) -> str:
+    name: tp.Optional[str], arg: tp.Any, arg_mpi: tp.Optional[list],
+    check_output: tp.Optional[tp.Callable[[str], None]]) -> str:
     """Schedule the execution of MPI task"""
     # task queue controller
     lock = asyncio.Lock()
@@ -85,7 +78,7 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
 
         # save function as pickle to run in parallel
         if name is None:
-            name = _name(cmd)
+            name = getname(cmd)
 
         if callable(cmd):
             if arg_mpi:
@@ -112,6 +105,9 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
             cmd = f'python -m "sebox.mpi" {d.path(name)}'
         
         else:
+            if arg is not None or arg_mpi is not None:
+                raise TypeError('cannot add arguments to shell command')
+
             cwd = d.path()
         
         # wrap with parallel execution command
@@ -135,6 +131,9 @@ async def mpiexec(d: Directory, cmd: tp.Union[str, tp.Callable],
 
         elif process.returncode:
             raise RuntimeError(f'{cmd}\nexit code: {process.returncode}')
+        
+        elif check_output:
+            check_output(d.read(f'{name}.out'))
     
     except Exception as e:
         err = e

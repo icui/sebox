@@ -4,11 +4,13 @@ from sebox import Workspace
 from sebox.solver.specfem.specfem import getsize
 
 
-async def _adios(ws: Workspace, cmd: str):
-    name = await ws.mpiexec(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize(ws))
-
-    if 'ERROR' in ws.read(name + '.out'):
+def _check(out: str):
+    if 'ERROR' in out:
         raise RuntimeError('adios execution failed')
+
+
+async def _adios(ws: Workspace, cmd: str):
+    ws.add_mpi(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize(ws), check_output=_check)
 
 
 async def xsum(ws: Workspace):

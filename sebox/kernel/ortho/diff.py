@@ -5,17 +5,10 @@ if tp.TYPE_CHECKING:
     from .typing import Kernel
 
 from sebox import root
-from sebox.utils.catalog import getstations
 from .ft import rotate_frequencies
 
 
-async def diff(ws: Kernel):
-    ws.mkdir('misfit')
-    await ws.mpiexec(_diff, arg=ws, arg_mpi=getstations())
-    ws.add(_gather)
-
-
-async def _diff(ws: Kernel, stas: tp.List[str]):
+def diff(ws: Kernel, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from sebox.mpi import pid
@@ -66,7 +59,7 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
     if ws.amplitude_factor > 0:
         mf += np.nansum(amp_diff ** 2, axis=-1)
 
-    ws.dump(mf, f'misfit/{pid}.npy', mkdir=False)
+    ws.dump(mf, f'enc_mf/{pid}.npy', mkdir=False)
 
     # compute adjoint source
     if not ws.misfit_only:
@@ -100,15 +93,15 @@ async def _diff(ws: Kernel, stas: tp.List[str]):
             ntaper = int(ws.taper * 60 / ws.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        ws.dump((adstf, stas, stats['cmps']), f'misfit/{pid}.pickle', mkdir=False)
+        ws.dump((adstf, stas, stats['cmps']), f'adstf/{pid}.pickle', mkdir=False)
 
 
-def _gather(ws: Kernel):
+def gather(ws: Kernel):
     from pyasdf import ASDFDataSet
 
     with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
-        for pid in ws.ls('misfit', '*.pickle'):
-            adstf, stas, cmps = ws.load(f'misfit/{pid}')
+        for pid in ws.ls('adstf'):
+            adstf, stas, cmps = ws.load(f'adstf/{pid}')
 
             for i, sta in enumerate(stas):
                 for j, cmp in enumerate(cmps):

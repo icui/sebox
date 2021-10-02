@@ -32,18 +32,11 @@ def ft_obs(ws: Kernel, data: ndarray):
     return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
 
 
-async def ft(ws: Kernel):
-    # load trace parameters
-    ws.mkdir('enc_syn')
-    await ws.mpiexec(_ft, arg=ws, arg_mpi=getstations())
-
-
-def _ft(ws: Kernel, _):
+def ft(ws: Kernel, _):
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
 
-    print(ws, '?')
     root.restore(ws)
     stats = ws.load('forward/traces/stats.pickle')
     data = ws.load(f'forward/traces/{pid}.npy')
