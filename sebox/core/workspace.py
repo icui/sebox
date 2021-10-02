@@ -49,6 +49,9 @@ class Workspace(Directory):
     # exception raised from self.task
     _err: tp.Optional[Exception] = None
 
+    # task is a wrapper of mpiexec
+    _mpi: bool = False
+
     # child workspaces
     _ws: tp.List[Workspace]
 
@@ -181,7 +184,10 @@ class Workspace(Directory):
                     name += ' (terminated)'
                 
                 else:
-                    if self.prober:
+                    if self._mpi and self._dispatchtime is None:
+                        name += ' (queued)'
+                    
+                    elif self.prober:
                         try:
                             state = self.prober(self)
 
@@ -354,6 +360,7 @@ class Workspace(Directory):
         
         func = partial(mpiexec, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
         ws = self.add(func, **(data or {}))
+        ws._mpi = True
 
         if name is not None:
             ws._name = name
