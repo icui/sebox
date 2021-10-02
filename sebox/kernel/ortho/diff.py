@@ -59,7 +59,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
     if ws.amplitude_factor > 0:
         mf += np.nansum(amp_diff ** 2, axis=-1)
 
-    ws.dump(mf, f'{pid}.npy', mkdir=False)
+    ws.dump(mf, f'enc_mf/{pid}.npy', mkdir=False)
 
     # compute adjoint source
     if not ws.misfit_only:
@@ -93,7 +93,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
             ntaper = int(ws.taper * 60 / ws.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        ws.dump((adstf, stas, stats['cmps']), f'{pid}.pickle', mkdir=False)
+        ws.dump((adstf, stas, stats['cmps']), f'enc_mf/{pid}.pickle', mkdir=False)
 
 
 def gather(ws: Kernel):
