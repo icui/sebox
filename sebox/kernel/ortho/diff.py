@@ -16,11 +16,11 @@ def diff(ws: Kernel, stas: tp.List[str]):
 
     # read data
     root.restore(ws)
-    stats = ws.load('../forward/traces/stats.pickle')
-    syn = ws.load(f'../enc_syn/{pid}.npy')
-    obs = ws.load(f'../enc_obs/{pid}.npy')
-    ref = ws.load(f'../enc_diff/{pid}.npy')
-    weight = ws.load(f'../enc_weight/{pid}.npy')
+    stats = ws.load('forward/traces/stats.pickle')
+    syn = ws.load(f'enc_syn/{pid}.npy')
+    obs = ws.load(f'enc_obs/{pid}.npy')
+    ref = ws.load(f'enc_diff/{pid}.npy')
+    weight = ws.load(f'enc_weight/{pid}.npy')
 
     # clip phases
     weight[np.where(abs(ref) > np.pi)] = 0.0
