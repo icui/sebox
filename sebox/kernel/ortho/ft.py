@@ -43,6 +43,7 @@ def _ft(ws: Kernel, _):
     from sebox import root
     from sebox.mpi import pid
 
+    print(ws, '?')
     root.restore(ws)
     stats = ws.load('forward/traces/stats.pickle')
     data = ws.load(f'forward/traces/{pid}.npy')
