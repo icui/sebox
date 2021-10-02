@@ -16,11 +16,11 @@ def diff(ws: Kernel, stas: tp.List[str]):
 
     # read data
     root.restore(ws)
-    stats = ws.load('forward/traces/stats.pickle')
-    syn = ws.load(f'enc_syn/{pid}.npy')
-    obs = ws.load(f'enc_obs/{pid}.npy')
-    ref = ws.load(f'enc_diff/{pid}.npy')
-    weight = ws.load(f'enc_weight/{pid}.npy')
+    stats = ws.load('../forward/traces/stats.pickle')
+    syn = ws.load(f'../enc_syn/{pid}.npy')
+    obs = ws.load(f'../enc_obs/{pid}.npy')
+    ref = ws.load(f'../enc_diff/{pid}.npy')
+    weight = ws.load(f'../enc_weight/{pid}.npy')
 
     # clip phases
     weight[np.where(abs(ref) > np.pi)] = 0.0
@@ -59,7 +59,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
     if ws.amplitude_factor > 0:
         mf += np.nansum(amp_diff ** 2, axis=-1)
 
-    ws.dump(mf, f'enc_mf/{pid}.npy', mkdir=False)
+    ws.dump(mf, f'{pid}.npy', mkdir=False)
 
     # compute adjoint source
     if not ws.misfit_only:
@@ -93,15 +93,15 @@ def diff(ws: Kernel, stas: tp.List[str]):
             ntaper = int(ws.taper * 60 / ws.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        ws.dump((adstf, stas, stats['cmps']), f'adstf/{pid}.pickle', mkdir=False)
+        ws.dump((adstf, stas, stats['cmps']), f'{pid}.pickle', mkdir=False)
 
 
 def gather(ws: Kernel):
     from pyasdf import ASDFDataSet
 
     with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
-        for pid in ws.ls('adstf'):
-            adstf, stas, cmps = ws.load(f'adstf/{pid}')
+        for pid in ws.ls('enc_mf', '*.pickle'):
+            adstf, stas, cmps = ws.load(f'enc_mf/{pid}')
 
             for i, sta in enumerate(stas):
                 for j, cmp in enumerate(cmps):

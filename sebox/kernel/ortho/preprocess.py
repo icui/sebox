@@ -204,12 +204,9 @@ def _encode_events(ws: Kernel):
 def _encode(ws: Kernel):
     stas = getstations()
 
-    ws.mkdir('enc_obs')
-    ws.mkdir('enc_diff')
     ws.mkdir('enc_weight')
-
-    ws.add_mpi(_enc_obs, arg=ws, arg_mpi=stas)
-    ws.add_mpi(_enc_diff, arg=ws, arg_mpi=stas)
+    ws.add_mpi(_enc_obs, arg=ws, arg_mpi=stas, cwd='enc_obs')
+    ws.add_mpi(_enc_diff, arg=ws, arg_mpi=stas, cwd='enc_diff')
 
 
 def _enc_obs(ws: Kernel, stas: tp.List[str]):
@@ -261,7 +258,7 @@ def _enc_obs(ws: Kernel, stas: tp.List[str]):
                 i = np.squeeze(np.where(m))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
-    ws.dump(encoded, f'enc_obs/{pid}.npy', mkdir=False)
+    ws.dump(encoded, f'{pid}.npy', mkdir=False)
 
 
 def _enc_diff(ws: Kernel, stas: tp.List[str]):
@@ -301,5 +298,5 @@ def _enc_diff(ws: Kernel, stas: tp.List[str]):
                 encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
     
-    ws.dump(encoded, f'enc_diff/{pid}.npy', mkdir=False)
-    ws.dump(weight, f'enc_weight/{pid}.npy', mkdir=False)
+    ws.dump(encoded, f'{pid}.npy', mkdir=False)
+    ws.dump(weight, f'../enc_weight/{pid}.npy', mkdir=False)

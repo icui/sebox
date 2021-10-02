@@ -347,7 +347,8 @@ class Workspace(Directory):
         nprocs: tp.Optional[tp.Union[int, tp.Callable[[Directory], int]]] = None,
         per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
         name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None,
-        check_output: tp.Optional[tp.Callable[[str], None]] = None, data: tp.Optional[dict] = None):
+        check_output: tp.Optional[tp.Callable[[str], None]] = None,
+        cwd: tp.Optional[str] = None, data: tp.Optional[dict] = None):
         """Run MPI task."""
         from .mpiexec import mpiexec, getname
 
@@ -359,7 +360,13 @@ class Workspace(Directory):
             per_proc = (per_proc, per_proc)
         
         func = partial(mpiexec, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
-        ws = self.add(func, **(data or {}))
+
+        if cwd is None:
+            ws = self.add(func, **(data or {}))
+
+        else:
+            ws = self.add(cwd, func, **(data or {}))
+            
         ws._mpi = True
 
         if name is not None:

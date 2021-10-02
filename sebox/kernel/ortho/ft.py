@@ -38,8 +38,8 @@ def ft(ws: Kernel, _):
     from sebox.mpi import pid
 
     root.restore(ws)
-    stats = ws.load('forward/traces/stats.pickle')
-    data = ws.load(f'forward/traces/{pid}.npy')
+    stats = ws.load('../forward/traces/stats.pickle')
+    data = ws.load(f'../forward/traces/{pid}.npy')
     
     # resample if necessary
     if not np.isclose(stats['dt'], ws.dt):
@@ -50,7 +50,7 @@ def ft(ws: Kernel, _):
     # FFT
     data_nez = ft_syn(ws, data)
     data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
-    ws.dump(data_rtz, f'enc_syn/{pid}.npy', mkdir=False)
+    ws.dump(data_rtz, f'{pid}.npy', mkdir=False)
 
 
 def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):

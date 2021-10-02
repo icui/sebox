@@ -68,8 +68,8 @@ def _preprocess(ws: Kernel):
         # create workspace for individual kernels
         ws.parent.encoding[iker] = tp.cast('Kernel', ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
 
-    # run mesher
-    ws.add('mesh', ('module:solver', 'mesh'))
+    #FIXME # run mesher
+    # ws.add('mesh', ('module:solver', 'mesh'))
 
 
 def _main(ws: Kernel):
@@ -99,15 +99,11 @@ def _compute_kernel(ws: Kernel):
 def _compute_misfit(ws: Kernel):
     stas = getstations()
 
-    ws.mkdir('enc_syn')
-    ws.mkdir('enc_mf')
-    ws.mkdir('adstf')
-
     # process traces
-    ws.add_mpi(ft, arg=ws, arg_mpi=stas)
+    ws.add_mpi(ft, arg=ws, arg_mpi=stas, cwd='enc_syn')
     
     # compute misfit
-    ws.add_mpi(diff, arg=ws, arg_mpi=stas)
+    ws.add_mpi(diff, arg=ws, arg_mpi=stas, cwd='enc_mf')
 
     # convert adjoint sources to ASDF format
     ws.add(gather)
