@@ -4,7 +4,7 @@ import typing as tp
 from sebox import Workspace, Directory
 
 if tp.TYPE_CHECKING:
-    from .typing import Par_file
+    from .typing import Par_file, Forward
 
 
 def xspecfem(ws: Workspace):
@@ -78,9 +78,13 @@ def setpars(d: Directory, pars: Par_file):
     d.writelines(lines, 'DATA/Par_file')
 
 
-def getsize(d: Directory):
+def getsize(ws: Forward):
     """Number of processors to run the solver."""
-    pars = getpars(d)
+    if ws.has(f'DATA/Par_file'):
+        pars = getpars(ws)
+        
+    else:
+        pars = getpars(Directory(ws.path_specfem))
 
     if 'NPROC_XI' in pars and 'NPROC_ETA' in pars and 'NCHUNKS' in pars:
         return pars['NPROC_XI'] * pars['NPROC_ETA'] * pars['NCHUNKS']
