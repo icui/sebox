@@ -335,7 +335,7 @@ class Workspace(Directory):
     def add_mpi(self, cmd: tp.Union[str, tp.Callable], 
         nprocs: tp.Optional[int] = None, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
         name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None,
-        check_output: tp.Optional[tp.Callable[[str], None]] = None):
+        check_output: tp.Optional[tp.Callable[[str], None]] = None, data: tp.Optional[dict] = None):
         """Run MPI task."""
         from .mpiexec import mpiexec, getname
 
@@ -346,7 +346,8 @@ class Workspace(Directory):
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
         
-        ws = self.add(partial(mpiexec, self, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output))
+        func = partial(mpiexec, self, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
+        ws = self.add(func, **(data or {}))
 
         if name is not None:
             ws._name = name

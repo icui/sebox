@@ -4,30 +4,21 @@ import typing as tp
 from sebox import Workspace, Directory
 
 if tp.TYPE_CHECKING:
-    from sebox.typing import Mesh
-    from .typing import Par_file, Forward
-
-
-async def _xspecfem(ws: Workspace):
-    await ws.mpiexec('bin/xspecfem3D', getsize(ws), 1)
-
-
-async def _xmeshfem(ws: tp.Union[Forward, Mesh]):
-    if ws.path_mesh:
-        ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI')
-    
-    else:
-        await ws.mpiexec('bin/xmeshfem3D', getsize(ws))
+    from .typing import Par_file
 
 
 def xspecfem(ws: Workspace):
     """Add task to call xspecfem3D."""
-    ws.add(_xspecfem, prober=probe_solver)
+    ws.add_mpi('bin/xspecfem3D', getsize(ws), 1, data={'prober': probe_solver})
 
 
 def xmeshfem(ws: Workspace):
     """Add task to call xmeshfem3D."""
-    ws.add(_xmeshfem, prober=probe_mesher)
+    if ws.path_mesh:
+        ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI')
+    
+    else:
+        ws.add_mpi('bin/xmeshfem3D', getsize(ws), data={'prober': probe_mesher})
 
 
 def getpars(d: Directory) -> Par_file:

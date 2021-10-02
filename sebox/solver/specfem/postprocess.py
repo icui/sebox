@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing as tp
+from functools import partial
 
 from sebox.utils.adios import xsum, xmerge
 from .specfem import getsize
@@ -27,29 +28,42 @@ def setup(ws: Sum):
 def postprocess(ws: Sum):
     """Generate mesh."""
     ws.add(setup)
-    ws.add(xsum)
+    xsum(ws)
     ws.add(_smooth, concurrent=True)
-    ws.add(xmerge)
+    xmerge(ws)
 
 
 def _smooth(ws: Sum):
     from functools import partial
 
-    for kl in ws.kernel_names:
-        ws.add(partial(_xsmooth, kl, False), prober=partial(probe_smoother, kl))
+    klen = ws.smooth_kernels
+    hlen = ws.smooth_hessian
+
+    if isinstance(klen, list):
+        klen = max(klen[1], klen[0] * klen[2] ** (ws.iteration or 0))
+
+    if isinstance(hlen, list):
+        hlen = max(hlen[1], hlen[0] * hlen[2] ** (ws.iteration or 0))
+
+    if klen:
+        for kl in ws.kernel_names:
+            _xsmooth(ws, kl, klen)
     
-    for kl in ws.hessian_names:
-        ws.add(partial(_xsmooth, kl, True), prober=partial(probe_smoother, kl))
+    if hlen:
+        for kl in ws.hessian_names:
+            _xsmooth(ws, kl, hlen)
 
 
-async def _xsmooth(kl: str, hess: bool, ws: Sum):
-    rad = ws.smooth_hessian if hess else ws.smooth_kernels
-
-    if isinstance(rad, list):
-        rad = max(rad[1], rad[0] * rad[2] ** (ws.iteration or 0))
-
-    if rad:
-        await ws.mpiexec(f'bin/xsmooth_laplacian_sem_adios  {rad} {rad*(ws.smooth_vertical or 1)} {kl} kernels.bp DATABASES_MPI/ smooth/kernels_smooth_{kl}_crust_mantle.bp > OUTPUT_FILES/smooth_{kl}.txt', getsize(ws))
+def _xsmooth(ws: Sum, kl: str, length: float):
+    args = [
+        f'{length} {length*(ws.smooth_vertical or 1)}', kl,
+        'kernels.bp',
+        'DATABASES_MPI/',
+        f'smooth/kernels_smooth_{kl}_crust_mantle.bp',
+        f'> OUTPUT_FILES/smooth_{kl}.txt'
+    ]
+    ws.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join(args),
+        getsize(ws), name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
 
 
 def probe_smoother(kl: str, ws: Sum):

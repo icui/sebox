@@ -53,7 +53,7 @@ def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
     return tp.cast('Trace', wav[wav.get_waveform_tags()[0]].select(component=cmp)[0])
 
 
-def _scatter(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
+def _write(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     import numpy as np
     from pyasdf import ASDFDataSet
 
@@ -132,6 +132,4 @@ async def scatter(ws: Scatter):
 
         # save stats
         ws.dump(stats, ws.rel(ws.path_output, 'stats.pickle'))
-        await ws.mpiexec(_scatter,
-            arg=(ws.path_input, ws.path_output, ws.aux, stats),
-            arg_mpi=stats['stas'])
+        ws.add_mpi(_write, arg=(ws.path_input, ws.path_output, ws.aux, stats), arg_mpi=stats['stas'])

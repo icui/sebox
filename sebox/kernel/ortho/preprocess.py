@@ -202,22 +202,17 @@ def _encode_events(ws: Kernel):
 
 
 def _encode(ws: Kernel):
-    ws.add('enc_obs', _enc_obs)
-    ws.add('enc_diff', _enc_diff)
+    stas = getstations()
+
+    ws.mkdir('enc_obs')
+    ws.mkdir('enc_diff')
+    ws.mkdir('enc_weight')
+
+    ws.add_mpi(_enc_obs, arg=ws, arg_mpi=stas)
+    ws.add_mpi(_enc_diff, arg=ws, arg_mpi=stas)
 
 
-async def _enc_obs(ws: Kernel):
-    ws.mkdir()
-    await ws.mpiexec(_encode_obs, arg=ws, arg_mpi=getstations())
-
-
-async def _enc_diff(ws: Kernel):
-    ws.mkdir()
-    ws.mkdir('../enc_weight')
-    await ws.mpiexec(_encode_diff, arg=ws, arg_mpi=getstations())
-
-
-def _encode_obs(ws: Kernel, stas: tp.List[str]):
+def _enc_obs(ws: Kernel, stas: tp.List[str]):
     import numpy as np
     from sebox.mpi import pid
     from .preprocess import getfreq
@@ -269,7 +264,7 @@ def _encode_obs(ws: Kernel, stas: tp.List[str]):
     ws.dump(encoded, f'{pid}.npy', mkdir=False)
 
 
-def _encode_diff(ws: Kernel, stas: tp.List[str]):
+def _enc_diff(ws: Kernel, stas: tp.List[str]):
     """Encode diff data."""
     import numpy as np
     from sebox.mpi import pid
