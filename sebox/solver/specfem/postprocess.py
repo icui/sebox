@@ -34,8 +34,6 @@ def postprocess(ws: Sum):
 
 
 def _smooth(ws: Sum):
-    from functools import partial
-
     klen = ws.smooth_kernels
     hlen = ws.smooth_hessian
 
@@ -63,7 +61,7 @@ def _xsmooth(ws: Sum, kl: str, length: float):
         f'> OUTPUT_FILES/smooth_{kl}.txt'
     ]
     ws.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join(args),
-        getsize(ws), name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
+        getsize, name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
 
 
 def probe_smoother(kl: str, ws: Sum):

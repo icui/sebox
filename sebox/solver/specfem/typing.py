@@ -51,8 +51,7 @@ class Par_file(tp.TypedDict, total=False):
     SPONGE_RADIUS_IN_DEGREES: float
 
 
-class Forward(typing.Forward):
-    """Forward simulation with specfem-specific configuraitons."""
+class Specfem(typing.Forward, typing.Adjoint):
     # specfem directory
     path_specfem: str
 

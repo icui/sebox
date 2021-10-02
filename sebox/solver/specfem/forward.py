@@ -5,10 +5,10 @@ from .specfem import xmeshfem, xspecfem, setpars
 from .mesh import setup as setup_mesh
 
 if tp.TYPE_CHECKING:
-    from .typing import Par_file, Forward
+    from .typing import Par_file, Specfem
 
 
-def setup(ws: Forward):
+def setup(ws: Specfem):
     """Create forward workspace."""
     if not ws.path_mesh and not ws.path_model:
         raise AttributeError('path_mesh or path_model is required')
@@ -40,7 +40,7 @@ def setup(ws: Forward):
     setpars(ws, pars)
 
 
-def forward(ws: Forward):
+def forward(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
     xmeshfem(ws)

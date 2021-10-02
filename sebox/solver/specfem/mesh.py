@@ -5,10 +5,10 @@ from sebox import Directory
 from .specfem import xmeshfem, setpars
 
 if tp.TYPE_CHECKING:
-    from .typing import Par_file, Forward
+    from .typing import Par_file, Specfem
 
 
-def setup(ws: Forward):
+def setup(ws: Specfem):
     """Create mesher workspace."""
     src = ws.path_specfem
     d = Directory(src)
@@ -52,7 +52,7 @@ def setup(ws: Forward):
     setpars(ws, pars)
 
 
-async def mesh(ws: Forward):
+async def mesh(ws: Specfem):
     """Generate mesh."""
     ws.add(setup)
     xmeshfem(ws)

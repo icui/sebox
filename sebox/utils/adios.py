@@ -10,7 +10,7 @@ def _check(out: str):
 
 
 def _adios(ws: Workspace, cmd: str):
-    ws.add_mpi(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize(ws), check_output=_check)
+    ws.add_mpi(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize, check_output=_check)
 
 
 def xsum(ws: Workspace):

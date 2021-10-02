@@ -333,7 +333,8 @@ class Workspace(Directory):
         return ws
     
     def add_mpi(self, cmd: tp.Union[str, tp.Callable], 
-        nprocs: tp.Optional[int] = None, per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
+        nprocs: tp.Optional[tp.Union[int, tp.Callable[[Directory], int]]] = None,
+        per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
         name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None,
         check_output: tp.Optional[tp.Callable[[str], None]] = None, data: tp.Optional[dict] = None):
         """Run MPI task."""

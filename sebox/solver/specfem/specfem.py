@@ -1,24 +1,34 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Workspace, Directory
+from sebox import Directory
 
 if tp.TYPE_CHECKING:
-    from .typing import Par_file, Forward
+    from .typing import Par_file, Specfem
 
 
-def xspecfem(ws: Workspace):
+def xspecfem(ws: Specfem):
     """Add task to call xspecfem3D."""
-    ws.add_mpi('bin/xspecfem3D', getsize(ws), 1, data={'prober': probe_solver})
+    ws.add_mpi('bin/xspecfem3D', getsize, 1, data={'prober': probe_solver})
 
 
-def xmeshfem(ws: Workspace):
+def xmeshfem(ws: Specfem):
     """Add task to call xmeshfem3D."""
     if ws.path_mesh:
         ws.ln(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI')
     
     else:
-        ws.add_mpi('bin/xmeshfem3D', getsize(ws), data={'prober': probe_mesher})
+        ws.add_mpi('bin/xmeshfem3D', getsize, data={'prober': probe_mesher})
+
+
+def getsize(d: Directory):
+    """Number of processors to run the solver."""
+    pars = getpars(d)
+
+    if 'NPROC_XI' in pars and 'NPROC_ETA' in pars and 'NCHUNKS' in pars:
+        return pars['NPROC_XI'] * pars['NPROC_ETA'] * pars['NCHUNKS']
+    
+    raise RuntimeError('not dimension in Par_file')
 
 
 def getpars(d: Directory) -> Par_file:
@@ -76,20 +86,6 @@ def setpars(d: Directory, pars: Par_file):
                 lines[i] = f'{keysec}= {val}'
 
     d.writelines(lines, 'DATA/Par_file')
-
-
-def getsize(ws: Forward):
-    """Number of processors to run the solver."""
-    if ws.has(f'DATA/Par_file'):
-        pars = getpars(ws)
-        
-    else:
-        pars = getpars(Directory(ws.path_specfem))
-
-    if 'NPROC_XI' in pars and 'NPROC_ETA' in pars and 'NCHUNKS' in pars:
-        return pars['NPROC_XI'] * pars['NPROC_ETA'] * pars['NCHUNKS']
-    
-    raise RuntimeError('not dimension in Par_file')
 
 
 def probe_mesher(d: Directory) -> float:

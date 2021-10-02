@@ -6,6 +6,7 @@ from .specfem import xspecfem, setpars
 
 if tp.TYPE_CHECKING:
     from sebox.typing import Adjoint
+    from .typing import Specfem
 
 
 def setup(ws: Adjoint):
@@ -42,7 +43,7 @@ def finalize(ws: Adjoint):
     ws.mv('OUTPUT_FILES/kernels.bp', 'kernels.bp')
 
 
-def adjoint(ws: Adjoint):
+def adjoint(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
     xspecfem(ws)

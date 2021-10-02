@@ -48,7 +48,7 @@ def getname(cmd: tp.Union[str, tp.Callable]) -> str:
 
 
 async def mpiexec(cmd: tp.Union[str, tp.Callable],
-    nprocs: int, cpus_per_proc: int, gpus_per_proc: int,
+    nprocs: tp.Union[int, tp.Callable[[Directory], int]], cpus_per_proc: int, gpus_per_proc: int,
     name: tp.Optional[str], arg: tp.Any, arg_mpi: tp.Optional[list],
     check_output: tp.Optional[tp.Callable[[str], None]], d: Directory) -> str:
     """Schedule the execution of MPI task"""
@@ -59,7 +59,11 @@ async def mpiexec(cmd: tp.Union[str, tp.Callable],
     err = None
     
     try:
-        # remove unused proceessors
+        # get number of MPI processes
+        if callable(nprocs):
+            nprocs = nprocs(d)
+
+        # remove unused proceesses
         if arg_mpi:
             nprocs = min(len(arg_mpi), nprocs)
 

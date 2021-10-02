@@ -1,25 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Task, Workspace
-
-
-class SolverModule(tp.Protocol):
-    """Required functions in a solver module."""
-    # generate mesh
-    mesh: Task[Mesh]
-
-    # forward simulation
-    forward: Task[Forward]
-
-    # adjoint simulation
-    adjoint: Task[Adjoint]
-
-
-class Mesh(Workspace):
-    """A workspace to generate mesh."""
-    # path to model file
-    path_model: str
+from sebox import Workspace
 
 
 class Sum(Workspace):
