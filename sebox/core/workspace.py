@@ -346,7 +346,7 @@ class Workspace(Directory):
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
         
-        func = partial(mpiexec, self, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
+        func = partial(mpiexec, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
         ws = self.add(func, **(data or {}))
 
         if name is not None:
