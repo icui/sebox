@@ -34,10 +34,10 @@ def postprocess(ws: Sum):
 
     if ws.source_mask:
         xmask(ws)
-        ws.ln('kernels_masked.bp', 'kernels.bp')
+        ws.ln('./kernels_masked.bp', './kernels.bp')
     
     else:
-        ws.ln('kernels_smooth.bp', 'kernels.bp')
+        ws.ln('./kernels_smooth.bp', './kernels.bp')
 
 
 def _smooth(ws: Sum):
