@@ -53,7 +53,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
         for i in range(ws.nbands_used):
             mf[i] = np.nansum(diff[..., i * fincr: (i + 1) * fincr] ** 2)
         
-        mf_sum = comm.gather(np.nansum(phase_diff, axis=0), root=0)
+        mf_sum = comm.gather(np.nansum(mf, axis=0), root=0)
 
         if rank == 0:
             ws.dump(sum(mf_sum), f'{name}_mf.npy')
