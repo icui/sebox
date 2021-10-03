@@ -1,8 +1,6 @@
 from .mesh import mesh
 from .adjoint import adjoint
-from .forward import forward
+from .forward import forward as main
 from .postprocess import postprocess
 
-main = forward
-
-__all__ = ['main', 'mesh', 'forward', 'adjoint', 'postprocess']
+__all__ = ['main', 'mesh', 'adjoint', 'postprocess']

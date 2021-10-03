@@ -7,11 +7,11 @@ from .search import *
 
 class Solver(tp.Protocol):
     """Required functions in a solver module."""
+    # forward simulation
+    main: Task[Forward]
+
     # generate mesh
     mesh: Task[Forward]
-
-    # forward simulation
-    forward: Task[Forward]
 
     # adjoint simulation
     adjoint: Task[Adjoint]
@@ -22,29 +22,28 @@ class Solver(tp.Protocol):
 
 class Kernel(tp.Protocol):
     """Required functions in a solver module."""
-    # compute kernels
-    compute_kernel: Task[Kernel]
+    main: Task[Kernel]
     
     # compute misfit
-    compute_misfit: Task[Kernel]
+    misfit: Task[Kernel]
 
 
 class Optimizer(tp.Protocol):
     """Required functions in a optimizer module."""
     # create iterations
-    optimize: Task[Optimizer]
+    main: Task[Optimizer]
 
     # add an iteration
     iterate: Task[Optimizer]
 
     # compute search direction
-    compute_direction: Task[Optimizer]
+    direction: Task[Optimizer]
 
 
 class Search(tp.Protocol):
     """Required functions in a search module."""
     # create search steps
-    search: Task[Search]
+    main: Task[Search]
 
     # add a search step
     step: Task[Search]

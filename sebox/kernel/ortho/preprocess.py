@@ -30,7 +30,7 @@ def getfreq(ws: Kernel) -> ndarray:
 
 def prepare_encoding(ws: Kernel):
     """Prepare source encoding data."""
-    if ws.inherit_encoding:
+    if ws.inherit_kernel:
         # link existing encoding workspace
         ws.add(_link_encoded)
     
@@ -46,7 +46,11 @@ def prepare_encoding(ws: Kernel):
 
 
 def _link_encoded(ws: Kernel):
-    pass
+    kl = ws.encoding[ws.iker]
+    ws.ln(ws.rel(kl.path('SUPERSOURCE')))
+    ws.ln(ws.rel(kl.path('enc_obs')))
+    ws.ln(ws.rel(kl.path('enc_diff')))
+    ws.ln(ws.rel(kl.path('enc_weight')))
 
 
 def _prepare_frequencies(ws: Kernel):
@@ -203,9 +207,7 @@ def _encode_events(ws: Kernel):
 
 def _encode(ws: Kernel):
     stas = getstations()
-
     ws.mkdir('enc_weight')
-
     ws.add_mpi(_enc_obs, arg=ws, arg_mpi=stas, cwd='enc_obs')
     ws.add_mpi(_enc_diff, arg=ws, arg_mpi=stas, cwd='enc_diff')
 

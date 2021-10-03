@@ -20,3 +20,6 @@ class Kernel(Workspace):
 
     # path to current model
     path_model: str
+
+    # inherit from an existing kernel workspace
+    inherit_kernel: tp.Optional[Kernel]

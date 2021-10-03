@@ -22,7 +22,7 @@ def setup(ws: Postprocess):
     ws.write(f'{len(ws.path_kernels)}\n', 'path.txt')
 
     for kl in ws.path_kernels:
-        ws.write('1.0\n' + ws.rel(kl) + '\n', 'path.txt', 'a')
+        ws.write('1.0\n' + ws.rel(kl, 'OUTPUT_FILES/kernels.bp') + '\n', 'path.txt', 'a')
 
 
 def postprocess(ws: Postprocess):

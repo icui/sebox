@@ -5,20 +5,21 @@ from sebox import root
 from sebox.utils.catalog import getdir, getstations
 from .catalog import merge, scatter_obs, scatter_diff, scatter_baz
 from .preprocess import prepare_encoding
-from .ft import ft
-from .diff import diff, gather
+from .kernel import compute_kernel
 
 if tp.TYPE_CHECKING:
     from .typing import Kernel
 
 
-def compute_kernel(ws: Kernel):
+def main(ws: Kernel):
     """Compute kernels."""
+    ws.encoding = {}
     _compute(ws, False)
 
 
-def compute_misfit(ws: Kernel):
+def misfit(ws: Kernel):
     """Compute misfit."""
+    ws.encoding = tp.cast(Kernel, ws.inherit_kernel).encoding
     _compute(ws, True)
 
 
@@ -33,10 +34,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add(_main, concurrent=True, misfit_only=misfit_only)
 
     # sum and smooth kernels
-    if not misfit_only:
-        ws.add('solver.postprocess', 'postprocess',
-            path_kernels=[ws.path(f'kl_{iker:02d}/adjoint/kernels.bp') for iker in range(ws.nkernels or 1)],
-            path_mesh= ws.path('mesh'))
+    ws.add(_postprocess)
 
 
 def _catalog(ws: Kernel):
@@ -63,11 +61,12 @@ def _catalog(ws: Kernel):
 
 
 def _preprocess(ws: Kernel):
-    ws.parent.encoding = {}
-    
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        ws.parent.encoding[iker] = tp.cast('Kernel', ws.add(prepare_encoding, f'kl_{iker:02d}', iker=iker))
+        kl = tp.cast('Kernel', ws.add(prepare_encoding, f'kl_{iker:02d}', iker=iker))
+
+        if not ws.inherit_kernel:
+            ws.encoding[iker] = kl
 
     #FIXME # run mesher
     # ws.add('mesh', ('module:solver', 'mesh'))
@@ -76,36 +75,13 @@ def _preprocess(ws: Kernel):
 def _main(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(_compute_kernel, f'kl_{iker:02d}', inherit=tp.cast('Kernel', ws.parent).encoding[iker])
+        ws.add(compute_kernel, f'kl_{iker:02d}', inherit=ws.encoding[iker])
 
 
-def _compute_kernel(ws: Kernel):
-    # forward simulation
-    ws.add('solver.forward', 'forward',
-        path_event= ws.path('SUPERSOURCE'),
-        path_stations= getdir().path('SUPERSTATION'),
-        path_mesh= ws.path('../mesh'),
-        monochromatic_source= True,
-        save_forward= True)
-    
-    # compute misfit
-    ws.add(_compute_misfit)
-
-    # adjoint simulation
+def _postprocess(ws: Kernel):
     if not ws.misfit_only:
-        ws.add('solver.adjoint', 'adjoint',
-            path_forward = ws.path('forward'),
-            path_misfit = ws.path('adjoint.h5'))
-
-
-def _compute_misfit(ws: Kernel):
-    stas = getstations()
-
-    # process traces
-    ws.add_mpi(ft, arg=ws, arg_mpi=stas, cwd='enc_syn')
-    
-    # compute misfit
-    ws.add_mpi(diff, arg=ws, arg_mpi=stas, cwd='enc_mf')
-
-    # convert adjoint sources to ASDF format
-    ws.add(gather)
+        ws.add('solver.postprocess', 'postprocess',
+            path_kernels=[kl.path('adjoint') for kl in ws.encoding.values()],
+            path_mesh= ws.path('mesh'))
+        
+        ws.add(ws.ln, args=('postprocess/*.bp',), name='link_kernels')

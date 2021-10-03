@@ -1,3 +1,3 @@
-from .ortho import kernel, misfit
+from .main import main, misfit
 
-__all__ = ['kernel', 'misfit']
+__all__ = ['main', 'misfit']
