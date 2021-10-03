@@ -33,9 +33,10 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add(_main, concurrent=True, misfit_only=misfit_only)
 
     # sum and smooth kernels
-    ws.add('postprocess', ('module:solver', 'postprocess'),
-        path_kernels=[ws.path(f'kl_{iker:02d}/adjoint/kernels.bp') for iker in range(ws.nkernels or 1)],
-        path_mesh= ws.path('mesh'))
+    if not misfit_only:
+        ws.add('postprocess', ('module:solver', 'postprocess'),
+            path_kernels=[ws.path(f'kl_{iker:02d}/adjoint/kernels.bp') for iker in range(ws.nkernels or 1)],
+            path_mesh= ws.path('mesh'))
 
 
 def _catalog(ws: Kernel):
@@ -90,10 +91,11 @@ def _compute_kernel(ws: Kernel):
     # compute misfit
     ws.add(_compute_misfit)
 
-    # forward simulation
-    ws.add('adjoint', ('module:solver', 'adjoint'),
-        path_forward = ws.path('forward'),
-        path_misfit = ws.path('adjoint.h5'))
+    # adjoint simulation
+    if not ws.misfit_only:
+        ws.add('adjoint', ('module:solver', 'adjoint'),
+            path_forward = ws.path('forward'),
+            path_misfit = ws.path('adjoint.h5'))
 
 
 def _compute_misfit(ws: Kernel):

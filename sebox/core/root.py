@@ -6,7 +6,7 @@ import signal
 from .workspace import Workspace
 
 if tp.TYPE_CHECKING:
-    from sebox.typing import SystemModule
+    from sebox.typing.modules import System
 
 
 class Root(Workspace):
@@ -54,14 +54,14 @@ class Root(Workspace):
     _cache: tp.Dict[str, tp.Any] = {}
 
     # module of job scheduler
-    _sys: SystemModule
+    _sys: System
     
     @property
     def cache(self):
         return self._cache
 
     @property
-    def sys(self) -> SystemModule:
+    def sys(self) -> System:
         return self._sys
 
     @property
@@ -119,7 +119,7 @@ class Root(Workspace):
         self.job_paused = False
 
         # load module of job scheduler
-        self._sys = tp.cast('SystemModule', import_module(f'sebox.system.{self.module_system}'))
+        self._sys = tp.cast('System', import_module(f'sebox.system.{self.module_system}'))
         
     
     def _signal(self, *_):

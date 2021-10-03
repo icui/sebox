@@ -1,16 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Task, Workspace
-
-
-class KernelModule(tp.Protocol):
-    """Required functions in a solver module."""
-    # compute kernels
-    kernel: Task[Kernel]
-
-    # compute misfit
-    misfit: Task[Kernel]
+from sebox import Workspace
 
 
 class Kernel(Workspace):
