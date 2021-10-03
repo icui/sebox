@@ -47,10 +47,10 @@ def prepare_encoding(ws: Kernel):
 
 def _link_encoded(ws: Kernel):
     kl = ws.encoding[ws.iker]
-    ws.ln(ws.rel(kl.path('SUPERSOURCE')))
-    ws.ln(ws.rel(kl.path('enc_obs')))
-    ws.ln(ws.rel(kl.path('enc_diff')))
-    ws.ln(ws.rel(kl.path('enc_weight')))
+    ws.ln(ws.rel(kl, 'SUPERSOURCE'))
+    ws.ln(ws.rel(kl, 'enc_obs'))
+    ws.ln(ws.rel(kl, 'enc_diff'))
+    ws.ln(ws.rel(kl, 'enc_weight'))
 
 
 def _prepare_frequencies(ws: Kernel):

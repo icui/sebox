@@ -27,25 +27,19 @@ def setup(ws: Adjoint):
     ws.mkdir('OUTPUT_FILES')
     
     # link files
-    ws.ln(ws.rel(d.path('bin')))
-    ws.ln(ws.rel(d.path('DATABASES_MPI')))
-    ws.ln(ws.rel(d.path('DATA/*')), 'DATA')
+    ws.ln(ws.rel(d, 'bin'))
+    ws.ln(ws.rel(d, 'DATABASES_MPI'))
+    ws.ln(ws.rel(d, 'DATA/*'), 'DATA')
     ws.ln(ws.rel(ws.path_misfit), 'SEM/adjoint.h5')
     ws.ln('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
 
     #  update Par_file
     ws.rm('DATA/Par_file')
-    ws.cp(ws.rel(d.path('DATA/Par_file')), 'DATA')
+    ws.cp(ws.rel(d, 'DATA/Par_file'), 'DATA')
     setpars(ws, { 'SIMULATION_TYPE': 3, 'SAVE_FORWARD': False })
-
-
-def finalize(ws: Adjoint):
-    """Move generated kernels."""
-    ws.mv('OUTPUT_FILES/kernels.bp', 'kernels.bp')
 
 
 def adjoint(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
     xspecfem(ws)
-    ws.add(finalize)

@@ -28,9 +28,12 @@ class Directory:
         src = path.normpath(path.join(self.cwd, *paths))
         return path.abspath(src) if abs else src
     
-    def rel(self, *paths: str) -> str:
+    def rel(self, src: tp.Union[str, Directory], *paths: str) -> str:
         """Convert from a path relative to root directory to a path relative to current directory."""
-        src = path.join('.', *paths)
+        if isinstance(src, Directory):
+            src = src.path()
+
+        src = path.join(src, *paths)
 
         if path.isabs(src):
             return src
@@ -38,7 +41,7 @@ class Directory:
         if path.isabs(self.path()):
             return path.abspath(src)
             
-        return path.relpath(src, self.path())
+        return path.relpath(src or '.', self.path())
     
     def subdir(self, *paths: str) -> Directory:
         """Create a subdirectory object."""
@@ -52,14 +55,14 @@ class Directory:
         """Remove a file or a directory."""
         check_call('rm -rf ' + self.path(src), shell=True)
     
-    def cp(self, src: str, dst: str = '.', mkdir: bool = True):
+    def cp(self, src: str, dst: str = '.', *, mkdir: bool = True):
         """Copy file or a directory."""
         if mkdir:
             self.mkdir(path.dirname(dst))
 
         check_call(f'cp -r {self.path(src)} {self.path(dst)}', shell=True)
     
-    def mv(self, src: str, dst: str = '.', mkdir: bool = True):
+    def mv(self, src: str, dst: str = '.', *, mkdir: bool = True):
         """Move a file or a directory."""
         if mkdir:
             self.mkdir(path.dirname(dst))
@@ -68,14 +71,11 @@ class Directory:
     
     def ln(self, src: str, dst: str = '.', mkdir: bool = True):
         """Link a file or a directory."""
-        if '/' not in src and src != '.':
-            src = './' + src
-        
-        if '/' not in dst and dst != '.':
-            dst = './' + dst
-
+        # source file name
+        srcdir = path.dirname(src) or '.'
         srcf = path.basename(src)
 
+        # determine target directory and file name
         if self.isdir(dst):
             self.rm(path.join(dst, srcf))
             dstdir = dst
@@ -83,7 +83,7 @@ class Directory:
         
         else:
             self.rm(dst)
-            dstdir = path.dirname(dst)
+            dstdir = path.dirname(dst) or '.'
             dstf = path.basename(dst)
 
             if mkdir:
@@ -93,7 +93,7 @@ class Directory:
         if not path.isabs(src):
             if not path.isabs(dst):
                 # convert to relative path if both src and dst are relative
-                src = path.join(path.relpath(path.dirname(src), dstdir), srcf)
+                src = path.join(path.relpath(srcdir, dstdir), srcf)
             
             else:
                 # convert src to abspath if dst is abspath
@@ -131,7 +131,7 @@ class Directory:
         with open(self.path(src), 'r') as f:
             return f.read()
 
-    def write(self, text: str, dst: str, mode: str = 'w', mkdir: bool = True):
+    def write(self, text: str, dst: str, mode: str = 'w', *, mkdir: bool = True):
         """Write text and wait until write is complete."""
         if mkdir:
             self.mkdir(path.dirname(dst))
@@ -169,7 +169,7 @@ class Directory:
         else:
             raise TypeError(f'unsupported file type {ext}')
     
-    def dump(self, obj, dst: str, ext: DumpType = None, mkdir: bool = True):
+    def dump(self, obj, dst: str, ext: DumpType = None, *, mkdir: bool = True):
         """Save a pickle / toml file."""
         if mkdir:
             self.mkdir(path.dirname(dst))
