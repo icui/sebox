@@ -14,13 +14,14 @@ def _adios(ws: Workspace, cmd: str):
     ws.add_mpi(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize, check_output=_check)
 
 
-def xsum(ws: Workspace):
+def xsum(ws: Workspace, mask: bool):
     _adios(ws, f'xsum_kernels path.txt kernels_raw.bp')
 
+    if mask:
+        _adios(ws, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
 
-def xmask(ws: Workspace):
-    _adios(ws, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
 
-
-def xmerge(ws: Workspace):
-    _adios(ws, f'xmerge_kernels smooth kernels.bp')
+def xmerge(ws: Workspace, precond: float):
+    _adios(ws, 'xmerge_kernels smooth kernels.bp')
+    _adios(ws, 'xcompute_vp_vs_hess kernels.bp DATABASES_MPI/solver_data.bp hess.bp')
+    _adios(ws, f'xprepare_vp_vs_precond hess.bp precond.bp {1/precond}')

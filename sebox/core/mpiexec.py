@@ -122,7 +122,7 @@ async def mpiexec(cmd: tp.Union[str, tp.Callable],
         cmd = root.sys.mpiexec(cmd, nprocs, cpus_per_proc, gpus_per_proc)
         
         # create subprocess to execute task
-        with open(d.path(f'{name}.out'), 'a') as f:
+        with open(d.path(f'{name}.out'), 'w') as f:
             # write command
             f.write(f'{cmd}\n\n')
             time_start = time()

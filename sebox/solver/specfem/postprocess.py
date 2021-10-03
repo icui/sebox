@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 from functools import partial
 
-from sebox.utils.adios import xsum, xmerge, xmask
+from sebox.utils.adios import xsum, xmerge
 from .specfem import getsize
 
 if tp.TYPE_CHECKING:
@@ -28,13 +28,9 @@ def setup(ws: Sum):
 def postprocess(ws: Sum):
     """Sum and smooth kernels."""
     ws.add(setup)
-    xsum(ws)
-
-    if ws.source_mask:
-        xmask(ws)
-
+    xsum(ws, ws.source_mask)
     ws.add(_smooth, concurrent=True)
-    xmerge(ws)
+    xmerge(ws, ws.precondition)
 
 
 def _smooth(ws: Sum):

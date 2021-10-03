@@ -33,6 +33,9 @@ class Sum(Workspace):
     # apply source mask
     source_mask: bool
 
+    # precondition threshold
+    precondition: float
+
 
 class Forward(Workspace):
     """A workspace to run forward simulation."""

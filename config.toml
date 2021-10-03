@@ -54,9 +54,9 @@ kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
 hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
 smooth_kernels = [150.0, 70.0, 0.9]
 smooth_hessian = [150.0, 70.0, 0.9]
-smooth_vertical = 0.6
+smooth_vertical = 1.0
 fixed_preconditioner = false
-precondition = 200.0
+precondition = 400.0
 source_mask = true
 
 # misfit
