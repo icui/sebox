@@ -2,7 +2,8 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Directory
-from .shared import xspecfem, setpars
+from .forward import xspecfem
+from .shared import setpars
 
 if tp.TYPE_CHECKING:
     from sebox.typing import Adjoint

@@ -1,8 +1,8 @@
 from __future__ import annotations
 import typing as tp
 
-from .mesh import setup as setup_mesh
-from .shared import xmeshfem, xspecfem, setpars
+from .mesh import setup as setup_mesh, xmeshfem
+from .shared import setpars, getsize
 
 if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
@@ -40,6 +40,11 @@ def setup(ws: Specfem):
     setpars(ws, pars)
 
 
+def xspecfem(ws: Specfem):
+    """Add task to call xspecfem3D."""
+    ws.add_mpi('bin/xspecfem3D', getsize, 1, data={'prober': _probe})
+
+
 def forward(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
@@ -48,3 +53,31 @@ def forward(ws: Specfem):
     ws.add(('sebox.utils.asdf', 'scatter'),
         path_input=ws.path('OUTPUT_FILES/synthetic.h5'), path_output=ws.path('traces'),
         stats={'cmps': ['N', 'E', 'Z']})
+
+
+def _probe(d: Specfem) -> float:
+    """Prober of solver progress."""
+    from math import ceil
+
+    if not d.has(out := 'OUTPUT_FILES/output_solver.txt'):
+        return 0.0
+    
+    lines = d.readlines(out)
+    lines.reverse()
+
+    for line in lines:
+        if 'End of the simulation' in line:
+            return 1.0
+
+        if 'We have done' in line:
+            words = line.split()
+            done = False
+
+            for word in words:
+                if word == 'done':
+                    done = True
+
+                elif word and done:
+                    return ceil(float(word)) / 100
+
+    return 0.0
