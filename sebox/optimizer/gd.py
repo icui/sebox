@@ -14,17 +14,15 @@ def main(ws: Optimizer):
 def iterate(ws: Optimizer):
     """Add an iteration."""
     ws.ln(ws.rel(ws.path_model), 'model_init.bp')
-    #FIXME
-    ws.ln('../mesh', 'kernel/mesh')
 
     # compute kernels
-    ws.add('kernel', 'kernel', path_model=ws.path('model_init.bp'))
+    kl = ws.add('kernel', 'kernel', path_model=ws.path('model_init.bp'))
 
     # compute direction
     ws.add('optimizer.direction')
 
     # line search
-    ws.add('search')
+    ws.search = tp.cast(tp.Any, ws.add('search', kernel=kl))
 
     # add new iteration
     ws.add(_add)
@@ -40,4 +38,5 @@ def _add(ws: Optimizer):
 
     if len(optim) < optim.niters:
         optim.add(iterate, f'iter_{len(optim):02d}',
-            path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'))
+            path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
+            path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))

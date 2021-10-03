@@ -54,7 +54,6 @@ def diff(ws: Kernel, stas: tp.List[str]):
         for i in range(ws.nbands_used):
             mf[..., i] = np.nansum(diff[..., i * fincr: (i + 1) * fincr] ** 2, axis=-1)
         
-        print('$', pid, mf.sum(axis=0))
         mf_sum = comm.gather(mf.sum(axis=0), root=0)
 
         if rank == 0:
@@ -113,7 +112,6 @@ def gather(ws: Kernel):
         mf += ws.load('amp_mf.npy').sum()
 
     ws.solvers[ws.iker].misfit_value = mf
-    print('@', mf)
 
     # merge adjoint sources into a single ASDF file
     if not ws.misfit_only:

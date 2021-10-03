@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Workspace
-from .kernel import Kernel
+from .search import Search
 
 
 class Optimizer(Workspace):
@@ -15,3 +15,9 @@ class Optimizer(Workspace):
 
     # current model
     path_model: str
+
+    # mesh of current model
+    path_mesh: tp.Optional[str]
+
+    # workspace for line search
+    search: Search
