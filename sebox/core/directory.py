@@ -68,6 +68,12 @@ class Directory:
     
     def ln(self, src: str, dst: str = '.', mkdir: bool = True):
         """Link a file or a directory."""
+        if '/' not in src:
+            src = './' + src
+        
+        if '/' not in dst:
+            dst = './' + dst
+            
         srcf = path.basename(src)
 
         if self.isdir(dst):
