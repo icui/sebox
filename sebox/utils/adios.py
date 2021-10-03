@@ -18,9 +18,9 @@ def xsum(ws: Workspace):
     _adios(ws, f'xsum_kernels path.txt kernels_raw.bp')
 
 
-def xmerge(ws: Workspace):
-    _adios(ws, f'xmerge_kernels smooth kernels_smooth.bp')
-
-
 def xmask(ws: Workspace):
-    _adios(ws, f'xsrc_mask kernels_smooth.bp {getdir().path("source_mask")} kernels_masked.bp')
+    _adios(ws, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
+
+
+def xmerge(ws: Workspace):
+    _adios(ws, f'xmerge_kernels smooth kernels.bp')

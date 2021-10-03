@@ -29,15 +29,12 @@ def postprocess(ws: Sum):
     """Sum and smooth kernels."""
     ws.add(setup)
     xsum(ws)
-    ws.add(_smooth, concurrent=True)
-    xmerge(ws)
 
     if ws.source_mask:
         xmask(ws)
-        ws.ln('kernels_masked.bp', 'kernels.bp')
-    
-    else:
-        ws.ln('kernels_smooth.bp', 'kernels.bp')
+
+    ws.add(_smooth, concurrent=True)
+    xmerge(ws)
 
 
 def _smooth(ws: Sum):
@@ -62,7 +59,7 @@ def _smooth(ws: Sum):
 def _xsmooth(ws: Sum, kl: str, length: float):
     args = [
         f'{length} {length*(ws.smooth_vertical or 1)}', kl,
-        'kernels_raw.bp',
+        'kernels_masked.bp' if ws.source_mask else 'kernels_raw.bp',
         'DATABASES_MPI/',
         f'smooth/kernels_smooth_{kl}_crust_mantle.bp',
         f'> OUTPUT_FILES/smooth_{kl}.txt'
