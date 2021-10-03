@@ -1,6 +1,7 @@
 import typing as tp
 
 from sebox import Workspace
+from sebox.utils.catalog import getdir
 from sebox.solver.specfem.specfem import getsize
 
 
@@ -14,8 +15,12 @@ def _adios(ws: Workspace, cmd: str):
 
 
 def xsum(ws: Workspace):
-    _adios(ws, f'xsum_kernels path.txt kernels.bp')
+    _adios(ws, f'xsum_kernels path.txt kernels_raw.bp')
 
 
 def xmerge(ws: Workspace):
     _adios(ws, f'xmerge_kernels smooth kernels_smooth.bp')
+
+
+def xmask(ws: Workspace):
+    _adios(ws, f'xsrc_mask kernels_smooth.bp {getdir().path("source_mask")} kernels_masked.bp')

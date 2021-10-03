@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 from functools import partial
 
-from sebox.utils.adios import xsum, xmerge
+from sebox.utils.adios import xsum, xmerge, xmask
 from .specfem import getsize
 
 if tp.TYPE_CHECKING:
@@ -26,11 +26,18 @@ def setup(ws: Sum):
 
 
 def postprocess(ws: Sum):
-    """Generate mesh."""
+    """Sum and smooth kernels."""
     ws.add(setup)
     xsum(ws)
     ws.add(_smooth, concurrent=True)
     xmerge(ws)
+
+    if ws.source_mask:
+        xmask(ws)
+        ws.ln('kernels_masked.bp', 'kernels.bp')
+    
+    else:
+        ws.ln('kernels_smooth.bp', 'kernels.bp')
 
 
 def _smooth(ws: Sum):
@@ -55,7 +62,7 @@ def _smooth(ws: Sum):
 def _xsmooth(ws: Sum, kl: str, length: float):
     args = [
         f'{length} {length*(ws.smooth_vertical or 1)}', kl,
-        'kernels.bp',
+        'kernels_raw.bp',
         'DATABASES_MPI/',
         f'smooth/kernels_smooth_{kl}_crust_mantle.bp',
         f'> OUTPUT_FILES/smooth_{kl}.txt'

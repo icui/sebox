@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Directory
+from sebox.utils.catalog import getdir
 from .specfem import xspecfem, setpars
 
 if tp.TYPE_CHECKING:
@@ -47,9 +48,4 @@ def adjoint(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
     xspecfem(ws)
-
-    if ws.source_mask:
-        ws.add_mpi('xsrc_mask OUTPUT_FILES/kernels.bp DATABASES_MPI/ kernels.bp')
-
-    else:
-        ws.add(finalize)
+    ws.add(finalize)
