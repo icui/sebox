@@ -27,3 +27,7 @@ def xmerge(ws: Workspace, precond: float):
     _adios(ws, 'xmerge_kernels smooth kernels.bp')
     _adios(ws, 'xcompute_vp_vs_hess kernels.bp DATABASES_MPI/solver_data.bp hess.bp')
     _adios(ws, f'xprepare_vp_vs_precond hess.bp precond.bp {1/precond}')
+
+
+def xgd(ws: Workspace):
+    _adios(ws, 'xsteepDescent kernel/kernels.bp kernel/precond.bp direction.bp')

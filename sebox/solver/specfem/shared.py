@@ -21,6 +21,9 @@ def getpars(d: Directory) -> Par_file:
     """Get entries in Par_file."""
     pars: Par_file = {}
 
+    if not d.has('DATA/Par_file'):
+        d = Directory(tp.cast(tp.Any, d).path_specfem)
+
     for line in d.readlines('DATA/Par_file'):
         if '=' in line:
             keysec, valsec = line.split('=')[:2]
