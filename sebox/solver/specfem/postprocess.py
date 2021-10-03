@@ -6,10 +6,10 @@ from sebox.utils.adios import xsum, xmerge
 from .shared import getsize
 
 if tp.TYPE_CHECKING:
-    from sebox.typing import Sum
+    from sebox.typing import Postprocess
 
 
-def setup(ws: Sum):
+def setup(ws: Postprocess):
     """Create mesher workspace."""
     # link directories
     ws.mkdir('smooth')
@@ -25,7 +25,7 @@ def setup(ws: Sum):
         ws.write('1.0\n' + ws.rel(kl) + '\n', 'path.txt', 'a')
 
 
-def postprocess(ws: Sum):
+def postprocess(ws: Postprocess):
     """Sum and smooth kernels."""
     ws.add(setup)
     xsum(ws, ws.source_mask)
@@ -33,7 +33,7 @@ def postprocess(ws: Sum):
     xmerge(ws, ws.precondition)
 
 
-def _smooth(ws: Sum):
+def _smooth(ws: Postprocess):
     klen = ws.smooth_kernels
     hlen = ws.smooth_hessian
 
@@ -52,7 +52,7 @@ def _smooth(ws: Sum):
             _xsmooth(ws, kl, hlen)
 
 
-def _xsmooth(ws: Sum, kl: str, length: float):
+def _xsmooth(ws: Postprocess, kl: str, length: float):
     args = [
         f'{length} {length*(ws.smooth_vertical or 1)}', kl,
         'kernels_masked.bp' if ws.source_mask else 'kernels_raw.bp',
@@ -64,7 +64,7 @@ def _xsmooth(ws: Sum, kl: str, length: float):
         getsize, name=f'smooth_{kl}', data={'prober': partial(_probe, kl)})
 
 
-def _probe(kl: str, ws: Sum):
+def _probe(kl: str, ws: Postprocess):
     """Prober of smoother progress."""
     if ws.has(out := f'OUTPUT_FILES/smooth_{kl}.txt'):
         n = 0

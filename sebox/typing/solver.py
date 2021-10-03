@@ -4,7 +4,7 @@ import typing as tp
 from sebox import Workspace
 
 
-class Sum(Workspace):
+class Postprocess(Workspace):
     """A workspace to generate mesh."""
     # current iteration
     iteration: tp.Optional[int]

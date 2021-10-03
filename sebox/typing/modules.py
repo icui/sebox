@@ -17,7 +17,7 @@ class Solver(tp.Protocol):
     adjoint: Task[Adjoint]
 
     # sum and smooth kernels
-    postprocess: Task[Sum]
+    postprocess: Task[Postprocess]
 
 
 class Kernel(tp.Protocol):
