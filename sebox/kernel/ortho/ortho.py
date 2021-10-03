@@ -12,19 +12,19 @@ if tp.TYPE_CHECKING:
     from .typing import Kernel
 
 
-def kernel(ws: Kernel):
+def compute_kernel(ws: Kernel):
     """Compute kernels."""
     _compute(ws, False)
 
 
-def misfit(ws: Kernel):
+def compute_misfit(ws: Kernel):
     """Compute misfit."""
     _compute(ws, True)
 
 
 def _compute(ws: Kernel, misfit_only: bool):
     # prepare catalog (executed only once for a catalog)
-    ws.add('catalog', _catalog, concurrent=True)
+    ws.add(_catalog, 'catalog', concurrent=True)
 
     # mesher and preprocessing
     ws.add(_preprocess, concurrent=True)
@@ -34,7 +34,7 @@ def _compute(ws: Kernel, misfit_only: bool):
 
     # sum and smooth kernels
     if not misfit_only:
-        ws.add('postprocess', ('module:solver', 'postprocess'),
+        ws.add('solver.postprocess', 'postprocess',
             path_kernels=[ws.path(f'kl_{iker:02d}/adjoint/kernels.bp') for iker in range(ws.nkernels or 1)],
             path_mesh= ws.path('mesh'))
 
@@ -67,7 +67,7 @@ def _preprocess(ws: Kernel):
     
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        ws.parent.encoding[iker] = tp.cast('Kernel', ws.add(f'kl_{iker:02d}', prepare_encoding, iker=iker))
+        ws.parent.encoding[iker] = tp.cast('Kernel', ws.add(prepare_encoding, f'kl_{iker:02d}', iker=iker))
 
     #FIXME # run mesher
     # ws.add('mesh', ('module:solver', 'mesh'))
@@ -76,12 +76,12 @@ def _preprocess(ws: Kernel):
 def _main(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(f'kl_{iker:02d}', _compute_kernel, inherit=tp.cast('Kernel', ws.parent).encoding[iker])
+        ws.add(_compute_kernel, f'kl_{iker:02d}', inherit=tp.cast('Kernel', ws.parent).encoding[iker])
 
 
 def _compute_kernel(ws: Kernel):
     # forward simulation
-    ws.add('forward', ('module:solver', 'forward'),
+    ws.add('solver.forward', 'forward',
         path_event= ws.path('SUPERSOURCE'),
         path_stations= getdir().path('SUPERSTATION'),
         path_mesh= ws.path('../mesh'),
@@ -93,7 +93,7 @@ def _compute_kernel(ws: Kernel):
 
     # adjoint simulation
     if not ws.misfit_only:
-        ws.add('adjoint', ('module:solver', 'adjoint'),
+        ws.add('solver.adjoint', 'adjoint',
             path_forward = ws.path('forward'),
             path_misfit = ws.path('adjoint.h5'))
 

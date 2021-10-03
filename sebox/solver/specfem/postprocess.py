@@ -3,7 +3,7 @@ import typing as tp
 from functools import partial
 
 from sebox.utils.adios import xsum, xmerge
-from .specfem import getsize
+from .shared import getsize
 
 if tp.TYPE_CHECKING:
     from sebox.typing import Sum
@@ -61,10 +61,10 @@ def _xsmooth(ws: Sum, kl: str, length: float):
         f'> OUTPUT_FILES/smooth_{kl}.txt'
     ]
     ws.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join(args),
-        getsize, name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
+        getsize, name=f'smooth_{kl}', data={'prober': partial(_probe, kl)})
 
 
-def probe_smoother(kl: str, ws: Sum):
+def _probe(kl: str, ws: Sum):
     """Prober of smoother progress."""
     if ws.has(out := f'OUTPUT_FILES/smooth_{kl}.txt'):
         n = 0

@@ -1,6 +1,8 @@
 from sebox import Task
 from .solver import *
 from .kernel import *
+from .optimizer import *
+from .search import *
 
 
 class Solver(tp.Protocol):
@@ -21,10 +23,31 @@ class Solver(tp.Protocol):
 class Kernel(tp.Protocol):
     """Required functions in a solver module."""
     # compute kernels
-    kernel: Task[Kernel]
-
+    compute_kernel: Task[Kernel]
+    
     # compute misfit
-    misfit: Task[Kernel]
+    compute_misfit: Task[Kernel]
+
+
+class Optimizer(tp.Protocol):
+    """Required functions in a optimizer module."""
+    # create iterations
+    optimize: Task[Optimizer]
+
+    # add an iteration
+    iterate: Task[Optimizer]
+
+    # compute search direction
+    compute_direction: Task[Optimizer]
+
+
+class Search(tp.Protocol):
+    """Required functions in a search module."""
+    # create search steps
+    search: Task[Search]
+
+    # add a search step
+    step: Task[Search]
 
 
 class System(tp.Protocol):

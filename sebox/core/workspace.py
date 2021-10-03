@@ -61,9 +61,12 @@ class Workspace(Directory):
         func = self.task
         
         if func:
-            # use task function name as workspace name
-            if isinstance(func, tuple) or isinstance(func, list):
+            # use task name as workspace name
+            if isinstance(func, (list, tuple)):
                 return func[1]
+            
+            if isinstance(func, str):
+                return func.replace('.', '_')
 
             while isinstance(func, partial):
                 func = func.func
@@ -230,14 +233,21 @@ class Workspace(Directory):
             # import task
             task = self.task
 
-            if isinstance(task, tuple) or isinstance(task, list):
-                path = task[0]
+            if isinstance(task, (list, tuple)):
+                # import function from custom module
+                task = getattr(import_module(task[0]), task[1])
 
-                if path.startswith('module:'):
-                    # choice of sebox module
-                    path = f'sebox.{path[7:]}.' + getattr(self, f'module_{path[7:]}')
+            elif isinstance(task, str):
+                # import built-in modules
+                if '.' in task:
+                    section, func = task.split('.')
+                
+                else:
+                    section = task
+                    func = 'main'
 
-                task = getattr(import_module(path), task[1])
+                path = f'sebox.{section}.' + getattr(self, f'module_{section}')
+                task = getattr(import_module(path), func)
 
             # call task function
             if task and (result := task(self)) and asyncio.iscoroutine(result):
@@ -303,18 +313,20 @@ class Workspace(Directory):
         """Update properties from dict."""
         self._data.update(items)
 
-    def add(self, name: tp.Union[str, Task[tp.Any]] = None, /,
-        task: Task[tp.Any] = None, *,
+    def add(self, task: Task[tp.Any] = None, /,
+        cwd: tp.Optional[str] = None, name: tp.Optional[str] = None, *,
+        args: tp.Optional[tp.Union[list, tuple]] = None,
         concurrent: tp.Optional[bool] = None, prober: Prober = None,
         inherit: tp.Optional[Workspace] = None, **data) -> Workspace:
         """Add a child workspace or a child task."""
-        if name is not None and not isinstance(name, str):
-            if task is not None:
-                raise TypeError('duplicate task when adding workspace')
+        if args is not None:
+            assert callable(task)
+            task = partial(task, *args)
 
-            task = name
-        
         if task is not None:
+            if isinstance(task, (list, tuple)):
+                assert len(task) == 2
+
             data['task'] = task
         
         if prober is not None:
@@ -326,18 +338,19 @@ class Workspace(Directory):
         if inherit is not None:
             data['inherit'] = inherit
 
-        if isinstance(name, str):
-            ws = Workspace(self.path(name), data, self)
+        ws = Workspace(self.path(cwd or '.'), data, self)
+
+        if name is not None:
             ws._name = name
         
-        else:
-            ws = Workspace(self.path(), data, self)
+        elif cwd is not None:
+            ws._name = cwd
         
         self._ws.append(ws)
 
         return ws
     
-    def add_mpi(self, cmd: tp.Union[str, tp.Callable], 
+    def add_mpi(self, cmd: tp.Union[str, tp.Callable], /,
         nprocs: tp.Optional[tp.Union[int, tp.Callable[[Directory], int]]] = None,
         per_proc: tp.Union[int, tp.Tuple[int, int]] = (1, 0), *,
         name: tp.Optional[str] = None, arg: tp.Any = None, arg_mpi: tp.Optional[list] = None,
@@ -353,19 +366,8 @@ class Workspace(Directory):
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
         
-        func = partial(mpiexec, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
-
-        if cwd is None:
-            ws = self.add(func, **(data or {}))
-
-        else:
-            ws = self.add(cwd, func, **(data or {}))
-
-        if name is not None:
-            ws._name = name
-
-        else:
-            ws._name = getname(cmd)
+        args = (cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
+        ws = self.add(tp.cast(Task, mpiexec), cwd, name or getname(cmd), args=args, **(data or {}))
         
         return ws
     
@@ -413,5 +415,5 @@ class Workspace(Directory):
 
 # type annotation for a workspace task function
 T = tp.TypeVar('T', bound=Workspace)
-Task = tp.Optional[tp.Union[tp.Callable[[T], tp.Optional[tp.Coroutine]], tp.Tuple[str, str]]]
+Task = tp.Optional[tp.Union[tp.Callable[[T], tp.Optional[tp.Coroutine]], tp.Tuple[str, str], str]]
 Prober = tp.Optional[tp.Callable[[Workspace], tp.Union[float, str, None]]]

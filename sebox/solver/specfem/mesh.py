@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Directory
-from .specfem import xmeshfem, setpars
+from .shared import xmeshfem, setpars
 
 if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem

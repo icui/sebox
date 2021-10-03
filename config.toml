@@ -14,7 +14,7 @@ job_gap = 1.0
 job_debug = false
 
 # main task
-task = ["module:kernel", "kernel"]
+task = "kernel"
 task_nnodes = 1
 
 # path to external directories
@@ -52,8 +52,8 @@ seed = 0
 # kernel processing
 kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
 hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
-smooth_kernels = [150.0, 70.0, 0.9]
-smooth_hessian = [150.0, 70.0, 0.9]
+smooth_kernels = [150.0, 60.0, 0.9]
+smooth_hessian = [150.0, 60.0, 0.9]
 smooth_vertical = 1.0
 fixed_preconditioner = false
 precondition = 400.0

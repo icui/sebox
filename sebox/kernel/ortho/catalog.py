@@ -51,5 +51,5 @@ def _scatter(ws: Kernel, tag: tp.Literal['obs', 'diff']):
         dst = f'ft_{tag}_p{root.task_nprocs}/{event}'
         
         if not cdir.has(dst):
-            ws.add(event, ('sebox.utils.asdf', 'scatter'), aux=True, dtype=complex,
+            ws.add(('sebox.utils.asdf', 'scatter'), event, aux=True, dtype=complex,
                 path_input=cdir.path(f'ft_{tag}/{src}'), path_output=cdir.path(dst))
