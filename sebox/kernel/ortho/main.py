@@ -13,18 +13,16 @@ if tp.TYPE_CHECKING:
 
 def main(ws: Kernel):
     """Compute kernels."""
-    ws.encoding = {}
     _compute(ws, False)
 
 
 def misfit(ws: Kernel):
     """Compute misfit."""
-    ws.encoding = tp.cast('Kernel', ws.inherit_kernel).encoding
-    print('$$$', ws.path_model, ws.path_mesh)
     _compute(ws, True)
 
 
 def _compute(ws: Kernel, misfit_only: bool):
+    ws.encoding = {}
     ws.solvers = {}
 
     # prepare catalog (executed only once for a catalog)
@@ -66,10 +64,7 @@ def _catalog(ws: Kernel):
 def _preprocess(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # create workspace for individual kernels
-        kl = tp.cast('Kernel', ws.add(prepare_encoding, f'kl_{iker:02d}', iker=iker))
-
-        if not ws.inherit_kernel:
-            ws.encoding[iker] = kl
+        ws.encoding[iker] = tp.cast('Kernel', ws.add(prepare_encoding, f'kl_{iker:02d}', iker=iker))
 
     # run mesher
     ws.add('solver.mesh', 'mesh')

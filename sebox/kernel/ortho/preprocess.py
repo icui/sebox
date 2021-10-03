@@ -46,11 +46,13 @@ def prepare_encoding(ws: Kernel):
 
 
 def _link_encoded(ws: Kernel):
-    kl = ws.encoding[ws.iker]
+    kl = ws.inherit_kernel.encoding[ws.iker] # type: ignore
     ws.ln(ws.rel(kl, 'SUPERSOURCE'))
     ws.ln(ws.rel(kl, 'enc_obs'))
     ws.ln(ws.rel(kl, 'enc_diff'))
     ws.ln(ws.rel(kl, 'enc_weight'))
+    ws.parent.update(kl.load('encoding.pickle'))
+    ws.parent.fslots = kl.load('fslots.pickle')
 
 
 def _prepare_frequencies(ws: Kernel):
@@ -94,7 +96,7 @@ def _prepare_frequencies(ws: Kernel):
         for i in range(nbands):
             # compare smooth radius with the highest frequency of current band
             if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < rad:
-                ws.nbands_used = i
+                nbands_used = i
                 break
 
     # save results to parent workspace
@@ -104,7 +106,7 @@ def _prepare_frequencies(ws: Kernel):
         'nt_ts': nt_ts,
         'nt_se': nt_se,
         'nbands': nbands,
-        'nbands_used': nbands,
+        'nbands_used': nbands_used,
         'imin': imin,
         'imax': imax,
         'seed_used': getseed(ws)
