@@ -2,7 +2,6 @@ import typing as tp
 
 from sebox import Workspace
 from sebox.utils.catalog import getdir
-from sebox.solver.specfem.shared import getsize
 
 
 def _check(out: str):
@@ -11,6 +10,7 @@ def _check(out: str):
 
 
 def _adios(ws: Workspace, cmd: str):
+    from sebox.solver.specfem.shared import getsize
     ws.add_mpi(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize, check_output=_check)
 
 
