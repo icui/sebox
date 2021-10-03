@@ -52,7 +52,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
         mf = np.zeros([syn.shape[0], syn.shape[1], ws.nbands_used])
 
         for i in range(ws.nbands_used):
-            mf[i] = np.nansum(diff[..., i * fincr: (i + 1) * fincr] ** 2)
+            mf[i] = np.nansum(diff[..., i * fincr: (i + 1) * fincr] ** 2, axis=-1)
         
         print('$', pid, mf.sum(axis=0))
         mf_sum = comm.gather(mf.sum(axis=0), root=0)
