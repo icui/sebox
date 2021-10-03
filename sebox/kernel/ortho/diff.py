@@ -23,6 +23,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
     weight = ws.load(f'enc_weight/{pid}.npy')
 
     # clip phases
+    print(pid, np.nanmax(weight), np.nanmin(weight))
     weight[np.where(abs(ref) > np.pi)] = 0.0
 
     # compute diff
@@ -34,8 +35,7 @@ def diff(ws: Kernel, stas: tp.List[str]):
         phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
         amp_sum = sum(comm.allgather(np.nansum(amp_diff, axis=0)))
         weight_sum = sum(comm.allgather(np.nansum(weight, axis=0)))
-        nan_sum = np.sum(np.isnan(phase_diff).astype(int), axis=0)
-        tp.cast(tp.Any, weight_sum)[np.invert(np.where(nan_sum))] = 1.0
+        weight_sum[np.where(weight_sum == 0.0)] = 1.0 # type: ignore
 
         # sum of phase and amplitude differences
         phase_diff -= phase_sum / weight_sum
