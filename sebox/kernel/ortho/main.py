@@ -20,6 +20,7 @@ def main(ws: Kernel):
 def misfit(ws: Kernel):
     """Compute misfit."""
     ws.encoding = tp.cast('Kernel', ws.inherit_kernel).encoding
+    print('$$$', ws.path_model, ws.path_mesh)
     _compute(ws, True)
 
 
@@ -70,8 +71,8 @@ def _preprocess(ws: Kernel):
         if not ws.inherit_kernel:
             ws.encoding[iker] = kl
 
-    #FIXME # run mesher
-    # ws.add('mesh', ('module:solver', 'mesh'))
+    # run mesher
+    ws.add('solver.mesh', 'mesh')
 
 
 def _main(ws: Kernel):
@@ -99,4 +100,4 @@ def _link_kernels(ws: Kernel):
 
 
 def _sum_misfit(ws: Kernel):
-    ws.misfit_sum = sum([kl.misfit_value for kl in ws.solvers.values()])
+    ws.misfit_value = sum([kl.misfit_kl for kl in ws.solvers.values()])

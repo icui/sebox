@@ -30,4 +30,10 @@ def xmerge(ws: Workspace, precond: float):
 
 
 def xgd(ws: Workspace):
+    """Compute gradient descent direction."""
     _adios(ws, 'xsteepDescent kernel/kernels.bp kernel/precond.bp direction.bp')
+
+
+def xupdate(ws: Workspace, step: float):
+    """Update model."""
+    _adios(ws, f'xupdate_model {step} ../model_init.bp ../mesh/solver_data.bp ../direction.bp')

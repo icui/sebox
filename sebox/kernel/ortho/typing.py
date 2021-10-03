@@ -6,6 +6,9 @@ from sebox import typing
 
 class Kernel(typing.Kernel):
     """Source encoded kernel computation."""
+    # number of kernel computations per iteration
+    nkernels: tp.Optional[int]
+
     # number of kernels to randomize frequency per iteration
     nkernels_rng: tp.Optional[int]
 
@@ -83,3 +86,6 @@ class Kernel(typing.Kernel):
 
     # normalize source magnitudes
     normalize_source: bool
+
+    # misfit value from an individual kernel computation
+    misfit_kl: float

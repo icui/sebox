@@ -13,16 +13,22 @@ def main(ws: Optimizer):
 
 def iterate(ws: Optimizer):
     """Add an iteration."""
+    # link model
     ws.ln(ws.rel(ws.path_model), 'model_init.bp')
+    ws.path_model = ws.path('model_init.bp')
+
+    # generate or link mesh
+    ws.add('solver.mesh', 'mesh', path_mesh=ws.path_mesh)
+    ws.path_mesh = ws.path('mesh')
 
     # compute kernels
-    kl = ws.add('kernel', 'kernel', path_model=ws.path('model_init.bp'))
+    kl = ws.add('kernel', 'kernel')
 
     # compute direction
     ws.add('optimizer.direction')
 
     # line search
-    ws.search = tp.cast(tp.Any, ws.add('search', kernel=kl))
+    ws.search = tp.cast(tp.Any, ws.add('search', inherit_kernel=kl))
 
     # add new iteration
     ws.add(_add)

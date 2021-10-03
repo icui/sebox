@@ -13,5 +13,8 @@ class Search(Workspace):
     # initial step length
     step_init: float
 
+    # current step length
+    step: float
+
     # kernel workspace
-    kernel: Kernel
+    inherit_kernel: Kernel
