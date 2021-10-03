@@ -14,7 +14,6 @@ def main(ws: Search):
 
 def step(ws: Search):
     # update model
-    ws.mkdir()
     xupdate(ws, ws.step)
 
     # compute misfit
