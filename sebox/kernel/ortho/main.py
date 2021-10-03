@@ -19,11 +19,13 @@ def main(ws: Kernel):
 
 def misfit(ws: Kernel):
     """Compute misfit."""
-    ws.encoding = tp.cast(Kernel, ws.inherit_kernel).encoding
+    ws.encoding = tp.cast('Kernel', ws.inherit_kernel).encoding
     _compute(ws, True)
 
 
 def _compute(ws: Kernel, misfit_only: bool):
+    ws.solvers = {}
+
     # prepare catalog (executed only once for a catalog)
     ws.add(_catalog, 'catalog', concurrent=True)
 
@@ -75,11 +77,15 @@ def _preprocess(ws: Kernel):
 def _main(ws: Kernel):
     for iker in range(ws.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(compute_kernel, f'kl_{iker:02d}', inherit=ws.encoding[iker])
+        ws.solvers[iker] = tp.cast('Kernel', ws.add(compute_kernel, f'kl_{iker:02d}', inherit=ws.encoding[iker]))
 
 
 def _postprocess(ws: Kernel):
+    # sum misfit
+    ws.add(_sum_misfit)
+
     if not ws.misfit_only:
+        # process kernels
         ws.add('solver.postprocess', 'postprocess',
             path_kernels=[kl.path('adjoint') for kl in ws.encoding.values()],
             path_mesh= ws.path('mesh'))
@@ -90,3 +96,7 @@ def _postprocess(ws: Kernel):
 def _link_kernels(ws: Kernel):
     ws.ln('postprocess/kernels.bp')
     ws.ln('postprocess/precond.bp')
+
+
+def _sum_misfit(ws: Kernel):
+    ws.misfit_sum = sum([kl.misfit_value for kl in ws.solvers.values()])

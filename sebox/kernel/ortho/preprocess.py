@@ -94,8 +94,7 @@ def _prepare_frequencies(ws: Kernel):
         for i in range(nbands):
             # compare smooth radius with the highest frequency of current band
             if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < rad:
-                # parent.nbands_used = i #FIXME
-                ws.nbands_used = nbands
+                ws.nbands_used = i
                 break
 
     # save results to parent workspace

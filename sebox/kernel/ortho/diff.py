@@ -11,7 +11,7 @@ from .ft import rotate_frequencies
 def diff(ws: Kernel, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
-    from sebox.mpi import pid
+    from sebox.mpi import pid, rank
     from mpi4py.MPI import COMM_WORLD as comm
 
     # read data
@@ -36,33 +36,38 @@ def diff(ws: Kernel, stas: tp.List[str]):
         weight_sum = sum(comm.allgather(np.nansum(weight, axis=0)))
 
         # sum of phase and amplitude differences
-        phase_diff = phase_diff - phase_sum / weight_sum
-        amp_diff = amp_diff - amp_sum / weight_sum
-
-    
-        if 'II.OBN' in stas:
-            print('II.OBN')
-            print(np.nanmax(phase_sum), np.nanmax(amp_sum), np.nanmax(weight_sum))
+        phase_diff -= phase_sum / weight_sum
+        amp_diff -= amp_sum / weight_sum
 
     # apply measurement weightings
     omega = np.arange(ws.imin, ws.imax) / ws.imin
     phase_diff *= weight * ws.phase_factor / omega
     amp_diff *= weight * ws.amplitude_factor
 
-    # misfit values and adjoint sources
-    nan = np.where(np.isnan(phase_diff))
-    syn[nan] = 1.0
+    # save misfit value
+    fincr = ws.frequency_increment
 
-    # misfit value
-    mf = np.nansum(phase_diff ** 2, axis=-1)
+    def save_misfit(diff, name):
+        mf = np.zeros([syn.shape[0], syn.shape[1], ws.nbands_used])
+
+        for i in range(ws.nbands_used):
+            mf[i] = np.nansum(diff[..., i * fincr: (i + 1) * fincr] ** 2)
+        
+        mf_sum = comm.gather(np.nansum(phase_diff, axis=0), root=0)
+
+        if rank == 0:
+            ws.dump(sum(mf_sum), f'{name}_mf.npy')
+
+    save_misfit(phase_diff, 'phase')
 
     if ws.amplitude_factor > 0:
-        mf += np.nansum(amp_diff ** 2, axis=-1)
+        save_misfit(amp_diff, 'amp')
 
-    ws.dump(mf, f'enc_mf/{pid}.npy', mkdir=False)
-
-    # compute adjoint source
     if not ws.misfit_only:
+        # compute adjoint sources
+        nan = np.where(np.isnan(phase_diff))
+        syn[nan] = 1.0
+
         phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
         phase_adj[nan] = 0.0
 
@@ -99,10 +104,20 @@ def diff(ws: Kernel, stas: tp.List[str]):
 def gather(ws: Kernel):
     from pyasdf import ASDFDataSet
 
-    with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
-        for pid in ws.ls('enc_mf', 'p*.pickle'):
-            adstf, stas, cmps = ws.load(f'enc_mf/{pid}')
+    # get total misfit
+    mf = ws.load('phase_mf.npy').sum()
 
-            for i, sta in enumerate(stas):
-                for j, cmp in enumerate(cmps):
-                    ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
+    if ws.amplitude_factor > 0:
+        mf += ws.load('amp_mf.npy').sum()
+
+    ws.parent.misfit_value = mf
+
+    # merge adjoint sources into a single ASDF file
+    if not ws.misfit_only:
+        with ASDFDataSet(ws.path('adjoint.h5'), mode='w', mpi=False) as ds:
+            for pid in ws.ls('enc_mf', 'p*.pickle'):
+                adstf, stas, cmps = ws.load(f'enc_mf/{pid}')
+
+                for i, sta in enumerate(stas):
+                    for j, cmp in enumerate(cmps):
+                        ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})

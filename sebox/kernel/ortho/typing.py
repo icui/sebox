@@ -6,9 +6,6 @@ from sebox import typing
 
 class Kernel(typing.Kernel):
     """Source encoded kernel computation."""
-    # number of kernel computations per iteration
-    nkernels: tp.Optional[int]
-
     # number of kernels to randomize frequency per iteration
     nkernels_rng: tp.Optional[int]
 
@@ -21,8 +18,11 @@ class Kernel(typing.Kernel):
     # index of current kernel
     iker: int
 
-    # workspace with source encoding paremeters
+    # workspaces with source encoding paremeters
     encoding: tp.Dict[int, Kernel]
+
+    # workspaces for forward and adojoint simulation
+    solvers: tp.Dict[int, Kernel]
 
     # time duration to reach steady state for source encoding
     transient_duration: float

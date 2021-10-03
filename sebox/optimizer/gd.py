@@ -14,6 +14,8 @@ def main(ws: Optimizer):
 def iterate(ws: Optimizer):
     """Add an iteration."""
     ws.ln(ws.rel(ws.path_model), 'model_init.bp')
+    #FIXME
+    ws.ln('../mesh', 'kernel/mesh')
 
     # compute kernels
     ws.add('kernel', 'kernel', path_model=ws.path('model_init.bp'))

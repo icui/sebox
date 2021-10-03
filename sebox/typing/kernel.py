@@ -6,6 +6,9 @@ from sebox import Workspace
 
 class Kernel(Workspace):
     """Compute kernel and / or misfit."""
+    # number of kernel computations per iteration
+    nkernels: tp.Optional[int]
+
     # current iteration
     iteration: tp.Optional[int]
 
@@ -23,3 +26,9 @@ class Kernel(Workspace):
 
     # inherit from an existing kernel workspace
     inherit_kernel: tp.Optional[Kernel]
+
+    # misfit value from an individual kernel computation
+    misfit_value: float
+
+    # sum of misfit values of all kernels
+    misfit_sum: float
