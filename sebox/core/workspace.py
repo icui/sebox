@@ -25,6 +25,9 @@ class Workspace(Directory):
     # workspace to inherit properties from
     inherit: tp.Optional[Workspace]
 
+    # arguments passed to task (pass Workspace if args is None)
+    args: tp.Optional[tp.Iterable]
+
     # display name
     _name: tp.Optional[str] = None
 
@@ -250,7 +253,8 @@ class Workspace(Directory):
                 task = getattr(import_module(path), func)
 
             # call task function
-            if task and (result := task(self)) and asyncio.iscoroutine(result):
+            args = self.args or [self]
+            if task and (result := task(*args)) and asyncio.iscoroutine(result):
                 await result
         
         except Exception as e:
@@ -319,10 +323,6 @@ class Workspace(Directory):
         concurrent: tp.Optional[bool] = None, prober: Prober = None,
         inherit: tp.Optional[Workspace] = None, **data) -> Workspace:
         """Add a child workspace or a child task."""
-        if args is not None:
-            assert callable(task)
-            task = partial(task, *args)
-
         if task is not None:
             if isinstance(task, (list, tuple)):
                 assert len(task) == 2
@@ -337,6 +337,9 @@ class Workspace(Directory):
         
         if inherit is not None:
             data['inherit'] = inherit
+        
+        if args is not None:
+            data['args'] = args
 
         ws = Workspace(self.path(cwd or '.'), data, self)
 
@@ -366,8 +369,8 @@ class Workspace(Directory):
         if isinstance(per_proc, int):
             per_proc = (per_proc, per_proc)
         
-        args = (cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
-        ws = self.add(tp.cast(Task, mpiexec), cwd, name or getname(cmd), args=args, **(data or {}))
+        func = partial(mpiexec, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
+        ws = self.add(func, cwd, name or getname(cmd), **(data or {}))
         
         return ws
     

@@ -11,3 +11,6 @@ class Optimizer(Workspace):
 
     # current iteration
     iteration: int
+
+    # current model
+    path_model: str
