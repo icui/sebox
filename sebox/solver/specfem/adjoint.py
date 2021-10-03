@@ -41,7 +41,7 @@ def setup(ws: Adjoint):
 
 def finalize(ws: Adjoint):
     """Move generated kernels."""
-    ws.mv('OUTPUT_FILES/kernels_masked.bp', 'kernels.bp')
+    ws.mv('OUTPUT_FILES/kernels.bp', 'kernels.bp')
 
 
 def adjoint(ws: Specfem):
