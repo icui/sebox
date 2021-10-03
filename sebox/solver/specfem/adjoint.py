@@ -40,11 +40,16 @@ def setup(ws: Adjoint):
 
 def finalize(ws: Adjoint):
     """Move generated kernels."""
-    ws.mv('OUTPUT_FILES/kernels.bp', 'kernels.bp')
+    ws.mv('OUTPUT_FILES/kernels_masked.bp', 'kernels.bp')
 
 
 def adjoint(ws: Specfem):
     """Forward simulation."""
     ws.add(setup)
     xspecfem(ws)
-    ws.add(finalize)
+
+    if ws.source_mask:
+        ws.add_mpi('xsrc_mask OUTPUT_FILES/kernels.bp DATABASES_MPI/ kernels.bp')
+
+    else:
+        ws.add(finalize)

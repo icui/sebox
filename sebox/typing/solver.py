@@ -30,6 +30,9 @@ class Sum(Workspace):
     # names of the hessian to be smoothed
     hessian_names: tp.List[str]
 
+    # apply source mask
+    source_mask: bool
+
 
 class Forward(Workspace):
     """A workspace to run forward simulation."""
