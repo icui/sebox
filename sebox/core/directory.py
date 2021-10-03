@@ -128,7 +128,7 @@ class Directory:
 
     def read(self, src: str) -> str:
         """Read text file."""
-        with open(self.path(src), 'r') as f:
+        with open(self.path(src), 'r', encoding='utf-8') as f:
             return f.read()
 
     def write(self, text: str, dst: str, mode: str = 'w', *, mkdir: bool = True):
