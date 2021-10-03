@@ -36,4 +36,4 @@ def xgd(ws: Workspace):
 
 def xupdate(ws: Workspace, step: float):
     """Update model."""
-    _adios(ws, f'xupdate_model {step} ../model_init.bp ../mesh/solver_data.bp ../direction.bp')
+    _adios(ws, f'xupdate_model {step} ../model_init.bp ../mesh/DATABASES_MPI/solver_data.bp ../direction.bp')
