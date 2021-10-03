@@ -84,4 +84,9 @@ def _postprocess(ws: Kernel):
             path_kernels=[kl.path('adjoint') for kl in ws.encoding.values()],
             path_mesh= ws.path('mesh'))
         
-        ws.add(ws.ln, args=('postprocess/*.bp',), name='link_kernels')
+        ws.add(_link_kernels)
+
+
+def _link_kernels(ws: Kernel):
+    ws.ln('postprocess/kernels.bp')
+    ws.ln('postprocess/precond.bp')
