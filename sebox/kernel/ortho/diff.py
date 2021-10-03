@@ -113,6 +113,7 @@ def gather(ws: Kernel):
         mf += ws.load('amp_mf.npy').sum()
 
     ws.solvers[ws.iker].misfit_value = mf
+    print('@', mf)
 
     # merge adjoint sources into a single ASDF file
     if not ws.misfit_only:
