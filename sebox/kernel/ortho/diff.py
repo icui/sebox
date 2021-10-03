@@ -110,7 +110,7 @@ def gather(ws: Kernel):
     if ws.amplitude_factor > 0:
         mf += ws.load('amp_mf.npy').sum()
 
-    ws.parent.misfit_value = mf
+    ws.parent.parent.misfit_value = mf
 
     # merge adjoint sources into a single ASDF file
     if not ws.misfit_only:

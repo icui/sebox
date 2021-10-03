@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Workspace
+from .kernel import Kernel
 
 
 class Optimizer(Workspace):

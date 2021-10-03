@@ -2,6 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import Workspace
+from .kernel import Kernel
 
 
 class Search(Workspace):
@@ -11,3 +12,6 @@ class Search(Workspace):
 
     # initial step length
     step_init: float
+
+    # kernel workspace
+    kernel: Kernel
