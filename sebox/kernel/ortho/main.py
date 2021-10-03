@@ -13,15 +13,17 @@ if tp.TYPE_CHECKING:
 
 def main(ws: Kernel):
     """Compute kernels."""
-    _compute(ws, False)
+    ws.misfit_only = False
+    _compute(ws)
 
 
 def misfit(ws: Kernel):
     """Compute misfit."""
-    _compute(ws, True)
+    ws.misfit_only = True
+    _compute(ws)
 
 
-def _compute(ws: Kernel, misfit_only: bool):
+def _compute(ws: Kernel):
     ws.encoding = {}
     ws.solvers = {}
 
@@ -32,7 +34,7 @@ def _compute(ws: Kernel, misfit_only: bool):
     ws.add(_preprocess, concurrent=True)
 
     # kernel computation
-    ws.add(_main, concurrent=True, misfit_only=misfit_only)
+    ws.add(_main, concurrent=True)
 
     # sum and smooth kernels
     ws.add(_postprocess)
