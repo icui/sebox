@@ -29,11 +29,16 @@ def diff(ws: Kernel, stas: tp.List[str]):
     phase_diff = np.angle(syn / obs) * weight
     amp_diff = np.log(np.abs(syn) / np.abs(obs)) * weight
 
+    nan = np.where(np.isnan(phase_diff))
+    syn[nan] = 1.0
+
     if ws.double_difference:
         # unwrap or clip phases
         phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
         amp_sum = sum(comm.allgather(np.nansum(amp_diff, axis=0)))
         weight_sum = sum(comm.allgather(np.nansum(weight, axis=0)))
+        nan_sum = np.sum(np.isnan(phase_diff).astype(int), axis=0)
+        tp.cast(tp.Any, weight_sum)[np.invert(np.where(nan_sum))] = 1.0
 
         # sum of phase and amplitude differences
         phase_diff -= phase_sum / weight_sum
@@ -65,9 +70,6 @@ def diff(ws: Kernel, stas: tp.List[str]):
 
     if not ws.misfit_only:
         # compute adjoint sources
-        nan = np.where(np.isnan(phase_diff))
-        syn[nan] = 1.0
-
         phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
         phase_adj[nan] = 0.0
 
@@ -111,7 +113,6 @@ def gather(ws: Kernel):
         mf += ws.load('amp_mf.npy').sum()
 
     ws.solvers[ws.iker].misfit_value = mf
-    print('@', mf)
 
     # merge adjoint sources into a single ASDF file
     if not ws.misfit_only:
