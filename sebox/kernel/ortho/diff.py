@@ -29,9 +29,6 @@ def diff(ws: Kernel, stas: tp.List[str]):
     phase_diff = np.angle(syn / obs) * weight
     amp_diff = np.log(np.abs(syn) / np.abs(obs)) * weight
 
-    nan = np.where(np.isnan(phase_diff))
-    syn[nan] = 1.0
-
     if ws.double_difference:
         # unwrap or clip phases
         phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
@@ -70,6 +67,9 @@ def diff(ws: Kernel, stas: tp.List[str]):
 
     if not ws.misfit_only:
         # compute adjoint sources
+        nan = np.where(np.isnan(phase_diff))
+        syn[nan] = 1.0
+
         phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
         phase_adj[nan] = 0.0
 
