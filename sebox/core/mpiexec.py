@@ -141,7 +141,7 @@ async def mpiexec(cmd: tp.Union[str, tp.Callable],
             raise RuntimeError(f'{cmd}\nexit code: {process.returncode}')
         
         elif check_output:
-            print('@', name, d.path(name))
+            print('@', d.read(f'{name}.out'))
             check_output(d.read(f'{name}.out'))
     
     except Exception as e:
