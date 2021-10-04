@@ -62,7 +62,7 @@ def _check(ws: Search):
             alpha = x[1] / 1.618034
     
     if alpha:
-        search.add(step, f'step_{len(steps)-1}')
+        search.add(step, f'step_{len(steps)-1:02d}')
     
     else:
         print('line search failed')
