@@ -21,5 +21,6 @@ if __name__ == '__main__':
     root.dump(config, dst + '/config.toml')
     
     # submit job
+    root.restore()
     root.submit(dst)
     print('submitted', dst)
