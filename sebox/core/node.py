@@ -410,7 +410,7 @@ class Node(Directory):
         collapsed = False
 
         for i, node in enumerate(self):
-            stat += '\node' + idx(i)
+            stat += '\n' + idx(i)
 
             if not verbose and (node.done or (collapsed and node._starttime is None)):
                 stat += str(node)
@@ -419,7 +419,7 @@ class Node(Directory):
                 collapsed = True
                 
                 if len(node):
-                    stat += '\node  '.join(node.stat(verbose).split('\node'))
+                    stat += '\n  '.join(node.stat(verbose).split('\n'))
                 
                 else:
                     stat += str(node)

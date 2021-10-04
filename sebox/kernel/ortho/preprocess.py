@@ -199,10 +199,10 @@ def _encode_events(node: Ortho):
                     line[-1] = f'{(float(line[-1]) * mref / mmax):.6e}'
                     lines[j] = '           '.join(line)
 
-            cmt += '\node'.join(lines)
+            cmt += '\n'.join(lines)
 
-            if cmt[-1] != '\node':
-                cmt += '\node'
+            if cmt[-1] != '\n':
+                cmt += '\n'
 
     # save frequency slots and encoded source
     node.dump(fslots, 'fslots.pickle')

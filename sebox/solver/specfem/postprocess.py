@@ -19,10 +19,10 @@ def setup(node: Postprocess):
     node.ln(node.rel(node.path_mesh, 'DATABASES_MPI'))
 
     # create text file with kernel paths
-    node.write(f'{len(node.path_kernels)}\node', 'path.txt')
+    node.write(f'{len(node.path_kernels)}\n', 'path.txt')
 
     for kl in node.path_kernels:
-        node.write('1.0\node' + node.rel(kl, 'OUTPUT_FILES/kernels.bp') + '\node', 'path.txt', 'a')
+        node.write('1.0\n' + node.rel(kl, 'OUTPUT_FILES/kernels.bp') + '\n', 'path.txt', 'a')
 
 
 def postprocess(node: Postprocess):
