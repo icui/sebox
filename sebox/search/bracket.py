@@ -9,10 +9,10 @@ if tp.TYPE_CHECKING:
 
 def main(ws: Search):
     """Perform line search"""
-    ws.add(step, 'step_00', step=ws.step_init)
+    ws.add(add_step, 'step_00', step=ws.step_init)
 
 
-def step(ws: Search):
+def add_step(ws: Search):
     """Perform a search step."""
     # update model
     ws.mkdir()
@@ -45,10 +45,10 @@ def _check(ws: Search):
 
     if check_bracket(f):
         if good_enough(x, f):
-            step_optim = x[f.argmin()]
+            step = x[f.argmin()]
 
             for j, s in enumerate(steps):
-                if np.isclose(step_optim, s):
+                if np.isclose(step, s):
                     ws.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
                     return
             
@@ -62,7 +62,7 @@ def _check(ws: Search):
             alpha = x[1] / 1.618034
     
     if alpha:
-        search.add(step_optim, f'step_{len(steps)-1:02d}')
+        search.add(add_step, f'step_{len(steps)-1:02d}', step=alpha)
     
     else:
         print('line search failed')
