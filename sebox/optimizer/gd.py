@@ -46,13 +46,13 @@ def check_misfit():
     root.restore()
 
     for i, optim in enumerate(root._ws):
-        if optim.inherit_kernel is None:
+        if len(optim) < 2 or optim[1].misfit_value is None:
             continue
 
         print(f'Iteration {i}')
     
         steps = [0.0]
-        vals = [optim.inherit_kernel.misfit_value]
+        vals = [optim[1].misfit_value]
 
         if optim.search:
             for step in optim.search._ws:
