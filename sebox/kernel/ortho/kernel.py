@@ -8,38 +8,39 @@ if tp.TYPE_CHECKING:
     from .typing import Ortho
 
 
-def kernel(node: Ortho):
-    """Compute kernels."""
+def forward(node: Ortho):
+    """Forward simulation."""
     for iker in range(node.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        node.add(_compute_kernel, f'kl_{iker:02d}', iker=iker)
+        node.add('solver', f'kl_{iker:02d}/forward',
+            path_event= node.path(f'kl_{iker:02d}/SUPERSOURCE'),
+            path_stations= getdir().path('SUPERSTATION'),
+            path_mesh= node.path('mesh'),
+            monochromatic_source= True,
+            save_forward= True)
 
 
-def _compute_kernel(node: Ortho):
+def misfit(node: Ortho):
+    """Compute misfit and adjoint source."""
+    for iker in range(node.nkernels or 1):
+        node.add(_misfit, f'kl_{iker:02d}')
+
+
+def adjoint(node: Ortho):
+    """Adjoint simulation."""
+    if not node.misfit_only:
+        for iker in range(node.nkernels or 1):
+            node.add('solver.adjoint', f'kl_{iker:02d}/adjoint',
+                path_forward = node.path(f'kl_{iker:02d}/forward'),
+                path_misfit = node.path(f'kl_{iker:02d}/adjoint.h5'))
+
+
+def _misfit(node: Ortho):
+    stas = getstations()
+
     # load source encoding parameters
     node.update(node.load('encoding.pickle'))
     node.fslots = node.load('fslots.pickle')
-
-    # forward simulation
-    node.add('solver', 'forward',
-        path_event= node.path('SUPERSOURCE'),
-        path_stations= getdir().path('SUPERSTATION'),
-        path_mesh= node.path('../mesh'),
-        monochromatic_source= True,
-        save_forward= True)
-    
-    # compute misfit
-    node.add(_compute_misfit)
-
-    # adjoint simulation
-    if not node.misfit_only:
-        node.add('solver.adjoint', 'adjoint',
-            path_forward = node.path('forward'),
-            path_misfit = node.path('adjoint.h5'))
-
-
-def _compute_misfit(node: Ortho):
-    stas = getstations()
 
     # process traces
     node.add_mpi(ft, arg=node, arg_mpi=stas, cwd='enc_syn')

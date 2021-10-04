@@ -6,24 +6,20 @@ if tp.TYPE_CHECKING:
 
 
 def main(node: Ortho):
-    """Compute kernels."""
-    _main(node, False)
-
-
-def misfit(node: Ortho):
-    """Compute misfit."""
-    _main(node, True)
-
-
-def _main(node: Ortho, misfit_only: bool):
     # prepare catalog (executed only once for a catalog)
     node.add('kernel.catalog', 'catalog', concurrent=True)
 
     # mesher and preprocessing
-    node.add('kernel.preprocess', concurrent=True, misfit_only=misfit_only)
+    node.add('kernel.preprocess', concurrent=True)
 
-    # kernel computation
-    node.add('kernel.kernel', concurrent=True, misfit_only=misfit_only)
+    # forward simulation
+    node.add('kernel.forward', concurrent=True)
+
+    # misfit calculation
+    node.add('kernel.misfit', concurrent=True)
+
+    # adjoint simulation
+    node.add('kernel.adjoint', concurrent=True)
 
     # sum and smooth kernels
-    node.add('kernel.postprocess', misfit_only=misfit_only)
+    node.add('kernel.postprocess', concurrent=True)

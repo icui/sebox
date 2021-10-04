@@ -1,7 +1,7 @@
-from .main import main, misfit
+from .main import main
 from .catalog import catalog
 from .preprocess import preprocess
-from .kernel import kernel
+from .kernel import forward, misfit, adjoint
 from .postprocess import postprocess
 
-__all__ = ['main', 'misfit', 'catalog', 'preprocess', 'kernel', 'postprocess']
+__all__ = ['main', 'catalog', 'preprocess', 'forward', 'misfit', 'adjoint', 'postprocess']
