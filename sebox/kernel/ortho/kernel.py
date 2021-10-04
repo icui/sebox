@@ -12,7 +12,7 @@ def forward(node: Ortho):
     """Forward simulation."""
     for iker in range(node.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        node.add('solver', f'kl_{iker:02d}/forward',
+        node.add('solver', f'kl_{iker:02d}/forward', f'kl_{iker:02d}',
             path_event= node.path(f'kl_{iker:02d}/SUPERSOURCE'),
             path_stations= getdir().path('SUPERSTATION'),
             path_mesh= node.path('mesh'),
@@ -30,7 +30,7 @@ def adjoint(node: Ortho):
     """Adjoint simulation."""
     if not node.misfit_only:
         for iker in range(node.nkernels or 1):
-            node.add('solver.adjoint', f'kl_{iker:02d}/adjoint',
+            node.add('solver.adjoint', f'kl_{iker:02d}/adjoint', f'kl_{iker:02d}',
                 path_forward = node.path(f'kl_{iker:02d}/forward'),
                 path_misfit = node.path(f'kl_{iker:02d}/adjoint.h5'))
 
