@@ -71,7 +71,7 @@ def check_misfit():
 def _add(ws: Optimizer):
     optim = tp.cast('Optimizer', ws.parent.parent)
 
-    if len(optim) < optim.niters:
+    if len(optim) < optim.niters and ws.parent is optim._ws[-1]:
         optim.add(iterate, f'iter_{len(optim):02d}',
             path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
             path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))
