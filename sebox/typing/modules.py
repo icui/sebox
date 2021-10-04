@@ -39,6 +39,9 @@ class Optimizer(tp.Protocol):
     # compute search direction
     direction: Task[Optimizer]
 
+    # check and add new iteration
+    check: Task[Optimizer]
+
 
 class Search(tp.Protocol):
     """Required functions in a search module."""
@@ -47,6 +50,12 @@ class Search(tp.Protocol):
 
     # add a search step
     step: Task[Search]
+
+    # update model
+    update: Task[Search]
+
+    # check and add new step
+    check: Task[Search]
 
 
 class System(tp.Protocol):

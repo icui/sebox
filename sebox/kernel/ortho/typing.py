@@ -72,9 +72,6 @@ class Ortho(Kernel):
     # global amplitude weighting
     amplitude_factor: float
 
-    # skip computing adjoint kernels
-    misfit_only: bool
-
     # taper adjoint source
     taper: tp.Optional[float]
 

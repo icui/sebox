@@ -34,6 +34,6 @@ def xgd(node: Node):
     _adios(node, 'xsteepDescent kernel/kernels.bp kernel/precond.bp direction.bp')
 
 
-def xupdate(node: Node, step: float):
+def xupdate(node: Node, step: float, path_model: str, path_mesh: str):
     """Update model."""
-    _adios(node, f'xupdate_model {step} ../model_init.bp ../mesh/DATABASES_MPI/solver_data.bp ../direction.bp .')
+    _adios(node, f'xupdate_model {step} {path_model} {path_mesh}/DATABASES_MPI/solver_data.bp ../direction.bp .')

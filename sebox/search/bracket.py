@@ -9,53 +9,70 @@ if tp.TYPE_CHECKING:
 
 def main(node: Search):
     """Perform line search"""
-    node.add(step, 'step_00', step=node.step_init)
+    node.add('search.step', 'step_00', step=node.step_init)
 
 
 def step(node: Search):
     """Perform a search step."""
-    # update model
     node.mkdir()
-    xupdate(node, node.step)
+
+    # update model
+    node.add('search.update')
 
     # compute misfit
-    node.add('kernel.misfit', path_model=node.path('model_gll.bp'), path_mesh=None)
+    node.add('kernel.misfit', path_mesh=node.path('mesh'))
 
     # check bracket
-    node.add(_check, cwd='..', name='check_bracket')
+    node.add('search.check', cwd='..', name='check_bracket')
 
 
-def _check(node: Search):
+def update(node: Search):
+    """Update model and mesh."""
+    kl = node.inherit_kernel
+    xupdate(node, node.step, node.rel(kl.path_model), node.rel(kl.path_mesh))
+    node.add('mesh', path_model=node.path('model_gll.bp'), path_mesh=None)
+
+
+def check(node: Search):
+    """Check bracket and add new step if necessary."""
     import numpy as np
 
     search = tp.cast('Search', node.parent.parent)
+
+    # seach step lengths and misfit values
     steps = [0.0]
-    vals = [node.inherit_kernel.misfit_value]
+    vals = [search.inherit_kernel.misfit_value]
 
     for st in search:
         steps.append(st.step) # type: ignore
         vals.append(st[1].misfit_value) # type: ignore
     
+    # sort by step length
     x = np.array(steps)
     f = np.array(vals)
     f = f[abs(x).argsort()]
     x = x[abs(x).argsort()]
 
+    # new step length
     alpha = None
 
-    if check_bracket(f):
-        if good_enough(x, f):
+    if _check_bracket(f):
+        # search history has bracket shape
+        if _good_enough(x, f):
+            # find the step that minimizes misfit value
             st = x[f.argmin()]
 
             for j, s in enumerate(steps):
                 if np.isclose(st, s):
-                    node.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
-                    node.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
+                    # index is j-1 because the first step is 0.0
+                    search.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
+                    search.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
                     return
             
-        alpha = polyfit(x,f)
+        alpha = _polyfit(x,f)
         
-    elif len(steps) - 1 < node.nsteps:
+    elif len(steps) - 1 < search.nsteps:
+        # history is monochromatically increasing or decreasing
         if all(f <= f[0]):
             alpha = 1.618034 * x[-1]
         
@@ -63,31 +80,34 @@ def _check(node: Search):
             alpha = x[1] / 1.618034
     
     if alpha:
+        # add a new search step
         search.add(step, f'step_{len(steps)-1:02d}', step=alpha)
     
     else:
+        # use initial model as new model
         print('line search failed')
-        node.ln('model_init.bp', 'model_new.bp')
+        search.ln('model_init.bp', 'model_new.bp')
 
 
-def check_bracket(f):
+def _check_bracket(f):
     """Check history has bracket shape."""
     imin, fmin = f.argmin(), f.min()
 
     return (fmin < f[0]) and any(f[imin:] > fmin)
 
-def good_enough(x, f):
+
+def _good_enough(x, f):
     """Check current result is good."""
     import numpy as np
 
-    if not check_bracket(f):
+    if not _check_bracket(f):
         return 0
 
-    x0 = polyfit(x, f)
+    x0 = _polyfit(x, f)
 
     return any(np.abs(np.log10(x[1:]/x0)) < np.log10(1.2))
 
-def polyfit(x, f):
+def _polyfit(x, f):
     import numpy as np
 
     i = np.argmin(f)

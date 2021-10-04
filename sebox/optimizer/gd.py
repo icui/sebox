@@ -8,35 +8,42 @@ if tp.TYPE_CHECKING:
 
 def main(node: Optimizer):
     if len(node) == 0:
-        node.add(iterate, 'iter_00', iteration=0)
+        node.add('optimizer.iterate', 'iter_00', iteration=0)
 
 
 def iterate(node: Optimizer):
     """Add an iteration."""
-    # link model
     node.ln(node.rel(node.path_model), 'model_init.bp')
-    node.path_model = node.path('model_init.bp')
 
     # generate or link mesh
-    node.add('solver.mesh', 'mesh', path_mesh=node.path_mesh)
-    node.path_mesh = node.path('mesh')
+    node.add('solver.mesh', 'mesh')
 
     # compute kernels
-    kl = node.add('kernel', 'kernel')
+    kl = node.add('kernel', 'kernel', path_mesh=node.path('mesh'))
 
     # compute direction
     node.add('optimizer.direction')
 
     # line search
-    tp.cast(tp.Any, node.add('search', inherit_kernel=kl))
+    node.add('search', inherit_kernel=kl)
 
     # add new iteration
-    node.add(_add)
+    node.add('optimizer.check')
 
 
 def direction(node: Optimizer):
     """Compute direction."""
     xgd(node)
+
+
+def check(node: Optimizer):
+    """Add a new iteration if necessary."""
+    optim = tp.cast('Optimizer', node.parent.parent)
+
+    if len(optim) < optim.niters and node.parent is optim[-1]:
+        optim.add(iterate, f'iter_{len(optim):02d}',
+            path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
+            path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))
 
 
 def check_misfit():
@@ -66,13 +73,3 @@ def check_misfit():
             print(f'  step {step}: {val:.2e}')
         
         print()
-
-
-def _add(node: Optimizer):
-    optim = tp.cast('Optimizer', node.parent.parent)
-
-    if len(optim) < optim.niters and node.parent is optim[-1]:
-        # add a new iteration if node is the last iteration
-        optim.add(iterate, f'iter_{len(optim):02d}',
-            path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
-            path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))
