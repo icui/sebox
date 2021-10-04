@@ -39,6 +39,32 @@ def direction(ws: Optimizer):
     xgd(ws)
 
 
+def check_misfit():
+    """Check misfit values."""
+    from sebox import root
+
+    root.restore()
+
+    for i, optim in enumerate(root._ws):
+        if optim.inherit_kernel is None:
+            continue
+
+        print(f'Iteration {i}')
+    
+        steps = [0.0]
+        vals = [optim.inherit_kernel.misfit_value]
+
+        if optim.search:
+            for step in optim.search._ws:
+                steps.append(step.step)
+                vals.append(step[1].misfit_value)
+        
+        for step, val in zip(steps, vals):
+            print(f'  step {step}: {val:.2e}')
+        
+        print()
+
+
 def _add(ws: Optimizer):
     optim = tp.cast('Optimizer', ws.parent.parent)
 

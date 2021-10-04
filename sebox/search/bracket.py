@@ -13,6 +13,7 @@ def main(ws: Search):
 
 
 def step(ws: Search):
+    """Perform a search step."""
     # update model
     ws.mkdir()
     xupdate(ws, ws.step)
