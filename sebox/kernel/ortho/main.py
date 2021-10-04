@@ -97,4 +97,5 @@ def _link_kernels(ws: Kernel):
 
 
 def _sum_misfit(ws: Kernel):
+    print('#@', ws.parent.parent)
     ws.parent.parent.misfit_value = sum([kl.misfit_kl for kl in ws.solvers.values()])
