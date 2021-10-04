@@ -7,6 +7,9 @@ from .search import Search
 
 class Optimizer(Workspace):
     """Gradient optimization."""
+    # root kernel workspace
+    root_optimizer: Optimizer
+
     # total number of iterations
     niters: int
 

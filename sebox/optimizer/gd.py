@@ -28,7 +28,7 @@ def iterate(ws: Optimizer):
     ws.add('optimizer.direction')
 
     # line search
-    ws.search = tp.cast(tp.Any, ws.add('search', inherit_kernel=kl))
+    tp.cast(tp.Any, ws.add('search', inherit_kernel=kl))
 
     # add new iteration
     ws.add(_add)
@@ -54,9 +54,9 @@ def check_misfit():
         steps = [0.0]
         vals = [optim[1].misfit_value]
 
-        if optim.search:
-            for step in optim.search._ws:
-                steps.append(step.step)
+        if len(optim):
+            for step in optim[-2]._ws:
+                steps.append(step.step) # type: ignore
                 vals.append(step[1].misfit_value)
         
         for step, val in zip(steps, vals):

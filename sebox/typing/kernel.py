@@ -6,6 +6,9 @@ from sebox import Workspace
 
 class Kernel(Workspace):
     """Compute kernel and / or misfit."""
+    # root kernel workspace
+    root_kernel: Kernel
+
     # current iteration
     iteration: tp.Optional[int]
 

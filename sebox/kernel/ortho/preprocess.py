@@ -46,7 +46,7 @@ def prepare_encoding(ws: Kernel):
 
 
 def _link_encoded(ws: Kernel):
-    kl = ws.inherit_kernel.encoding[ws.iker] # type: ignore
+    kl = ws.inherit_kernel[1][ws.iker] # type: ignore
     ws.cp(ws.rel(kl, 'SUPERSOURCE'))
     ws.ln(ws.rel(kl, 'enc_obs'))
     ws.ln(ws.rel(kl, 'enc_diff'))
