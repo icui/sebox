@@ -136,6 +136,7 @@ def _encode_events(ws: Kernel):
     event_bands = {}
 
     for event in events:
+        fslots[event] = []
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
 
     # fill frequency slots
@@ -147,9 +148,6 @@ def _encode_events(ws: Kernel):
         events = random.sample(events, len(events))
 
         for event in events:
-            if event not in fslots:
-                fslots[event] = []
-
             idx = None
 
             for i in range(nbands):
@@ -214,7 +212,6 @@ def _encode(ws: Kernel):
 
 
 def _enc_obs(ws: Kernel, stas: tp.List[str]):
-    print('@@@', ws)
     import numpy as np
     from sebox.mpi import pid
     from .preprocess import getfreq
