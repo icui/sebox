@@ -23,4 +23,3 @@ if __name__ == '__main__':
     # submit job
     root.restore()
     root.submit(dst)
-    print('submitted', dst)
