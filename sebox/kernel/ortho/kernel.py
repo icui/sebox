@@ -11,7 +11,7 @@ if tp.TYPE_CHECKING:
 def forward(node: Ortho):
     """Forward simulation."""
     for cwd in _cwd(node):
-        node.add('solver', f'k{cwd}/forward', cwd,
+        node.add('solver', f'{cwd}/forward', cwd,
             path_event= node.path(f'{cwd}/SUPERSOURCE'),
             path_stations= getdir().path('SUPERSTATION'),
             path_mesh= node.path('mesh'),
