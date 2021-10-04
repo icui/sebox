@@ -60,6 +60,9 @@ def check_misfit():
                 vals.append(step[1].misfit_value)
         
         for step, val in zip(steps, vals):
+            if val is None:
+                break
+            
             print(f'  step {step}: {val:.2e}')
         
         print()
