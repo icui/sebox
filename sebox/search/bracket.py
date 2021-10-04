@@ -50,6 +50,7 @@ def _check(ws: Search):
             for j, s in enumerate(steps):
                 if np.isclose(st, s):
                     ws.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
+                    ws.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
                     return
             
         alpha = polyfit(x,f)
