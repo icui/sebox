@@ -22,7 +22,7 @@ def step(ws: Search):
     ws.add('kernel.misfit', path_model=ws.path('model_gll.bp'), path_mesh=None)
 
     # check bracket
-    ws.add(_check, cwd='..')
+    ws.add(_check, cwd='..', name='check_bracket')
 
 
 def _check(ws: Search):
