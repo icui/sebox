@@ -6,11 +6,10 @@ from .forward import xspecfem
 from .shared import setpars
 
 if tp.TYPE_CHECKING:
-    from sebox.typing import Adjoint
     from .typing import Specfem
 
 
-def setup(node: Adjoint):
+def setup(node: Specfem):
     """Create adjoint node."""
     # specfem directory for forward simulation
     if not node.path_forward:

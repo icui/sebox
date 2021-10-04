@@ -1,6 +1,6 @@
 import typing as tp
 
-from sebox import typing
+from sebox.typing import Forward, Adjoint
 
 
 class Par_file(tp.TypedDict, total=False):
@@ -51,7 +51,7 @@ class Par_file(tp.TypedDict, total=False):
     SPONGE_RADIUS_IN_DEGREES: float
 
 
-class Specfem(typing.Forward, typing.Adjoint):
+class Specfem(Forward, Adjoint):
     # specfem directory
     path_specfem: str
 
