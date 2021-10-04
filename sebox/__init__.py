@@ -1,4 +1,4 @@
 from .core.root import root
-from .core.workspace import Workspace, Directory, Task
+from .core.node import Node, Directory, Task
 
-__all__ = ['root', 'Workspace', 'Directory', 'Task']
+__all__ = ['root', 'Node', 'Directory', 'Task']

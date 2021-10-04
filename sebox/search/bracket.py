@@ -7,32 +7,32 @@ if tp.TYPE_CHECKING:
     from sebox.typing import Search
 
 
-def main(ws: Search):
+def main(node: Search):
     """Perform line search"""
-    ws.add(step, 'step_00', step=ws.step_init)
+    node.add(step, 'step_00', step=node.step_init)
 
 
-def step(ws: Search):
+def step(node: Search):
     """Perform a search step."""
     # update model
-    ws.mkdir()
-    xupdate(ws, ws.step)
+    node.mkdir()
+    xupdate(node, node.step)
 
     # compute misfit
-    ws.add('kernel.misfit', path_model=ws.path('model_gll.bp'), path_mesh=None)
+    node.add('kernel.misfit', path_model=node.path('model_gll.bp'), path_mesh=None)
 
     # check bracket
-    ws.add(_check, cwd='..', name='check_bracket')
+    node.add(_check, cwd='..', name='check_bracket')
 
 
-def _check(ws: Search):
+def _check(node: Search):
     import numpy as np
 
-    search = tp.cast('Search', ws.parent.parent)
+    search = tp.cast('Search', node.parent.parent)
     steps = [0.0]
-    vals = [ws.inherit_kernel.misfit_value]
+    vals = [node.inherit_kernel.misfit_value]
 
-    for st in search._ws:
+    for st in search:
         steps.append(st.step) # type: ignore
         vals.append(st[1].misfit_value) # type: ignore
     
@@ -49,13 +49,13 @@ def _check(ws: Search):
 
             for j, s in enumerate(steps):
                 if np.isclose(st, s):
-                    ws.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
-                    ws.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
+                    node.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
+                    node.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
                     return
             
         alpha = polyfit(x,f)
         
-    elif len(steps) - 1 < ws.nsteps:
+    elif len(steps) - 1 < node.nsteps:
         if all(f <= f[0]):
             alpha = 1.618034 * x[-1]
         
@@ -67,7 +67,7 @@ def _check(ws: Search):
     
     else:
         print('line search failed')
-        ws.ln('model_init.bp', 'model_new.bp')
+        node.ln('model_init.bp', 'model_new.bp')
 
 
 def check_bracket(f):

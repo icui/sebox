@@ -1,11 +1,11 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Workspace
+from sebox import Node
 
 
-class Postprocess(Workspace):
-    """A workspace to generate mesh."""
+class Postprocess(Node):
+    """A node to generate mesh."""
     # current iteration
     iteration: tp.Optional[int]
     
@@ -37,8 +37,8 @@ class Postprocess(Workspace):
     precondition: float
 
 
-class Forward(Workspace):
-    """A workspace to run forward simulation."""
+class Forward(Node):
+    """A node to run forward simulation."""
     # path to CMTSOLUTION
     path_event: str
 
@@ -67,10 +67,14 @@ class Forward(Workspace):
     catalog_boundary: tp.Tuple[float, float, float, float]
 
 
-class Adjoint(Workspace):
-    """A workspace to run adjiont simulation."""
+class Adjoint(Node):
+    """A node to run adjiont simulation."""
     # path to adjoint source
     path_misfit: str
 
     # path to forward simulation directory
     path_forward: str
+
+
+class Solver(Forward, Adjoint, Postprocess):
+    """All solver configurations."""

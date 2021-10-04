@@ -11,95 +11,95 @@ if tp.TYPE_CHECKING:
     from .typing import Kernel
 
 
-def getseed(ws: Kernel):
+def getseed(node: Kernel):
     """Random seed based on kernel configuration."""
-    if isinstance(ws.nkernels_rng, int):
-        rng_iter = ws.nkernels_rng
+    if isinstance(node.nkernels_rng, int):
+        rng_iter = node.nkernels_rng
     
     else:
-        rng_iter = ws.nkernels or 1
+        rng_iter = node.nkernels or 1
     
-    return (ws.iteration or 0) * rng_iter + (ws.seed or 0) + (ws.iker or 0)
+    return (node.iteration or 0) * rng_iter + (node.seed or 0) + (node.iker or 0)
 
 
-def getfreq(ws: Kernel) -> ndarray:
+def getfreq(node: Kernel) -> ndarray:
     """Frequencies used for encoding."""
     from scipy.fft import fftfreq
-    return fftfreq(ws.nt_se, ws.dt)[ws.imin: ws.imax]
+    return fftfreq(node.nt_se, node.dt)[node.imin: node.imax]
 
 
-def prepare_encoding(ws: Kernel):
+def prepare_encoding(node: Kernel):
     """Prepare source encoding data."""
-    if ws.inherit_kernel:
-        # link existing encoding workspace
-        ws.add(_link_encoded)
+    if node.inherit_kernel:
+        # link existing encoding node
+        node.add(_link_encoded)
     
     else:
         # determine frequencies
-        ws.add(_prepare_frequencies)
+        node.add(_prepare_frequencies)
 
         # create SUPERSOURCE
-        ws.add(_encode_events)
+        node.add(_encode_events)
 
         # encode observed traces and diffs
-        ws.add(_encode, concurrent=True)
+        node.add(_encode, concurrent=True)
 
 
-def _link_encoded(ws: Kernel):
-    kl = ws.inherit_kernel[1][ws.iker] # type: ignore
-    ws.cp(ws.rel(kl, 'SUPERSOURCE'))
-    ws.ln(ws.rel(kl, 'enc_obs'))
-    ws.ln(ws.rel(kl, 'enc_diff'))
-    ws.ln(ws.rel(kl, 'enc_weight'))
-    ws.parent.update(kl.load('encoding.pickle'))
-    ws.parent.fslots = kl.load('fslots.pickle')
+def _link_encoded(node: Kernel):
+    kl = node.inherit_kernel[1][node.iker] # type: ignore
+    node.cp(node.rel(kl, 'SUPERSOURCE'))
+    node.ln(node.rel(kl, 'enc_obs'))
+    node.ln(node.rel(kl, 'enc_diff'))
+    node.ln(node.rel(kl, 'enc_weight'))
+    node.parent.update(kl.load('encoding.pickle'))
+    node.parent.fslots = kl.load('fslots.pickle')
 
 
-def _prepare_frequencies(ws: Kernel):
+def _prepare_frequencies(node: Kernel):
     import numpy as np
     from scipy.fft import fftfreq
 
-    if ws.fmax:
+    if node.fmax:
         return
 
-    if ws.duration <= ws.transient_duration:
+    if node.duration <= node.transient_duration:
         raise ValueError('duration should be larger than transient_duration')
 
     # number of time steps to reach steady state
-    nt_ts = int(round(ws.transient_duration * 60 / ws.dt))
+    nt_ts = int(round(node.transient_duration * 60 / node.dt))
 
     # number of time steps after steady state
-    nt_se = int(round((ws.duration - ws.transient_duration) * 60 / ws.dt))
+    nt_se = int(round((node.duration - node.transient_duration) * 60 / node.dt))
 
     # frequency step
-    df = 1 / nt_se / ws.dt
+    df = 1 / nt_se / node.dt
 
     # factor for observed data
     kf = int(np.ceil(nt_ts / nt_se))
 
     # frequencies to be encoded
-    freq = fftfreq(nt_se, ws.dt)
-    fincr = ws.frequency_increment
-    imin = int(np.ceil(1 / ws.period_range[1] / df))
-    imax = int(np.floor(1 / ws.period_range[0] / df))
+    freq = fftfreq(nt_se, node.dt)
+    fincr = node.frequency_increment
+    imin = int(np.ceil(1 / node.period_range[1] / df))
+    imax = int(np.floor(1 / node.period_range[0] / df))
     nf = imax - imin + 1
     nbands = nf // fincr
     imax = imin + nbands * fincr
     nf = nbands * fincr
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
-    if ws.reference_velocity is not None and (rad := ws.smooth_kernels):
+    if node.reference_velocity is not None and (rad := node.smooth_kernels):
         if isinstance(rad, list):
-            rad = max(rad[1], rad[0] * rad[2] ** (ws.iteration or 0))
+            rad = max(rad[1], rad[0] * rad[2] ** (node.iteration or 0))
 
         # exclude band where reference_volocity * period < smooth_radius
         for i in range(nbands):
             # compare smooth radius with the highest frequency of current band
-            if ws.reference_velocity / freq[(i + 1) * ws.frequency_increment - 1] < rad:
+            if node.reference_velocity / freq[(i + 1) * node.frequency_increment - 1] < rad:
                 nbands_used = i
                 break
 
-    # save results to parent workspace
+    # save results to parent node
     encoding = {
         'df': df,
         'kf': kf,
@@ -109,28 +109,28 @@ def _prepare_frequencies(ws: Kernel):
         'nbands_used': nbands_used,
         'imin': imin,
         'imax': imax,
-        'seed_used': getseed(ws)
+        'seed_used': getseed(node)
     }
 
-    ws.parent.update(encoding)
-    ws.dump(encoding, 'encoding.pickle')
+    node.parent.update(encoding)
+    node.dump(encoding, 'encoding.pickle')
 
 
-def _encode_events(ws: Kernel):
+def _encode_events(node: Kernel):
     # load catalog
     cmt = ''
     cdir = getdir()
 
     # randomize frequency
-    freq = getfreq(ws)
+    freq = getfreq(node)
     fslots = {}
     events = getevents()
-    nbands = ws.nbands_used
-    fincr = ws.frequency_increment
+    nbands = node.nbands_used
+    fincr = node.frequency_increment
     slots = set(range(nbands * fincr))
 
     # set random seed
-    random.seed(ws.seed_used)
+    random.seed(node.seed_used)
 
     # get available frequency bands for each event (sumed over tations and components)
     event_bands = {}
@@ -184,7 +184,7 @@ def _encode_events(ws: Kernel):
             lines[3] = f'half duration:{" " * (9 - len(str(int(1 / f0))))}{1/f0:.4f}'
 
             # normalize sources to the same order of magnitude
-            if ws.normalize_source:
+            if node.normalize_source:
                 mref = 1e25
                 mmax = max(abs(float(lines[i].split()[-1])) for i in range(7, 13))
                 
@@ -193,40 +193,40 @@ def _encode_events(ws: Kernel):
                     line[-1] = f'{(float(line[-1]) * mref / mmax):.6e}'
                     lines[j] = '           '.join(line)
 
-            cmt += '\n'.join(lines)
+            cmt += '\node'.join(lines)
 
-            if cmt[-1] != '\n':
-                cmt += '\n'
+            if cmt[-1] != '\node':
+                cmt += '\node'
 
     # save frequency slots and encoded source
-    ws.parent.fslots = fslots
-    ws.dump(fslots, 'fslots.pickle')
-    ws.write(cmt, 'SUPERSOURCE')
+    node.parent.fslots = fslots
+    node.dump(fslots, 'fslots.pickle')
+    node.write(cmt, 'SUPERSOURCE')
 
 
-def _encode(ws: Kernel):
+def _encode(node: Kernel):
     stas = getstations()
-    ws.mkdir('enc_weight')
-    ws.add_mpi(_enc_obs, arg=ws, arg_mpi=stas, cwd='enc_obs')
-    ws.add_mpi(_enc_diff, arg=ws, arg_mpi=stas, cwd='enc_diff')
+    node.mkdir('enc_weight')
+    node.add_mpi(_enc_obs, arg=node, arg_mpi=stas, cwd='enc_obs')
+    node.add_mpi(_enc_diff, arg=node, arg_mpi=stas, cwd='enc_diff')
 
 
-def _enc_obs(ws: Kernel, stas: tp.List[str]):
+def _enc_obs(node: Kernel, stas: tp.List[str]):
     import numpy as np
     from sebox.mpi import pid
     from .preprocess import getfreq
 
     # kernel configuration
-    nt = ws.kf * ws.nt_se
-    t = np.linspace(0, (nt - 1) * ws.dt, nt)
-    freq = getfreq(ws)
+    nt = node.kf * node.nt_se
+    t = np.linspace(0, (nt - 1) * node.dt, nt)
+    freq = getfreq(node)
 
     # data from catalog
-    root.restore(ws)
+    root.restore(node)
     cdir = getdir()
     cmps = getcomponents()
     event_data = cdir.load('event_data.pickle')
-    encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan, dtype=complex)
+    encoded = np.full([len(stas), 3, node.imax - node.imin], np.nan, dtype=complex)
 
     # get global station index
     sidx = []
@@ -240,18 +240,18 @@ def _enc_obs(ws: Kernel, stas: tp.List[str]):
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
-        slots = ws.fslots[event]
+        slots = node.fslots[event]
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
-        sff = ft_obs(ws, stf)
-        pff = np.exp(2 * np.pi * 1j * freq * (ws.nt_ts * ws.dt - tshift)) / sff
+        sff = ft_obs(node, stf)
+        pff = np.exp(2 * np.pi * 1j * freq * (node.nt_ts * node.dt - tshift)) / sff
 
         # record frequency components
         for idx in slots:
-            group = idx // ws.frequency_increment
+            group = idx // node.frequency_increment
             pshift = pff[idx]
 
             # phase shift due to the measurement of observed data
@@ -260,20 +260,20 @@ def _enc_obs(ws: Kernel, stas: tp.List[str]):
                 i = np.squeeze(np.where(m))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
-    ws.dump(encoded, f'enc_obs/{pid}.npy', mkdir=False)
+    node.dump(encoded, f'enc_obs/{pid}.npy', mkdir=False)
 
 
-def _enc_diff(ws: Kernel, stas: tp.List[str]):
+def _enc_diff(node: Kernel, stas: tp.List[str]):
     """Encode diff data."""
     import numpy as np
     from sebox.mpi import pid
 
     # data from catalog
-    root.restore(ws)
+    root.restore(node)
     cdir = getdir()
     cmps = getcomponents()
-    encoded = np.full([len(stas), 3, ws.imax - ws.imin], np.nan)
-    weight = np.full([len(stas), 3, ws.imax - ws.imin], np.nan)
+    encoded = np.full([len(stas), 3, node.imax - node.imin], np.nan)
+    weight = np.full([len(stas), 3, node.imax - node.imin], np.nan)
 
     # get global station index
     sidx = []
@@ -287,11 +287,11 @@ def _enc_diff(ws: Kernel, stas: tp.List[str]):
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{pid}.npy')
-        slots = ws.fslots[event]
+        slots = node.fslots[event]
 
         # record frequency components
         for idx in slots:
-            group = idx // ws.frequency_increment
+            group = idx // node.frequency_increment
 
             # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
@@ -300,5 +300,5 @@ def _enc_diff(ws: Kernel, stas: tp.List[str]):
                 encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
     
-    ws.dump(encoded, f'enc_diff/{pid}.npy', mkdir=False)
-    ws.dump(weight, f'enc_weight/{pid}.npy', mkdir=False)
+    node.dump(encoded, f'enc_diff/{pid}.npy', mkdir=False)
+    node.dump(weight, f'enc_weight/{pid}.npy', mkdir=False)

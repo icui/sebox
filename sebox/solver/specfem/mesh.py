@@ -8,51 +8,51 @@ if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
 
 
-def setup(ws: Specfem):
-    """Create mesher workspace."""
-    src = ws.path_specfem
+def setup(node: Specfem):
+    """Create mesher node."""
+    src = node.path_specfem
     d = Directory(src)
 
     # specfem directories
-    ws.mkdir('DATA')
-    ws.mkdir('OUTPUT_FILES')
-    ws.mkdir('DATABASES_MPI')
+    node.mkdir('DATA')
+    node.mkdir('OUTPUT_FILES')
+    node.mkdir('DATABASES_MPI')
 
     # link binaries and copy data files
-    ws.ln(ws.rel(src, 'bin'))
-    ws.cp(ws.rel(src, 'DATA/Par_file'), 'DATA')
-    ws.cp(ws.rel(ws.path_event or d.path('DATA/CMTSOLUTION')), 'DATA/CMTSOLUTION')
-    ws.cp(ws.rel(ws.path_stations or d.path('DATA/STATIONS')), 'DATA/STATIONS')
+    node.ln(node.rel(src, 'bin'))
+    node.cp(node.rel(src, 'DATA/Par_file'), 'DATA')
+    node.cp(node.rel(node.path_event or d.path('DATA/CMTSOLUTION')), 'DATA/CMTSOLUTION')
+    node.cp(node.rel(node.path_stations or d.path('DATA/STATIONS')), 'DATA/STATIONS')
 
     # link specfem model directories
     for subdir in d.ls('DATA', isdir=True):
         if subdir != 'GLL':
-            ws.ln(ws.rel(src, 'DATA', subdir), 'DATA')
+            node.ln(node.rel(src, 'DATA', subdir), 'DATA')
     
     # link model file to run mesher
-    if ws.path_model:
-        ws.mkdir('DATA/GLL')
-        ws.ln(ws.rel(ws.path_model), 'DATA/GLL/model_gll.bp')
+    if node.path_model:
+        node.mkdir('DATA/GLL')
+        node.ln(node.rel(node.path_model), 'DATA/GLL/model_gll.bp')
 
     # update Par_file
     pars: Par_file = { 'MODEL': 'GLL' }
     
-    if ws.lddrk is not None:
-        pars['USE_LDDRK'] = ws.lddrk
+    if node.lddrk is not None:
+        pars['USE_LDDRK'] = node.lddrk
 
-    if ws.catalog_boundary is not None:
+    if node.catalog_boundary is not None:
         pars['ABSORB_USING_GLOBAL_SPONGE'] = True
-        pars['SPONGE_LATITUDE_IN_DEGREES'] = ws.catalog_boundary[0]
-        pars['SPONGE_LONGITUDE_IN_DEGREES'] = ws.catalog_boundary[1]
-        pars['SPONGE_RADIUS_IN_DEGREES'] = ws.catalog_boundary[2]
+        pars['SPONGE_LATITUDE_IN_DEGREES'] = node.catalog_boundary[0]
+        pars['SPONGE_LONGITUDE_IN_DEGREES'] = node.catalog_boundary[1]
+        pars['SPONGE_RADIUS_IN_DEGREES'] = node.catalog_boundary[2]
     
     else:
         pars['ABSORB_USING_GLOBAL_SPONGE'] = False
     
-    setpars(ws, pars)
+    setpars(node, pars)
 
 
-async def mesh(ws: Specfem):
+async def mesh(node: Specfem):
     """Generate mesh."""
-    ws.add(setup)
-    xmeshfem(ws)
+    node.add(setup)
+    xmeshfem(node)

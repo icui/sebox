@@ -21,12 +21,6 @@ class Kernel(typing.Kernel):
     # index of current kernel
     iker: int
 
-    # workspaces with source encoding paremeters
-    encoding: tp.Dict[int, Kernel]
-
-    # workspaces for forward and adojoint simulation
-    solvers: tp.Dict[int, Kernel]
-
     # time duration to reach steady state for source encoding
     transient_duration: float
 

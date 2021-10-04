@@ -13,23 +13,23 @@ def merge(_):
     merge_stations(cdir.subdir('stations'), cdir, True)
 
 
-def scatter_obs(ws: Kernel):
+def scatter_obs(node: Kernel):
     """Convert ASDF observed data to MPI format."""
-    _scatter(ws, 'obs')
+    _scatter(node, 'obs')
 
 
-def scatter_diff(ws: Kernel):
+def scatter_diff(node: Kernel):
     """Convert ASDF diff data to MPI format."""
-    _scatter(ws, 'diff')
+    _scatter(node, 'diff')
 
 
-def scatter_baz(ws: Kernel, stas: tp.List[str]):
+def scatter_baz(node: Kernel, stas: tp.List[str]):
     import numpy as np
     from math import radians
     from obspy.geodetics import gps2dist_azimuth
     from sebox.mpi import pid
 
-    root.restore(ws)
+    root.restore(node)
     baz = {}
 
     for event in getevents():
@@ -43,7 +43,7 @@ def scatter_baz(ws: Kernel, stas: tp.List[str]):
     getdir().dump(baz, f'baz_p{root.task_nprocs}/{pid}.pickle')
 
 
-def _scatter(ws: Kernel, tag: tp.Literal['obs', 'diff']):
+def _scatter(node: Kernel, tag: tp.Literal['obs', 'diff']):
     cdir = getdir()
 
     for src in cdir.ls(f'ft_{tag}'):
@@ -51,5 +51,5 @@ def _scatter(ws: Kernel, tag: tp.Literal['obs', 'diff']):
         dst = f'ft_{tag}_p{root.task_nprocs}/{event}'
         
         if not cdir.has(dst):
-            ws.add(('sebox.utils.asdf', 'scatter'), event, aux=True, dtype=complex,
+            node.add(('sebox.utils.asdf', 'scatter'), event, aux=True, dtype=complex,
                 path_input=cdir.path(f'ft_{tag}/{src}'), path_output=cdir.path(dst))

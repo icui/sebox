@@ -3,14 +3,14 @@ from importlib import import_module
 import typing as tp
 import signal
 
-from .workspace import Workspace
+from .node import Node
 
 if tp.TYPE_CHECKING:
     from sebox.typing.modules import System
 
 
-class Root(Workspace):
-    """Root workspace with job configuration."""
+class Root(Node):
+    """Root node with job configuration."""
     # job name
     job_name: str
 
@@ -76,8 +76,8 @@ class Root(Workspace):
         """Submit job to scheduler."""
         self.sys.submit('python -m "sebox.run"', dst)
     
-    async def run(self):
-        """Run main task."""
+    async def execute(self):
+        """Execute main task."""
         self.restore()
         self.job_failed = False
         self.job_aborted = False
@@ -87,7 +87,7 @@ class Root(Workspace):
             signal.signal(signal.SIGALRM, self._signal)
             signal.alarm(int((self.job_walltime - self.job_gap) * 60))
 
-        await super().run()
+        await super().execute()
 
         # requeue job if task failed
         if self.job_failed and not self.job_aborted and not self.job_debug:
@@ -97,17 +97,17 @@ class Root(Workspace):
         """Save state."""
         self.dump(self.__getstate__(), 'root.pickle')
     
-    def restore(self, ws: tp.Optional[Workspace] = None):
+    def restore(self, node: tp.Optional[Node] = None):
         """Restore state."""
         if hasattr(self, '_sys'):
             return
         
-        if ws:
-            # restore from a saved workspace
-            while ws.parent is not None:
-                ws = ws.parent
+        if node:
+            # restore from a saved node
+            while node.parent is not None:
+                node = node.parent
             
-            self.__setstate__(ws.__getstate__())
+            self.__setstate__(node.__getstate__())
 
         elif self.has('root.pickle'):
             # restore previous state
@@ -131,5 +131,5 @@ class Root(Workspace):
             self.sys.requeue()
 
 
-# create root workspace
+# create root node
 root = Root('.', {}, None)

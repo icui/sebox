@@ -11,21 +11,21 @@ import typing as tp
 from .directory import Directory
 
 
-class Workspace(Directory):
+class Node(Directory):
     """A directory with a task."""
-    # workspace task
+    # node task
     task: Task
 
     # task progress prober
     prober: Prober
 
-    # whether child workspaces are executed concurrently
+    # whether child nodes are executed concurrently
     concurrent: tp.Optional[bool]
 
-    # workspace to inherit properties from
-    inherit: tp.Optional[Workspace]
+    # node to inherit properties from
+    inherit: tp.Optional[Node]
 
-    # arguments passed to task (pass Workspace if args is None)
+    # arguments passed to task (pass Node if args is None)
     args: tp.Optional[tp.Iterable]
 
     # display name
@@ -37,8 +37,8 @@ class Workspace(Directory):
     # data modified by self.task
     _data: dict
 
-    # parent workspace
-    _parent: tp.Optional[Workspace]
+    # parent node
+    _parent: tp.Optional[Node]
 
     # time when task started
     _starttime: tp.Optional[float] = None
@@ -52,19 +52,19 @@ class Workspace(Directory):
     # exception raised from self.task
     _err: tp.Optional[Exception] = None
 
-    # child workspaces
-    _ws: tp.List[Workspace]
+    # child nodes
+    _children: tp.List[Node]
 
     @property
     def name(self) -> str:
-        """Directory name."""
+        """Node name."""
         if self._name is not None:
             return self._name
 
         func = self.task
         
         if func:
-            # use task name as workspace name
+            # use task name as node name
             if isinstance(func, (list, tuple)):
                 return func[1]
             
@@ -77,19 +77,19 @@ class Workspace(Directory):
             if hasattr(func, '__name__'):
                 return func.__name__.lstrip('_')
 
-        # use directory name as workspace name
+        # use directory name as node name
         return path.basename(self.path(abs=True))
 
     @property
-    def parent(self) -> Workspace:
-        """Parent workspace."""
-        return tp.cast(Workspace, self._parent)
+    def parent(self) -> Node:
+        """Parent node."""
+        return tp.cast(Node, self._parent)
 
     @property
     def done(self) -> bool:
-        """Main function and child workspaces executed successfully."""
+        """Main function and child nodes executed successfully."""
         if self._endtime:
-            return all(ws.done for ws in self._ws)
+            return all(node.done for node in self)
 
         return False
     
@@ -98,22 +98,22 @@ class Workspace(Directory):
         """Total walltime."""
         if self.done:
             delta = self._endtime - (self._dispatchtime or self._starttime) # type: ignore
-            delta_ws = tp.cast(tp.List[float], [ws.elapsed for ws in self._ws])
+            delta_ws = tp.cast(tp.List[float], [node.elapsed for node in self])
 
             if self.concurrent and len(delta_ws) > 1:
                 return delta + max(*delta_ws)
 
             return delta + sum(delta_ws)
     
-    def __init__(self, cwd: str, data: dict, parent: tp.Optional[Workspace]):
+    def __init__(self, cwd: str, data: dict, parent: tp.Optional[Node]):
         super().__init__(cwd)
         self._init = data
         self._data = {}
         self._parent = parent
-        self._ws = []
+        self._children = []
     
     def __getattr__(self, key: str):
-        """Get workspace data (including parent data)."""
+        """Get node data (including parent data)."""
         if key.startswith('_'):
             return object.__getattribute__(self, key)
 
@@ -123,7 +123,7 @@ class Workspace(Directory):
         if key in self._init:
             return self._init[key]
         
-        if key not in tp.get_type_hints(Workspace):
+        if key not in tp.get_type_hints(Node):
             if self.inherit:
                 return self.inherit.__getattr__(key)
 
@@ -133,7 +133,7 @@ class Workspace(Directory):
         return None
     
     def __setattr__(self, key: str, val):
-        """Set workspace data."""
+        """Set node data."""
         if key.startswith('_'):
             object.__setattr__(self, key, val)
         
@@ -144,7 +144,7 @@ class Workspace(Directory):
         """Items to be saved when pickled."""
         state = {}
         
-        for key in tp.get_type_hints(Workspace):
+        for key in tp.get_type_hints(Node):
             if key.startswith('_'):
                 state[key] = getattr(self, key)
         
@@ -155,14 +155,20 @@ class Workspace(Directory):
         for key, val in state.items():
             setattr(self, key, val)
 
-    def __getitem__(self, key: int) -> Workspace:
-        """Get child workspace."""
-        return self._ws[key]
+    def __getitem__(self, key: int) -> Node:
+        """Get child node."""
+        return self._children[key]
 
     def __len__(self):
-        return len(self._ws)
+        """Child node number."""
+        return len(self._children)
+    
+    def __iter__(self):
+        """Iterate child nodes."""
+        return iter(self._children)
     
     def __str__(self):
+        """Node name with execution state."""
         from .root import root
         
         name = self.name
@@ -207,14 +213,19 @@ class Workspace(Directory):
 
 
     def __repr__(self):
+        """State of node and child nodes."""
         return self.stat(False)
     
-    async def run(self):
-        """Execute task and child tasks."""
-        await self.run_task()
-        await self.run_ws()
+    def run(self):
+        """Wrap self.execute with asyncio."""
+        asyncio.run(self.execute())
     
-    async def run_task(self):
+    async def execute(self):
+        """Execute task and child tasks."""
+        await self._exec_task()
+        await self._exec_children()
+    
+    async def _exec_task(self):
         """Execute self.task."""
         from .root import root
 
@@ -279,8 +290,8 @@ class Workspace(Directory):
         
         root.save()
     
-    async def run_ws(self):
-        """Execute self._ws."""
+    async def _exec_children(self):
+        """Execute self._children."""
         if not self._endtime:
             return
         
@@ -290,11 +301,11 @@ class Workspace(Directory):
         exclude = []
 
         def get_unfinished():
-            wss: tp.List[Workspace] = []
+            wss: tp.List[Node] = []
             
-            for ws in self._ws:
-                if ws not in exclude and not ws.done:
-                    wss.append(ws)
+            for node in self:
+                if node not in exclude and not node.done:
+                    wss.append(node)
             
             return wss
 
@@ -302,12 +313,12 @@ class Workspace(Directory):
             if self.concurrent:
                 # execute nodes concurrently
                 exclude += wss
-                await asyncio.gather(*(ws.run() for ws in wss))
+                await asyncio.gather(*(node.execute() for node in wss))
 
             else:
                 # execute nodes in sequence
                 exclude.append(wss[0])
-                await wss[0].run()
+                await wss[0].execute()
 
             # exit if any error occurs
             if root.job_failed or root.job_aborted:
@@ -321,8 +332,8 @@ class Workspace(Directory):
         cwd: tp.Optional[str] = None, name: tp.Optional[str] = None, *,
         args: tp.Optional[tp.Union[list, tuple]] = None,
         concurrent: tp.Optional[bool] = None, prober: Prober = None,
-        inherit: tp.Optional[Workspace] = None, **data) -> Workspace:
-        """Add a child workspace or a child task."""
+        inherit: tp.Optional[Node] = None, **data) -> Node:
+        """Add a child node or a child task."""
         if task is not None:
             if isinstance(task, (list, tuple)):
                 assert len(task) == 2
@@ -341,17 +352,17 @@ class Workspace(Directory):
         if args is not None:
             data['args'] = args
 
-        ws = Workspace(self.path(cwd or '.'), data, self)
+        node = Node(self.path(cwd or '.'), data, self)
 
         if name is not None:
-            ws._name = name
+            node._name = name
         
         elif cwd is not None:
-            ws._name = cwd
+            node._name = cwd
         
-        self._ws.append(ws)
+        self._children.append(node)
 
-        return ws
+        return node
     
     def add_mpi(self, cmd: tp.Union[str, tp.Callable], /,
         nprocs: tp.Optional[tp.Union[int, tp.Callable[[Directory], int]]] = None,
@@ -370,18 +381,18 @@ class Workspace(Directory):
             per_proc = (per_proc, per_proc)
         
         func = partial(mpiexec, cmd, nprocs, per_proc[0], per_proc[1], name, arg, arg_mpi, check_output)
-        ws = self.add(func, cwd, name or getname(cmd), **(data or {}))
+        node = self.add(func, cwd, name or getname(cmd), **(data or {}))
         
-        return ws
+        return node
     
     def reset(self):
-        """Reset workspace (including child workspaces)."""
+        """Reset node (including child nodes)."""
         self._starttime = None
         self._dispatchtime = None
         self._endtime = None
         self._err = None
         self._data.clear()
-        self._ws.clear()
+        self._children.clear()
     
     def stat(self, verbose: bool = False):
         """Structure and execution status."""
@@ -398,8 +409,8 @@ class Workspace(Directory):
             
         collapsed = False
 
-        for i, node in enumerate(self._ws):
-            stat += '\n' + idx(i)
+        for i, node in enumerate(self):
+            stat += '\node' + idx(i)
 
             if not verbose and (node.done or (collapsed and node._starttime is None)):
                 stat += str(node)
@@ -408,7 +419,7 @@ class Workspace(Directory):
                 collapsed = True
                 
                 if len(node):
-                    stat += '\n  '.join(node.stat(verbose).split('\n'))
+                    stat += '\node  '.join(node.stat(verbose).split('\node'))
                 
                 else:
                     stat += str(node)
@@ -416,7 +427,7 @@ class Workspace(Directory):
         return stat
 
 
-# type annotation for a workspace task function
-T = tp.TypeVar('T', bound=Workspace)
+# type annotation for a node task function
+T = tp.TypeVar('T', bound=Node)
 Task = tp.Optional[tp.Union[tp.Callable[[T], tp.Optional[tp.Coroutine]], tp.Tuple[str, str], str]]
-Prober = tp.Optional[tp.Callable[[Workspace], tp.Union[float, str, None]]]
+Prober = tp.Optional[tp.Callable[[Node], tp.Union[float, str, None]]]

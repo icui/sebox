@@ -2,7 +2,7 @@ from __future__ import annotations
 from os import path
 import typing as tp
 
-from sebox import root, Workspace
+from sebox import root, Node
 from sebox.utils.catalog import getstations, getcomponents
 
 if tp.TYPE_CHECKING:
@@ -29,8 +29,8 @@ if tp.TYPE_CHECKING:
         dtype: tp.Any
     
 
-    class Scatter(Workspace):
-        """A workspace to convert dataset from / to MPI format."""
+    class Scatter(Node):
+        """A node to convert dataset from / to MPI format."""
         # path to bundled data file
         path_input: str
 
@@ -90,14 +90,14 @@ def _write(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
         d.dump(data, f'{pid}.npy', mkdir=False)
 
 
-async def scatter(ws: Scatter):
+async def scatter(node: Scatter):
     """Convert ASDF trace to MPI trace."""
     from pyasdf import ASDFDataSet
 
-    ws.mkdir(ws.rel(ws.path_output))
+    node.mkdir(node.rel(node.path_output))
 
-    with ASDFDataSet(ws.path_input, mode='r', mpi=False) as ds:
-        stats = tp.cast('Stats', ws.stats or {})
+    with ASDFDataSet(node.path_input, mode='r', mpi=False) as ds:
+        stats = tp.cast('Stats', node.stats or {})
 
         # fill stattions and components
         if 'stas' not in stats:
@@ -107,7 +107,7 @@ async def scatter(ws: Scatter):
             stats['cmps'] = getcomponents()
         
         # fill data info
-        if ws.aux:
+        if node.aux:
             aux = ds.auxiliary_data[ds.auxiliary_data.list()[0]]
 
             if 'cha' not in stats:
@@ -131,5 +131,5 @@ async def scatter(ws: Scatter):
                 stats['dt'] = trace.stats.delta
 
         # save stats
-        ws.dump(stats, ws.rel(ws.path_output, 'stats.pickle'))
-        ws.add_mpi(_write, arg=(ws.path_input, ws.path_output, ws.aux, stats), arg_mpi=stats['stas'])
+        node.dump(stats, node.rel(node.path_output, 'stats.pickle'))
+        node.add_mpi(_write, arg=(node.path_input, node.path_output, node.aux, stats), arg_mpi=stats['stas'])

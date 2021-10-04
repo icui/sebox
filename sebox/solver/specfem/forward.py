@@ -8,43 +8,43 @@ if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
 
 
-def setup(ws: Specfem):
-    """Create forward workspace."""
-    if not ws.path_mesh and not ws.path_model:
+def setup(node: Specfem):
+    """Create forward node."""
+    if not node.path_mesh and not node.path_model:
         raise AttributeError('path_mesh or path_model is required')
     
-    setup_mesh(ws)
+    setup_mesh(node)
 
     # update Par_file
     pars: Par_file = { 'SIMULATION_TYPE': 1 }
 
-    if ws.save_forward is not None:
-        pars['SAVE_FORWARD'] = ws.save_forward
+    if node.save_forward is not None:
+        pars['SAVE_FORWARD'] = node.save_forward
     
-    if ws.monochromatic_source is not None:
-        pars['USE_MONOCHROMATIC_CMT_SOURCE'] = ws.monochromatic_source
+    if node.monochromatic_source is not None:
+        pars['USE_MONOCHROMATIC_CMT_SOURCE'] = node.monochromatic_source
     
-    if ws.duration is not None:
-        pars['RECORD_LENGTH_IN_MINUTES'] = ws.duration
+    if node.duration is not None:
+        pars['RECORD_LENGTH_IN_MINUTES'] = node.duration
     
-    if ws.transient_duration is not None:
-        if ws.duration is None:
+    if node.transient_duration is not None:
+        if node.duration is None:
             raise ValueError('solver duration must be set if transient_duration exists')
 
         pars['STEADY_STATE_KERNEL'] = True
-        pars['STEADY_STATE_LENGTH_IN_MINUTES'] = ws.duration - ws.transient_duration
+        pars['STEADY_STATE_LENGTH_IN_MINUTES'] = node.duration - node.transient_duration
     
     else:
         pars['STEADY_STATE_KERNEL'] = False
     
-    setpars(ws, pars)
+    setpars(node, pars)
 
 
-def forward(ws: Specfem):
+def forward(node: Specfem):
     """Forward simulation."""
-    ws.add(setup)
-    xmeshfem(ws)
-    xspecfem(ws)
-    ws.add(('sebox.utils.asdf', 'scatter'),
-        path_input=ws.path('OUTPUT_FILES/synthetic.h5'), path_output=ws.path('traces'),
+    node.add(setup)
+    xmeshfem(node)
+    xspecfem(node)
+    node.add(('sebox.utils.asdf', 'scatter'),
+        path_input=node.path('OUTPUT_FILES/synthetic.h5'), path_output=node.path('traces'),
         stats={'cmps': ['N', 'E', 'Z']})

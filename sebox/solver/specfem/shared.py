@@ -17,18 +17,18 @@ def getsize(d: Directory):
     raise RuntimeError('not dimension in Par_file')
 
 
-def xspecfem(ws: Specfem):
+def xspecfem(node: Specfem):
     """Add task to call xspecfem3D."""
-    ws.add_mpi('bin/xspecfem3D', getsize, 1, data={'prober': probe_solver})
+    node.add_mpi('bin/xspecfem3D', getsize, 1, data={'prober': probe_solver})
 
 
-def xmeshfem(ws: Specfem):
+def xmeshfem(node: Specfem):
     """Add task to call xmeshfem3D."""
-    if ws.path_mesh:
-        ws.add(ws.ln, name='link_mesh', args=(ws.rel(ws.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI'))
+    if node.path_mesh:
+        node.add(node.ln, name='link_mesh', args=(node.rel(node.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI'))
     
     else:
-        ws.add_mpi('bin/xmeshfem3D', getsize, data={'prober': probe_mesher})
+        node.add_mpi('bin/xmeshfem3D', getsize, data={'prober': probe_mesher})
 
 
 def getpars(d: Directory) -> Par_file:

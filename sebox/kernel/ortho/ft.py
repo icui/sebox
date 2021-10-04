@@ -1,26 +1,26 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import root, Directory
-from sebox.utils.catalog import getdir, getstations, getcomponents
+from sebox import root
+from sebox.utils.catalog import getdir, getcomponents
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
     from .typing import Kernel
 
 
-def ft_syn(ws: Kernel, data: ndarray):
+def ft_syn(node: Kernel, data: ndarray):
     from scipy.fft import fft
-    return fft(data[..., ws.nt_ts: ws.nt_ts + ws.nt_se])[..., ws.imin: ws.imax] # type: ignore
+    return fft(data[..., node.nt_ts: node.nt_ts + node.nt_se])[..., node.imin: node.imax] # type: ignore
 
 
-def ft_obs(ws: Kernel, data: ndarray):
+def ft_obs(node: Kernel, data: ndarray):
     import numpy as np
     from scipy.fft import fft
 
     shape = data.shape
 
-    if (nt := ws.kf * ws.nt_se) > len(data):
+    if (nt := node.kf * node.nt_se) > len(data):
         # expand observed data with zeros
         pad = list(shape)
         pad[-1] = nt - len(data)
@@ -29,31 +29,147 @@ def ft_obs(ws: Kernel, data: ndarray):
     else:
         data = data[..., :nt]
 
-    return fft(data)[..., ::ws.kf][..., ws.imin: ws.imax] # type: ignore
+    return fft(data)[..., ::node.kf][..., node.imin: node.imax] # type: ignore
 
 
-def ft(ws: Kernel, _):
+def ft(node: Kernel, _):
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
 
-    root.restore(ws)
-    stats = ws.load('forward/traces/stats.pickle')
-    data = ws.load(f'forward/traces/{pid}.npy')
+    root.restore(node)
+    stats = node.load('forward/traces/stats.pickle')
+    data = node.load(f'forward/traces/{pid}.npy')
     
     # resample if necessary
-    if not np.isclose(stats['dt'], ws.dt):
+    if not np.isclose(stats['dt'], node.dt):
         from scipy.signal import resample
-        print('resample:', stats['dt'], '->', ws.dt)
-        resample(data, int(round(stats['nt'] * stats['dt'] / ws.dt)), axis=-1)
+        print('resample:', stats['dt'], '->', node.dt)
+        resample(data, int(round(stats['nt'] * stats['dt'] / node.dt)), axis=-1)
 
     # FFT
-    data_nez = ft_syn(ws, data)
-    data_rtz = rotate_frequencies(ws, data_nez, stats['cmps'], True)
-    ws.dump(data_rtz, f'enc_syn/{pid}.npy', mkdir=False)
+    data_nez = ft_syn(node, data)
+    data_rtz = rotate_frequencies(node, data_nez, stats['cmps'], True)
+    node.dump(data_rtz, f'enc_syn/{pid}.npy', mkdir=False)
 
 
-def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
+def diff(node: Kernel, stas: tp.List[str]):
+    import numpy as np
+    from scipy.fft import ifft
+    from sebox.mpi import pid, rank
+    from mpi4py.MPI import COMM_WORLD as comm
+
+    # read data
+    root.restore(node)
+    stats = node.load('forward/traces/stats.pickle')
+    syn = node.load(f'enc_syn/{pid}.npy')
+    obs = node.load(f'enc_obs/{pid}.npy')
+    ref = node.load(f'enc_diff/{pid}.npy')
+    weight = node.load(f'enc_weight/{pid}.npy')
+
+    # clip phases
+    weight[np.where(abs(ref) > np.pi)] = 0.0
+
+    # compute diff
+    phase_diff = np.angle(syn / obs) * weight
+    amp_diff = np.log(np.abs(syn) / np.abs(obs)) * weight
+
+    if node.double_difference:
+        # unwrap or clip phases
+        phase_sum = sum(comm.allgather(np.nansum(phase_diff, axis=0)))
+        amp_sum = sum(comm.allgather(np.nansum(amp_diff, axis=0)))
+        weight_sum = sum(comm.allgather(np.nansum(weight, axis=0)))
+        weight_sum[np.where(weight_sum == 0.0)] = 1.0 # type: ignore
+
+        # sum of phase and amplitude differences
+        phase_diff -= phase_sum / weight_sum
+        amp_diff -= amp_sum / weight_sum
+
+    # apply measurement weightings
+    omega = np.arange(node.imin, node.imax) / node.imin
+    phase_diff *= weight * node.phase_factor / omega
+    amp_diff *= weight * node.amplitude_factor
+
+    # save misfit value
+    fincr = node.frequency_increment
+
+    def save_misfit(diff, name):
+        mf = np.zeros([syn.shape[0], syn.shape[1], node.nbands_used])
+
+        for i in range(node.nbands_used):
+            mf[..., i] = np.nansum(diff[..., i * fincr: (i + 1) * fincr] ** 2, axis=-1)
+        
+        mf_sum = comm.gather(mf.sum(axis=0), root=0)
+
+        if rank == 0:
+            node.dump(sum(mf_sum), f'{name}_mf.npy')
+
+    save_misfit(phase_diff, 'phase')
+
+    if node.amplitude_factor > 0:
+        save_misfit(amp_diff, 'amp')
+
+    if not node.misfit_only:
+        # compute adjoint sources
+        nan = np.where(np.isnan(phase_diff))
+        syn[nan] = 1.0
+
+        phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
+        phase_adj[nan] = 0.0
+
+        if node.amplitude_factor > 0:
+            amp_adj = amp_diff * syn / abs(syn) ** 2
+            amp_adj[nan] = 0.0
+        
+        else:
+            amp_adj = np.zeros(syn.shape)
+
+        # fourier transform of adjoint source time function
+        ft_adj = rotate_frequencies(node, phase_adj + amp_adj, stats['cmps'], False)
+
+        # fill full frequency band
+        ft_adstf = np.zeros([len(stas), 3, node.nt_se], dtype=complex)
+        ft_adstf[..., node.imin: node.imax] = ft_adj
+        ft_adstf[..., -node.imin: -node.imax: -1] = np.conj(ft_adj)
+
+        # stationary adjoint source
+        adstf_tau = -ifft(ft_adstf).real # type: ignore
+
+        # repeat to fill entrie adjoint duration
+        nt = stats['nt']
+        adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / node.nt_se)))
+        adstf = adstf_tile[..., -nt:]
+
+        if node.taper:
+            ntaper = int(node.taper * 60 / node.dt)
+            adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
+        
+        node.dump((adstf, stas, stats['cmps']), f'enc_mf/{pid}.pickle', mkdir=False)
+
+
+def gather(node: Kernel):
+    from pyasdf import ASDFDataSet
+
+    # get total misfit
+    mf = node.load('phase_mf.npy').sum()
+
+    if node.amplitude_factor > 0:
+        mf += node.load('amp_mf.npy').sum()
+
+    node.parent.parent.misfit_kl = mf
+
+    # merge adjoint sources into a single ASDF file
+    if not node.misfit_only:
+        with ASDFDataSet(node.path('adjoint.h5'), mode='w', mpi=False) as ds:
+            for pid in node.ls('enc_mf', 'p*.pickle'):
+                adstf, stas, cmps = node.load(f'enc_mf/{pid}')
+
+                for i, sta in enumerate(stas):
+                    for j, cmp in enumerate(cmps):
+                        ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
+
+
+def rotate_frequencies(node: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
     import numpy as np
     from sebox.mpi import pid
 
@@ -77,7 +193,7 @@ def rotate_frequencies(ws: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, st
 
     data_rot[:, cmps_from.index('Z'), :] = data[:, cmps_to.index('Z'), :]
 
-    for event, slots in ws.fslots.items():
+    for event, slots in node.fslots.items():
         if len(slots) == 0:
             continue
         

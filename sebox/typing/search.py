@@ -1,18 +1,11 @@
 from __future__ import annotations
-import typing as tp
 
-from sebox import Workspace
+from sebox import Node
 from .kernel import Kernel
 
 
-class Search(Workspace):
+class Search(Node):
     """Gradient optimization."""
-    # root search workspace
-    root_search: Search
-
-    # current iteration
-    iteration: int
-
     # maximum number of search steps
     nsteps: int
 
@@ -22,5 +15,5 @@ class Search(Workspace):
     # current step length
     step: float
 
-    # kernel workspace
+    # kernel node
     inherit_kernel: Kernel

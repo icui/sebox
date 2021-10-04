@@ -1,6 +1,6 @@
 import typing as tp
 
-from sebox import Workspace
+from sebox import Node
 from sebox.utils.catalog import getdir
 
 
@@ -9,31 +9,31 @@ def _check(out: str):
         raise RuntimeError('adios execution failed')
 
 
-def _adios(ws: Workspace, cmd: str):
+def _adios(node: Node, cmd: str):
     from sebox.solver.specfem.shared import getsize
-    ws.add_mpi(ws.rel(tp.cast(str, ws.path_adios), 'bin', cmd), getsize, check_output=_check)
+    node.add_mpi(node.rel(tp.cast(str, node.path_adios), 'bin', cmd), getsize, check_output=_check)
 
 
-def xsum(ws: Workspace, mask: bool):
+def xsum(node: Node, mask: bool):
     """Sum and mask kernels."""
-    _adios(ws, f'xsum_kernels path.txt kernels_raw.bp')
+    _adios(node, f'xsum_kernels path.txt kernels_raw.bp')
 
     if mask:
-        _adios(ws, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
+        _adios(node, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
 
 
-def xmerge(ws: Workspace, precond: float):
+def xmerge(node: Node, precond: float):
     """Merge smoothed kernels and create preconditioner."""
-    _adios(ws, 'xmerge_kernels smooth kernels.bp')
-    _adios(ws, 'xcompute_vp_vs_hess kernels.bp DATABASES_MPI/solver_data.bp hess.bp')
-    _adios(ws, f'xprepare_vp_vs_precond hess.bp precond.bp {1/precond}')
+    _adios(node, 'xmerge_kernels smooth kernels.bp')
+    _adios(node, 'xcompute_vp_vs_hess kernels.bp DATABASES_MPI/solver_data.bp hess.bp')
+    _adios(node, f'xprepare_vp_vs_precond hess.bp precond.bp {1/precond}')
 
 
-def xgd(ws: Workspace):
+def xgd(node: Node):
     """Compute gradient descent direction."""
-    _adios(ws, 'xsteepDescent kernel/kernels.bp kernel/precond.bp direction.bp')
+    _adios(node, 'xsteepDescent kernel/kernels.bp kernel/precond.bp direction.bp')
 
 
-def xupdate(ws: Workspace, step: float):
+def xupdate(node: Node, step: float):
     """Update model."""
-    _adios(ws, f'xupdate_model {step} ../model_init.bp ../mesh/DATABASES_MPI/solver_data.bp ../direction.bp .')
+    _adios(node, f'xupdate_model {step} ../model_init.bp ../mesh/DATABASES_MPI/solver_data.bp ../direction.bp .')

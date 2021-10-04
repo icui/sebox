@@ -5,95 +5,128 @@ from sebox import root
 from sebox.utils.catalog import getdir, getstations
 from .catalog import merge, scatter_obs, scatter_diff, scatter_baz
 from .preprocess import prepare_encoding
-from .kernel import compute_kernel
+from .ft import ft, diff, gather
 
 if tp.TYPE_CHECKING:
     from .typing import Kernel
 
 
-def main(ws: Kernel):
+def main(node: Kernel):
     """Compute kernels."""
-    ws.misfit_only = False
-    _compute(ws)
+    node.misfit_only = False
+    _main(node)
 
 
-def misfit(ws: Kernel):
+def misfit(node: Kernel):
     """Compute misfit."""
-    ws.misfit_only = True
-    _compute(ws)
+    node.misfit_only = True
+    _main(node)
 
 
-def _compute(ws: Kernel):
-    ws.root_kernel = ws
+def _main(node: Kernel):
+    node.root_kernel = node
 
     # prepare catalog (executed only once for a catalog)
-    ws.add(_catalog, 'catalog', concurrent=True)
+    node.add(_catalog, 'catalog', concurrent=True)
 
     # mesher and preprocessing
-    ws.add(_preprocess, concurrent=True)
+    node.add(_preprocess, concurrent=True)
 
     # kernel computation
-    ws.add(_main, concurrent=True)
+    node.add(_kernel, concurrent=True)
 
     # sum and smooth kernels
-    ws.add(_postprocess)
+    node.add(_postprocess)
 
 
-def _catalog(ws: Kernel):
+def _catalog(node: Kernel):
     # prepare catalog (executed only once for a catalog)
     cdir = getdir()
 
     # merge stations into a single file
     if not cdir.has('SUPERSTATION'):
-        ws.add(merge)
+        node.add(merge)
     
     #FIXME create_catalog (measurements.npy, weightings.npy, noise.npy, ft_obs, ft_diff)
 
     # convert observed traces into MPI format
     if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        ws.add(scatter_obs, concurrent=True)
+        node.add(scatter_obs, concurrent=True)
 
     # convert differences between observed and synthetic data into MPI format
     if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
-        ws.add(scatter_diff, concurrent=True)
+        node.add(scatter_diff, concurrent=True)
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
-        ws.add_mpi(scatter_baz, arg=ws, arg_mpi=getstations())
+        node.add_mpi(scatter_baz, arg=node, arg_mpi=getstations())
 
 
-def _preprocess(ws: Kernel):
-    for iker in range(ws.nkernels or 1):
-        # create workspace for individual kernels
-        ws.add(prepare_encoding, f'kl_{iker:02d}', iker=iker)
+def _preprocess(node: Kernel):
+    for iker in range(node.nkernels or 1):
+        # create node for individual kernels
+        node.add(prepare_encoding, f'kl_{iker:02d}', iker=iker)
 
     # run mesher
-    ws.add('solver.mesh', 'mesh')
+    node.add('solver.mesh', 'mesh')
 
 
-def _main(ws: Kernel):
-    for iker in range(ws.nkernels or 1):
+def _kernel(node: Kernel):
+    for iker in range(node.nkernels or 1):
         # add steps to run forward and adjoint simulation
-        ws.add(compute_kernel, f'kl_{iker:02d}', inherit=ws.parent[1][iker])
+        node.add(_compute_kernel, f'kl_{iker:02d}', inherit=node.parent[1][iker])
 
 
-def _postprocess(ws: Kernel):
+def _postprocess(node: Kernel):
     # sum misfit
-    ws.add(_sum_misfit)
+    node.add(_sum_misfit)
 
-    if not ws.misfit_only:
+    if not node.misfit_only:
         # process kernels
-        ws.add('solver.postprocess', 'postprocess',
-            path_kernels=[kl.path('adjoint') for kl in ws.parent[1]][:ws.nkernels],
-            path_mesh= ws.path('mesh'))
+        node.add('solver.postprocess', 'postprocess',
+            path_kernels=[kl.path('adjoint') for kl in node.parent[1]][:node.nkernels],
+            path_mesh= node.path('mesh'))
         
-        ws.add(_link_kernels)
+        node.add(_link_kernels)
 
 
-def _link_kernels(ws: Kernel):
-    ws.ln('postprocess/kernels.bp')
-    ws.ln('postprocess/precond.bp')
+def _compute_kernel(node: Kernel):
+    # forward simulation
+    node.add('solver', 'forward',
+        path_event= node.path('SUPERSOURCE'),
+        path_stations= getdir().path('SUPERSTATION'),
+        path_mesh= node.path('../mesh'),
+        monochromatic_source= True,
+        save_forward= True)
+    
+    # compute misfit
+    node.add(_compute_misfit)
+
+    # adjoint simulation
+    if not node.misfit_only:
+        node.add('solver.adjoint', 'adjoint',
+            path_forward = node.path('forward'),
+            path_misfit = node.path('adjoint.h5'))
 
 
-def _sum_misfit(ws: Kernel):
-    ws.parent.parent.misfit_value = sum([kl.misfit_kl for kl in ws.parent[2]])
+def _compute_misfit(node: Kernel):
+    stas = getstations()
+
+    # process traces
+    node.add_mpi(ft, arg=node, arg_mpi=stas, cwd='enc_syn')
+    
+    # compute misfit
+    node.add_mpi(diff, arg=node, arg_mpi=stas, cwd='enc_mf')
+
+    # convert adjoint sources to ASDF format
+    node.add(gather)
+
+
+def _link_kernels(node: Kernel):
+    node.ln('postprocess/kernels.bp')
+    node.ln('postprocess/precond.bp')
+
+
+def _sum_misfit(node: Kernel):
+    kernel = node.parent.parent
+    kernel.misfit_value = sum([kl.misfit_kl for kl in kernel[2]])

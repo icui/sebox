@@ -10,36 +10,36 @@ if tp.TYPE_CHECKING:
     from .typing import Specfem
 
 
-def setup(ws: Adjoint):
-    """Create adjoint workspace."""
+def setup(node: Adjoint):
+    """Create adjoint node."""
     # specfem directory for forward simulation
-    if not ws.path_forward:
+    if not node.path_forward:
         raise ValueError('forward solver not specified')
     
-    if not ws.path_misfit:
+    if not node.path_misfit:
         raise ValueError('adjoint source not specified')
 
-    d = Directory(ws.path_forward)
+    d = Directory(node.path_forward)
 
     # create directories
-    ws.mkdir('SEM')
-    ws.mkdir('DATA')
-    ws.mkdir('OUTPUT_FILES')
+    node.mkdir('SEM')
+    node.mkdir('DATA')
+    node.mkdir('OUTPUT_FILES')
     
     # link files
-    ws.ln(ws.rel(d, 'bin'))
-    ws.ln(ws.rel(d, 'DATABASES_MPI'))
-    ws.ln(ws.rel(d, 'DATA/*'), 'DATA')
-    ws.ln(ws.rel(ws.path_misfit), 'SEM/adjoint.h5')
-    ws.ln('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
+    node.ln(node.rel(d, 'bin'))
+    node.ln(node.rel(d, 'DATABASES_MPI'))
+    node.ln(node.rel(d, 'DATA/*'), 'DATA')
+    node.ln(node.rel(node.path_misfit), 'SEM/adjoint.h5')
+    node.ln('DATA/STATIONS', 'DATA/STATIONS_ADJOINT')
 
     #  update Par_file
-    ws.rm('DATA/Par_file')
-    ws.cp(ws.rel(d, 'DATA/Par_file'), 'DATA')
-    setpars(ws, { 'SIMULATION_TYPE': 3, 'SAVE_FORWARD': False })
+    node.rm('DATA/Par_file')
+    node.cp(node.rel(d, 'DATA/Par_file'), 'DATA')
+    setpars(node, { 'SIMULATION_TYPE': 3, 'SAVE_FORWARD': False })
 
 
-def adjoint(ws: Specfem):
+def adjoint(node: Specfem):
     """Forward simulation."""
-    ws.add(setup)
-    xspecfem(ws)
+    node.add(setup)
+    xspecfem(node)

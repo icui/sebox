@@ -80,7 +80,7 @@ async def mpiexec(cmd: tp.Union[str, tp.Callable],
             _pending[lock] = nnodes
             await lock.acquire()
         
-        # set dispatchtime for workspace
+        # set dispatchtime for node
         if hasattr(d, '_dispatchtime'):
             setattr(d, '_dispatchtime', time())
 
