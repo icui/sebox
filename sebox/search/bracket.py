@@ -21,19 +21,77 @@ def step(ws: Search):
     ws.add('kernel.misfit', path_model=ws.path('model_gll.bp'), path_mesh=None)
 
     # check bracket
-    ws.add(_check)
+    ws.add(_check, cwd='..')
 
 
 def _check(ws: Search):
+    import numpy as np
+
     search = tp.cast('Search', ws.parent.parent)
-    x = [0.0]
-    f = [ws.inherit_kernel.misfit_value]
+    steps = [0.0]
+    vals = [ws.inherit_kernel.misfit_value]
 
     for step in search._ws:
-        x.append(step.step) # type: ignore
-        f.append(step[1].misfit_value) # type: ignore
+        steps.append(step.step) # type: ignore
+        vals.append(step[1].misfit_value) # type: ignore
     
-    print(x, f)
-    exit()
+    x = np.array(steps)
+    f = np.array(vals)
+    f = f[abs(x).argsort()]
+    x = x[abs(x).argsort()]
 
+    alpha = None
+
+    if check_bracket(f):
+        if good_enough(x, f):
+            step = x[f.argmin()]
+
+            for j, s in enumerate(steps):
+                if np.isclose(step, s):
+                    ws.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
+                    return
+            
+        alpha = polyfit(x,f)
+        
+    elif len(steps) - 1 < ws.nsteps:
+        if all(f <= f[0]):
+            alpha = 1.618034 * x[-1]
+        
+        else:
+            alpha = x[1] / 1.618034
     
+    if alpha:
+        search.add(step, f'step_{len(steps)-1}')
+    
+    else:
+        print('line search failed')
+        ws.ln('model_init.bp', 'model_new.bp')
+
+
+def check_bracket(f):
+    """Check history has bracket shape."""
+    imin, fmin = f.argmin(), f.min()
+
+    return (fmin < f[0]) and any(f[imin:] > fmin)
+
+def good_enough(x, f):
+    """Check current result is good."""
+    import numpy as np
+
+    if not check_bracket(f):
+        return 0
+
+    x0 = polyfit(x, f)
+
+    return any(np.abs(np.log10(x[1:]/x0)) < np.log10(1.2))
+
+def polyfit(x, f):
+    import numpy as np
+
+    i = np.argmin(f)
+    p = np.polyfit(x[i-1:i+2], f[i-1:i+2], 2)
+    
+    if p[0] > 0:
+        return -p[1]/(2*p[0])
+    
+    raise RuntimeError('polyfit failed')

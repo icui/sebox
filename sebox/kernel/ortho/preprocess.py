@@ -214,6 +214,7 @@ def _encode(ws: Kernel):
 
 
 def _enc_obs(ws: Kernel, stas: tp.List[str]):
+    print('@@@', ws)
     import numpy as np
     from sebox.mpi import pid
     from .preprocess import getfreq

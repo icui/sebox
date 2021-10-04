@@ -7,6 +7,9 @@ from .kernel import Kernel
 
 class Search(Workspace):
     """Gradient optimization."""
+    # current iteration
+    iteration: int
+
     # maximum number of search steps
     nsteps: int
 
