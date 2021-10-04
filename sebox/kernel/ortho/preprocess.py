@@ -8,32 +8,25 @@ from .ft import ft_obs
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
-    from .typing import Kernel
+    from .typing import Ortho
 
 
-def getseed(node: Kernel):
-    """Random seed based on kernel configuration."""
-    if isinstance(node.nkernels_rng, int):
-        rng_iter = node.nkernels_rng
-    
-    else:
-        rng_iter = node.nkernels or 1
-    
-    return (node.iteration or 0) * rng_iter + (node.seed or 0) + (node.iker or 0)
+def preprocess(node: Ortho):
+    """Determine encoding parameters and run mesher."""
+    for iker in range(node.nkernels or 1):
+        # create node for individual kernels
+        node.add(_prepare_encoding, f'kl_{iker:02d}', iker=iker)
+
+    # run mesher
+    node.add('solver.mesh', 'mesh')
 
 
-def getfreq(node: Kernel) -> ndarray:
-    """Frequencies used for encoding."""
-    from scipy.fft import fftfreq
-    return fftfreq(node.nt_se, node.dt)[node.imin: node.imax]
-
-
-def prepare_encoding(node: Kernel):
+def _prepare_encoding(node: Ortho):
     """Prepare source encoding data."""
     if node.inherit_kernel:
         # link existing encoding node
         node.add(_link_encoded)
-    
+
     else:
         # determine frequencies
         node.add(_prepare_frequencies)
@@ -45,17 +38,30 @@ def prepare_encoding(node: Kernel):
         node.add(_encode, concurrent=True)
 
 
-def _link_encoded(node: Kernel):
+def _seed(node: Ortho):
+    if isinstance(node.nkernels_rng, int):
+        rng_iter = node.nkernels_rng
+    
+    else:
+        rng_iter = node.nkernels or 1
+    
+    return (node.iteration or 0) * rng_iter + (node.seed or 0) + (node.iker or 0)
+
+
+def _freq(node: Ortho) -> ndarray:
+    from scipy.fft import fftfreq
+    return fftfreq(node.nt_se, node.dt)[node.imin: node.imax]
+
+
+def _link_encoded(node: Ortho):
     kl = node.inherit_kernel[1][node.iker] # type: ignore
     node.cp(node.rel(kl, 'SUPERSOURCE'))
     node.ln(node.rel(kl, 'enc_obs'))
     node.ln(node.rel(kl, 'enc_diff'))
     node.ln(node.rel(kl, 'enc_weight'))
-    node.parent.update(kl.load('encoding.pickle'))
-    node.parent.fslots = kl.load('fslots.pickle')
 
 
-def _prepare_frequencies(node: Kernel):
+def _prepare_frequencies(node: Ortho):
     import numpy as np
     from scipy.fft import fftfreq
 
@@ -109,20 +115,20 @@ def _prepare_frequencies(node: Kernel):
         'nbands_used': nbands_used,
         'imin': imin,
         'imax': imax,
-        'seed_used': getseed(node)
+        'seed_used': _seed(node)
     }
 
     node.parent.update(encoding)
     node.dump(encoding, 'encoding.pickle')
 
 
-def _encode_events(node: Kernel):
+def _encode_events(node: Ortho):
     # load catalog
     cmt = ''
     cdir = getdir()
 
     # randomize frequency
-    freq = getfreq(node)
+    freq = _freq(node)
     fslots = {}
     events = getevents()
     nbands = node.nbands_used
@@ -199,27 +205,25 @@ def _encode_events(node: Kernel):
                 cmt += '\node'
 
     # save frequency slots and encoded source
-    node.parent.fslots = fslots
     node.dump(fslots, 'fslots.pickle')
     node.write(cmt, 'SUPERSOURCE')
 
 
-def _encode(node: Kernel):
+def _encode(node: Ortho):
     stas = getstations()
     node.mkdir('enc_weight')
     node.add_mpi(_enc_obs, arg=node, arg_mpi=stas, cwd='enc_obs')
     node.add_mpi(_enc_diff, arg=node, arg_mpi=stas, cwd='enc_diff')
 
 
-def _enc_obs(node: Kernel, stas: tp.List[str]):
+def _enc_obs(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from sebox.mpi import pid
-    from .preprocess import getfreq
 
     # kernel configuration
     nt = node.kf * node.nt_se
     t = np.linspace(0, (nt - 1) * node.dt, nt)
-    freq = getfreq(node)
+    freq = _freq(node)
 
     # data from catalog
     root.restore(node)
@@ -263,7 +267,7 @@ def _enc_obs(node: Kernel, stas: tp.List[str]):
     node.dump(encoded, f'enc_obs/{pid}.npy', mkdir=False)
 
 
-def _enc_diff(node: Kernel, stas: tp.List[str]):
+def _enc_diff(node: Ortho, stas: tp.List[str]):
     """Encode diff data."""
     import numpy as np
     from sebox.mpi import pid

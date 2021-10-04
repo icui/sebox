@@ -1,10 +1,10 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import typing
+from sebox.typing import Kernel
 
 
-class Kernel(typing.Kernel):
+class Ortho(Kernel):
     """Source encoded kernel computation."""
     # number of kernel computations per iteration
     nkernels: tp.Optional[int]

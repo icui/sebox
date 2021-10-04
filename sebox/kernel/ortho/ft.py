@@ -6,15 +6,15 @@ from sebox.utils.catalog import getdir, getcomponents
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
-    from .typing import Kernel
+    from .typing import Ortho
 
 
-def ft_syn(node: Kernel, data: ndarray):
+def ft_syn(node: Ortho, data: ndarray):
     from scipy.fft import fft
     return fft(data[..., node.nt_ts: node.nt_ts + node.nt_se])[..., node.imin: node.imax] # type: ignore
 
 
-def ft_obs(node: Kernel, data: ndarray):
+def ft_obs(node: Ortho, data: ndarray):
     import numpy as np
     from scipy.fft import fft
 
@@ -32,7 +32,7 @@ def ft_obs(node: Kernel, data: ndarray):
     return fft(data)[..., ::node.kf][..., node.imin: node.imax] # type: ignore
 
 
-def ft(node: Kernel, _):
+def ft(node: Ortho, _):
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
@@ -53,7 +53,7 @@ def ft(node: Kernel, _):
     node.dump(data_rtz, f'enc_syn/{pid}.npy', mkdir=False)
 
 
-def diff(node: Kernel, stas: tp.List[str]):
+def diff(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from sebox.mpi import pid, rank
@@ -147,7 +147,7 @@ def diff(node: Kernel, stas: tp.List[str]):
         node.dump((adstf, stas, stats['cmps']), f'enc_mf/{pid}.pickle', mkdir=False)
 
 
-def gather(node: Kernel):
+def gather(node: Ortho):
     from pyasdf import ASDFDataSet
 
     # get total misfit
@@ -169,7 +169,7 @@ def gather(node: Kernel):
                         ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
 
 
-def rotate_frequencies(node: Kernel, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
+def rotate_frequencies(node: Ortho, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
     import numpy as np
     from sebox.mpi import pid
 

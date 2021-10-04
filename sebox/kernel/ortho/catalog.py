@@ -5,25 +5,49 @@ from sebox import root
 from sebox.utils.catalog import getdir, getevents, getstations, merge_stations, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
-    from .typing import Kernel
+    from .typing import Ortho
 
 
-def merge(_):
+def catalog(node: Ortho):
+    """Create a catalog (run only once for each catalog directory)."""
+    # prepare catalog (executed only once for a catalog)
+    cdir = getdir()
+
+    # merge stations into a single file
+    if not cdir.has('SUPERSTATION'):
+        node.add(_merge)
+    
+    #FIXME create_catalog (measurements.npy, weightings.npy, noise.npy, ft_obs, ft_diff)
+
+    # convert observed traces into MPI format
+    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+        node.add(_scatter_obs, concurrent=True)
+
+    # convert differences between observed and synthetic data into MPI format
+    if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
+        node.add(_scatter_diff, concurrent=True)
+    
+    # compute back-azimuth
+    if not cdir.has(f'baz_p{root.task_nprocs}'):
+        node.add_mpi(_scatter_baz, arg=node, arg_mpi=getstations())
+
+
+def _merge(_):
     cdir = getdir()
     merge_stations(cdir.subdir('stations'), cdir, True)
 
 
-def scatter_obs(node: Kernel):
+def _scatter_obs(node: Ortho):
     """Convert ASDF observed data to MPI format."""
     _scatter(node, 'obs')
 
 
-def scatter_diff(node: Kernel):
+def _scatter_diff(node: Ortho):
     """Convert ASDF diff data to MPI format."""
     _scatter(node, 'diff')
 
 
-def scatter_baz(node: Kernel, stas: tp.List[str]):
+def _scatter_baz(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from math import radians
     from obspy.geodetics import gps2dist_azimuth
@@ -43,7 +67,7 @@ def scatter_baz(node: Kernel, stas: tp.List[str]):
     getdir().dump(baz, f'baz_p{root.task_nprocs}/{pid}.pickle')
 
 
-def _scatter(node: Kernel, tag: tp.Literal['obs', 'diff']):
+def _scatter(node: Ortho, tag: tp.Literal['obs', 'diff']):
     cdir = getdir()
 
     for src in cdir.ls(f'ft_{tag}'):

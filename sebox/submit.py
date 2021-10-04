@@ -2,7 +2,9 @@ from sys import argv
 
 from sebox import root
 
-if __name__ == '__main__':
+
+def mkws():
+    """Create a new workspace."""
     # determine target directory
     if len(argv) > 1:
         dst = f'job.{argv[1]}'
@@ -19,7 +21,11 @@ if __name__ == '__main__':
     # copy config.toml
     config = root.load('config.toml')
     root.dump(config, dst + '/config.toml')
-    
+
+    return dst
+
+
+if __name__ == '__main__':
     # submit job
     root.restore()
-    root.submit(dst)
+    root.submit(mkws())

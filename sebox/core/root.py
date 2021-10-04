@@ -47,10 +47,10 @@ class Root(Node):
     # module for job scheduler
     module_system: str
 
-    # number of nodes to run MPI tasks (if task_nnodes is None, task_nprocs must be set)
+    # default number of nodes to run MPI tasks (if task_nnodes is None, task_nprocs must be set)
     task_nnodes: tp.Optional[int]
 
-    # runtime global cache
+    # runtime global cache (use underscore to avoid being saved by __getstate__)
     _cache: tp.Dict[str, tp.Any] = {}
 
     # module of job scheduler
@@ -67,6 +67,9 @@ class Root(Node):
     @property
     def task_nprocs(self) -> int:
         """Number of processors to run MPI tasks."""
+        if 'task_nprocs' in self._init:
+            return self._init['task_nprocs']
+
         if 'task_nprocs' in self._data:
             return self._data['task_nprocs']
 
@@ -74,13 +77,16 @@ class Root(Node):
 
     def submit(self, dst: str):
         """Submit job to scheduler."""
-        self.sys.submit('python -m "sebox.run"', dst)
+        self.sys.submit('python -c "from sebox import root; root.run()"', dst)
     
     async def execute(self):
         """Execute main task."""
         self.restore()
+
+        # reset execution state
         self.job_failed = False
         self.job_aborted = False
+        self.job_paused = False
 
         # requeue before job gets killed
         if not self.job_debug:
@@ -103,7 +109,7 @@ class Root(Node):
             return
         
         if node:
-            # restore from a saved node
+            # restore from a saved workspace (e.g. pickle file from mpiexec)
             while node.parent is not None:
                 node = node.parent
             
@@ -116,8 +122,6 @@ class Root(Node):
         elif self.has('config.toml'):
             # load configuration
             self._init.update(root.load('config.toml'))
-        
-        self.job_paused = False
 
         # load module of job scheduler
         self._sys = tp.cast('System', import_module(f'sebox.system.{self.module_system}'))

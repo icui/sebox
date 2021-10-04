@@ -1,2 +1,2 @@
 #!/bin/sh
-python -m 'sebox.run' $@
+python -c 'from sebox import root; root.run()' $@
