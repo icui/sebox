@@ -45,10 +45,10 @@ def _check(ws: Search):
 
     if check_bracket(f):
         if good_enough(x, f):
-            step = x[f.argmin()]
+            step_optim = x[f.argmin()]
 
             for j, s in enumerate(steps):
-                if np.isclose(step, s):
+                if np.isclose(step_optim, s):
                     ws.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
                     return
             
@@ -62,7 +62,7 @@ def _check(ws: Search):
             alpha = x[1] / 1.618034
     
     if alpha:
-        search.add(step, f'step_{len(steps)-1:02d}')
+        search.add(step_optim, f'step_{len(steps)-1:02d}')
     
     else:
         print('line search failed')
