@@ -205,6 +205,7 @@ def _encode_events(node: Ortho):
                 cmt += '\n'
 
     # save frequency slots and encoded source
+    node.parent.fslots = fslots
     node.dump(fslots, 'fslots.pickle')
     node.write(cmt, 'SUPERSOURCE')
 
