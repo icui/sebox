@@ -72,8 +72,9 @@ class Root(Workspace):
 
         return tp.cast(int, self.task_nnodes) * (self.cpus_per_node or self.sys.cpus_per_node)
 
-    def submit(self):
+    def submit(self, dst: str):
         """Submit job to scheduler."""
+        self.sys.submit('python -m "sebox.run"', dst)
     
     async def run(self):
         """Run main task."""

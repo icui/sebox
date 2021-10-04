@@ -11,7 +11,7 @@ cpus_per_node = 42
 gpus_per_node = 6
 
 
-def submit(cmd: str):
+def submit(cmd: str, dst: str):
     """Write and submit job script."""
     # hours and minutes
     walltime = root.job_walltime
@@ -36,8 +36,8 @@ def submit(cmd: str):
     lines.append(cmd + '\n')
 
     # write job script and submit
-    root.writelines(lines, 'job.bash')
-    check_call('bsub job.bash', shell=True)
+    root.writelines(lines, dst + '/job.bash')
+    check_call('bsub job.bash', shell=True, cwd=dst)
 
 def requeue():
     """Run current job again."""

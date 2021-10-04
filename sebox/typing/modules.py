@@ -57,6 +57,9 @@ class System(tp.Protocol):
     # resubmit current job
     requeue: tp.Callable[[], None]
 
+    # submit new job
+    submit: tp.Callable[[str, str], None]
+
     # number of CPUs per node
     cpus_per_node: int
 
