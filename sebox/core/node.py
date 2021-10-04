@@ -69,7 +69,7 @@ class Node(Directory):
                 return func[1]
             
             if isinstance(func, str):
-                return func.replace('.', '_')
+                return func.split('.')[-1]
 
             while isinstance(func, partial):
                 func = func.func
