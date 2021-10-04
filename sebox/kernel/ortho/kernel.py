@@ -10,10 +10,9 @@ if tp.TYPE_CHECKING:
 
 def forward(node: Ortho):
     """Forward simulation."""
-    for iker in range(node.nkernels or 1):
-        # add steps to run forward and adjoint simulation
-        node.add('solver', f'kl_{iker:02d}/forward', f'kl_{iker:02d}',
-            path_event= node.path(f'kl_{iker:02d}/SUPERSOURCE'),
+    for cwd in _cwd(node):
+        node.add('solver', f'k{cwd}/forward', cwd,
+            path_event= node.path(f'{cwd}/SUPERSOURCE'),
             path_stations= getdir().path('SUPERSTATION'),
             path_mesh= node.path('mesh'),
             monochromatic_source= True,
@@ -22,17 +21,23 @@ def forward(node: Ortho):
 
 def misfit(node: Ortho):
     """Compute misfit and adjoint source."""
-    for iker in range(node.nkernels or 1):
-        node.add(_misfit, f'kl_{iker:02d}')
+    for cwd in _cwd(node):
+        node.add(_misfit, cwd)
 
 
 def adjoint(node: Ortho):
     """Adjoint simulation."""
-    if not node.misfit_only:
-        for iker in range(node.nkernels or 1):
-            node.add('solver.adjoint', f'kl_{iker:02d}/adjoint', f'kl_{iker:02d}',
-                path_forward = node.path(f'kl_{iker:02d}/forward'),
-                path_misfit = node.path(f'kl_{iker:02d}/adjoint.h5'))
+    if node.misfit_only:
+        return
+
+    for cwd in _cwd(node):
+        node.add('solver.adjoint', f'{cwd}/adjoint', cwd,
+            path_forward = node.path(f'{cwd}/forward'),
+            path_misfit = node.path(f'{cwd}/adjoint.h5'))
+
+
+def _cwd(node: Ortho):
+    return [f'kl_{iker:02d}' for iker in range(node.nkernels or 1)]
 
 
 def _misfit(node: Ortho):
