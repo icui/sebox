@@ -20,7 +20,7 @@ def step(node: Search):
     node.add('search.update')
 
     # compute misfit
-    node.add('kernel', path_mesh=node.path('mesh'), misfit_only=True)
+    node.add('kernel', path_mesh=None, path_model=node.path('model_gll.bp'), misfit_only=True)
 
     # check bracket
     node.add('search.check', cwd='..', name='check_bracket')
@@ -30,7 +30,6 @@ def update(node: Search):
     """Update model and mesh."""
     kl = node.inherit_kernel
     xupdate(node, node.step, node.rel(kl.path_model), node.rel(kl.path_mesh))
-    node.add('solver.mesh', 'mesh', path_model=node.path('model_gll.bp'), path_mesh=None)
 
 
 def check(node: Search):
