@@ -30,7 +30,7 @@ def update(node: Search):
     """Update model and mesh."""
     kl = node.inherit_kernel
     xupdate(node, node.step, node.rel(kl.path_model), node.rel(kl.path_mesh))
-    node.add('solver.mesh', path_model=node.path('model_gll.bp'), path_mesh=None)
+    node.add('solver.mesh', 'mesh', path_model=node.path('model_gll.bp'), path_mesh=None)
 
 
 def check(node: Search):
