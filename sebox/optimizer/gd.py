@@ -70,6 +70,6 @@ def check_misfit():
             if val is None:
                 break
             
-            print(f'  step {step}: {val:.2e}')
+            print(f'  step {step:.4e}: {val:.4e}')
         
         print()
