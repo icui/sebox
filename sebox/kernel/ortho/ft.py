@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getcomponents
+from sebox.utils.catalog import getdir, getstations, getcomponents
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -110,6 +110,8 @@ def mf(node: Ortho, stas: tp.List[str]):
         save_misfit(amp_diff, 'amp')
 
     if not node.misfit_only:
+        from pyasdf import ASDFDataSet
+
         # compute adjoint sources
         nan = np.where(np.isnan(phase_diff))
         syn[nan] = 1.0
@@ -144,12 +146,38 @@ def mf(node: Ortho, stas: tp.List[str]):
             ntaper = int(node.taper * 60 / node.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
+        with ASDFDataSet('adjoint.h5', mode='w', compression=None, mpi=True) as ds:
+            data_type = 'AdjointSources'
+
+            def get_info(data, sta, cmp):
+                path = sta.replace('.', '_') + '_MX' + cmp
+                return ds._add_auxiliary_data_get_collective_information(
+                    data=data,
+                    data_type=data_type,
+                    tag_path=[path],
+                    parameters={}
+                )
+
+            # write collective trace meta data
+            for i, sta in enumerate(getstations()):
+                for j, cmp in stats['cmps']:
+                    data = adstf[i, j]
+                    info = get_info(data, sta, cmp)
+                    ds._add_auxiliary_data_write_collective_information(info=info)
+            
+            comm.barrier()
+            
+            # write independent trace data
+            for i, sta in enumerate(stas):
+                for j, cmp in stats['cmps']:
+                    data = adstf[i, j]
+                    info = get_info(data, sta, cmp)
+                    ds._add_auxiliary_data_write_independent_information(info=info, data=data)
+
         node.dump((adstf, stas, stats['cmps']), f'enc_mf/{pid}.pickle', mkdir=False)
 
 
 def gather(node: Ortho):
-    from pyasdf import ASDFDataSet
-
     # get total misfit
     mf = node.load('phase_mf.npy').sum()
 
@@ -157,16 +185,6 @@ def gather(node: Ortho):
         mf += node.load('amp_mf.npy').sum()
 
     node.parent.parent.misfit_kl = mf
-
-    # merge adjoint sources into a single ASDF file
-    if not node.misfit_only:
-        with ASDFDataSet(node.path('adjoint.h5'), mode='w', mpi=False) as ds:
-            for pid in node.ls('enc_mf', 'p*.pickle'):
-                adstf, stas, cmps = node.load(f'enc_mf/{pid}')
-
-                for i, sta in enumerate(stas):
-                    for j, cmp in enumerate(cmps):
-                        ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
 
 
 def rotate_frequencies(node: Ortho, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
