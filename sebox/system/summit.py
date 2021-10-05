@@ -21,7 +21,7 @@ def submit(cmd: str, dst: str, run: bool):
     # job script
     lines = [
         '#!/bin/bash',
-        f'#BSUB -J {root.job_name}',
+        f'#BSUB -J {root.job_name}_{dst}',
         f'#BSUB -P {root.job_account}',
         f'#BSUB -W {hh:02d}:{mm:02d}',
         f'#BSUB -nnodes {root.job_nnodes}',
