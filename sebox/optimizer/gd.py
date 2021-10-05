@@ -39,9 +39,11 @@ def direction(node: Optimizer):
 def check(node: Optimizer):
     """Add a new iteration if necessary."""
     optim = tp.cast('Optimizer', node.parent.parent)
+    i = len(optim)
 
-    if len(optim) < optim.niters and node.parent is optim[-1]:
-        optim.add(iterate, f'iter_{len(optim):02d}',
+    if i < optim.niters and node.parent is optim[-1]:
+        optim.add(iterate, f'iter_{i:02d}',
+            iteration=i,
             path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
             path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))
 
