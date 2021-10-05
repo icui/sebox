@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getstations, getcomponents
+from sebox.utils.catalog import getdir, getcomponents
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -167,29 +167,8 @@ def mf(node: Ortho, stas: tp.List[str]):
             elif rank == 0:
                 s, a = comm.recv(source=k)
                 save_adjoint(s, a)
-                print(k, len(s), a.shape)
             
             comm.barrier()
-
-
-def gather(node: Ortho):
-    # get total misfit
-    mf = node.load('phase_mf.npy').sum()
-
-    if node.amplitude_factor > 0:
-        mf += node.load('amp_mf.npy').sum()
-
-    node.parent.parent.misfit_kl = mf
-
-    # # merge adjoint sources into a single ASDF file
-    # if not node.misfit_only:
-    #     with ASDFDataSet(node.path('adjoint.h5'), mode='w', mpi=False) as ds:
-    #         for pid in node.ls('enc_mf', 'p*.pickle'):
-    #             adstf, stas, cmps = node.load(f'enc_mf/{pid}')
-
-    #             for i, sta in enumerate(stas):
-    #                 for j, cmp in enumerate(cmps):
-    #                     ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
 
 
 def rotate_frequencies(node: Ortho, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):

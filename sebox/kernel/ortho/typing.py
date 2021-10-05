@@ -77,6 +77,3 @@ class Ortho(Kernel):
 
     # normalize source magnitudes
     normalize_source: bool
-
-    # misfit value from an individual kernel computation
-    misfit_kl: float

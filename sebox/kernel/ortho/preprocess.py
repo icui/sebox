@@ -5,6 +5,7 @@ import random
 from sebox import root
 from sebox.utils.catalog import getdir, getevents, getstations, getcomponents, getmeasurements
 from .ft import ft_obs
+from .main import dirs
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -13,9 +14,9 @@ if tp.TYPE_CHECKING:
 
 def preprocess(node: Ortho):
     """Determine encoding parameters and run mesher."""
-    for iker in range(node.nkernels or 1):
+    for iker, cwd in enumerate(dirs(node)):
         # create node for individual kernels
-        node.add(_prepare_encoding, f'kl_{iker:02d}', iker=iker)
+        node.add(_prepare_encoding, cwd, iker=iker)
 
     # run mesher
     node.add('solver.mesh', 'mesh')

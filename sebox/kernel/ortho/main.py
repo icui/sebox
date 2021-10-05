@@ -23,3 +23,8 @@ def main(node: Ortho):
 
     # sum and smooth kernels
     node.add('kernel.postprocess', concurrent=True)
+
+
+def dirs(node: Ortho):
+    """Get all kernel directories."""
+    return [f'kl_{iker:02d}' for iker in range(node.nkernels or 1)]

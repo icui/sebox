@@ -1,6 +1,8 @@
 from __future__ import annotations
 import typing as tp
 
+from .main import dirs
+
 if tp.TYPE_CHECKING:
     from .typing import Ortho
 
@@ -8,8 +10,14 @@ if tp.TYPE_CHECKING:
 def postprocess(node: Ortho):
     """Sum misfit and process kernels."""
     # sum misfit
-    kernel = node.parent
-    kernel.misfit_value = sum([kl.misfit_kl for kl in kernel[2]])
+    mf = 0.0
+    for cwd in dirs(node):
+        mf += node.load(f'{cwd}/phase_mf.npy').sum()
+
+        if node.amplitude_factor > 0:
+            mf += node.load(f'{cwd}/amp_mf.npy').sum()
+
+    node.parent.misfit_value = mf
 
     if not node.misfit_only:        
         # link kernels

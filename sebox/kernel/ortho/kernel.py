@@ -2,7 +2,8 @@ from __future__ import annotations
 import typing as tp
 
 from sebox.utils.catalog import getdir, getstations
-from .ft import ft, mf, gather
+from .ft import ft, mf
+from .main import dirs
 
 if tp.TYPE_CHECKING:
     from .typing import Ortho
@@ -10,7 +11,7 @@ if tp.TYPE_CHECKING:
 
 def forward(node: Ortho):
     """Forward simulation."""
-    for cwd in _cwd(node):
+    for cwd in dirs(node):
         node.add('solver', f'{cwd}/forward', cwd,
             path_event= node.path(f'{cwd}/SUPERSOURCE'),
             path_stations= getdir().path('SUPERSTATION'),
@@ -21,7 +22,7 @@ def forward(node: Ortho):
 
 def misfit(node: Ortho):
     """Compute misfit and adjoint source."""
-    for cwd in _cwd(node):
+    for cwd in dirs(node):
         node.add(_misfit, cwd)
 
 
@@ -30,14 +31,10 @@ def adjoint(node: Ortho):
     if node.misfit_only:
         return
 
-    for cwd in _cwd(node):
+    for cwd in dirs(node):
         node.add('solver.adjoint', f'{cwd}/adjoint', cwd,
             path_forward = node.path(f'{cwd}/forward'),
             path_misfit = node.path(f'{cwd}/adjoint.h5'))
-
-
-def _cwd(node: Ortho):
-    return [f'kl_{iker:02d}' for iker in range(node.nkernels or 1)]
 
 
 def _misfit(node: Ortho):
@@ -52,6 +49,3 @@ def _misfit(node: Ortho):
     
     # compute misfit
     node.add_mpi(mf, arg=node, arg_mpi=stas, cwd='enc_mf')
-
-    # convert adjoint sources to ASDF format
-    node.add(gather)
