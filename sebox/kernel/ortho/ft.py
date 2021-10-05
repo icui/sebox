@@ -62,23 +62,20 @@ def mf(node: Ortho, stas: tp.List[str]):
 
     # raise error last to ensure comm.barrier() succeeds
     err = None
+    adstf = None
 
     try:
         adstf, cmps = _mf(node, stas)
     
     except Exception as e:
-        adstf = None
         err = e
     
     if not node.misfit_only:
         # save adjoint sources to adjoint.h5
-        try:
-            ds = ASDFDataSet(node.path('adjoint.h5'), mode='r', compression=None, mpi=False) if rank == 0 else None
-        
-        except Exception as e:
-            err = e
+        ds = None
 
-        def save_adjoint(s, a):
+        def write(s, a):
+            # write data in serial (in rank 0)
             if ds is None:
                 return
 
@@ -86,17 +83,23 @@ def mf(node: Ortho, stas: tp.List[str]):
                 for j, cmp in enumerate(cmps): # type: ignore
                     ds.add_auxiliary_data(a[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
 
-        for k in range(1, size):
+        for k in range(size):
             try:
                 if k == 0:
-                    save_adjoint(stas, adstf)
+                    # write rank 0 data
+                    if rank == 0:
+                        ds = ASDFDataSet(node.path('adjoint.h5'), mode='r', compression=None, mpi=False)
+
+                    write(stas, adstf)
 
                 elif rank == k:
+                    # send data to rank 0
                     comm.send([stas, adstf], dest=0)
                 
                 elif rank == 0:
+                    # write received data
                     s, a = comm.recv(source=k)
-                    save_adjoint(s, a)
+                    write(s, a)
             
             except Exception as e:
                 err = e
@@ -110,7 +113,7 @@ def mf(node: Ortho, stas: tp.List[str]):
 def _mf(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
-    from sebox.mpi import pid, rank, size
+    from sebox.mpi import pid, rank
     from mpi4py.MPI import COMM_WORLD as comm
 
     # read data
@@ -147,7 +150,7 @@ def _mf(node: Ortho, stas: tp.List[str]):
     # save misfit value
     fincr = node.frequency_increment
 
-    def save_misfit(diff, name):
+    def write(diff, name):
         mf = np.zeros([syn.shape[0], syn.shape[1], node.nbands_used])
 
         for i in range(node.nbands_used):
@@ -158,10 +161,10 @@ def _mf(node: Ortho, stas: tp.List[str]):
         if rank == 0:
             node.dump(sum(mf_sum), f'{name}_mf.npy', mkdir=False)
 
-    save_misfit(phase_diff, 'phase')
+    write(phase_diff, 'phase')
 
     if node.amplitude_factor > 0:
-        save_misfit(amp_diff, 'amp')
+        write(amp_diff, 'amp')
 
     if node.misfit_only:
         return None, None
