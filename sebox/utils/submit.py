@@ -7,7 +7,7 @@ def mkws():
     """Create a new workspace."""
     # determine target directory
     if len(argv) > 1:
-        dst = f'job.{argv[1]}'
+        dst = argv[1]
 
         if root.has(dst):
             raise FileExistsError(f'{dst} already exists')
