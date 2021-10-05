@@ -29,7 +29,6 @@ def xmeshfem(node: Specfem):
         node.add(node.ln, name='link_mesh', args=(node.rel(node.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI'))
     
     else:
-        print('???')
         node.add_mpi('bin/xmeshfem3D', getsize, data={'prober': probe_mesher})
 
 

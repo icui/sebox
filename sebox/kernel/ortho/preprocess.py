@@ -60,6 +60,8 @@ def _link_encoded(node: Ortho):
     node.ln(node.rel(kl, 'enc_obs'))
     node.ln(node.rel(kl, 'enc_diff'))
     node.ln(node.rel(kl, 'enc_weight'))
+    node.ln(node.rel(kl, 'encoding.pickle'))
+    node.ln(node.rel(kl, 'fslots.pickle'))
 
 
 def _prepare_frequencies(node: Ortho):
