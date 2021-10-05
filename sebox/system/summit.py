@@ -45,6 +45,9 @@ def requeue():
         check_call('brequeue ' + environ['LSB_JOBID'], shell=True)
         exit()
 
+    else:
+        root.job_paused = False
+
 
 def mpiexec(cmd: str, nprocs: int, cpus_per_proc: int = 1, gpus_per_proc: int = 0):
     """Get the command to call MPI."""
