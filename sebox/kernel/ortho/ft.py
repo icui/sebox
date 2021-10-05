@@ -88,7 +88,7 @@ def mf(node: Ortho, stas: tp.List[str]):
                 if k == 0:
                     # write rank 0 data
                     if rank == 0:
-                        ds = ASDFDataSet(node.path('adjoint.h5'), mode='r', compression=None, mpi=False)
+                        ds = ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False)
 
                     write(stas, adstf)
 
