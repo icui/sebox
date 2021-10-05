@@ -33,6 +33,7 @@ def ft_obs(node: Ortho, data: ndarray):
 
 
 def ft(node: Ortho, _):
+    """Process synthetic traces."""
     import numpy as np
     from sebox import root
     from sebox.mpi import pid
@@ -54,6 +55,59 @@ def ft(node: Ortho, _):
 
 
 def mf(node: Ortho, stas: tp.List[str]):
+    """Compute misfit and adjoint source."""
+    from pyasdf import ASDFDataSet
+    from sebox.mpi import rank, size
+    from mpi4py.MPI import COMM_WORLD as comm
+
+    # raise error last to ensure comm.barrier() succeeds
+    err = None
+
+    try:
+        adstf, cmps = _mf(node, stas)
+    
+    except Exception as e:
+        adstf = None
+        err = e
+    
+    if not node.misfit_only:
+        # save adjoint sources to adjoint.h5
+        try:
+            ds = ASDFDataSet(node.path('adjoint.h5'), mode='r', compression=None, mpi=False) if rank == 0 else None
+        
+        except Exception as e:
+            err = e
+
+        def save_adjoint(s, a):
+            if ds is None:
+                return
+
+            for i, sta in enumerate(s):
+                for j, cmp in enumerate(cmps): # type: ignore
+                    ds.add_auxiliary_data(a[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
+
+        for k in range(1, size):
+            try:
+                if k == 0:
+                    save_adjoint(stas, adstf)
+
+                elif rank == k:
+                    comm.send([stas, adstf], dest=0)
+                
+                elif rank == 0:
+                    s, a = comm.recv(source=k)
+                    save_adjoint(s, a)
+            
+            except Exception as e:
+                err = e
+            
+            comm.barrier()
+    
+    if err:
+        raise err
+
+
+def _mf(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from sebox.mpi import pid, rank, size
@@ -109,66 +163,44 @@ def mf(node: Ortho, stas: tp.List[str]):
     if node.amplitude_factor > 0:
         save_misfit(amp_diff, 'amp')
 
-    if not node.misfit_only:
-        from pyasdf import ASDFDataSet
+    if node.misfit_only:
+        return None, None
 
-        # compute adjoint sources
-        nan = np.where(np.isnan(phase_diff))
-        syn[nan] = 1.0
+    # compute adjoint sources
+    nan = np.where(np.isnan(phase_diff))
+    syn[nan] = 1.0
 
-        phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
-        phase_adj[nan] = 0.0
+    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
+    phase_adj[nan] = 0.0
 
-        if node.amplitude_factor > 0:
-            amp_adj = amp_diff * syn / abs(syn) ** 2
-            amp_adj[nan] = 0.0
-        
-        else:
-            amp_adj = np.zeros(syn.shape)
+    if node.amplitude_factor > 0:
+        amp_adj = amp_diff * syn / abs(syn) ** 2
+        amp_adj[nan] = 0.0
+    
+    else:
+        amp_adj = np.zeros(syn.shape)
 
-        # fourier transform of adjoint source time function
-        ft_adj = rotate_frequencies(node, phase_adj + amp_adj, stats['cmps'], False)
+    # fourier transform of adjoint source time function
+    ft_adj = rotate_frequencies(node, phase_adj + amp_adj, stats['cmps'], False)
 
-        # fill full frequency band
-        ft_adstf = np.zeros([len(stas), 3, node.nt_se], dtype=complex)
-        ft_adstf[..., node.imin: node.imax] = ft_adj
-        ft_adstf[..., -node.imin: -node.imax: -1] = np.conj(ft_adj)
+    # fill full frequency band
+    ft_adstf = np.zeros([len(stas), 3, node.nt_se], dtype=complex)
+    ft_adstf[..., node.imin: node.imax] = ft_adj
+    ft_adstf[..., -node.imin: -node.imax: -1] = np.conj(ft_adj)
 
-        # stationary adjoint source
-        adstf_tau = -ifft(ft_adstf).real # type: ignore
+    # stationary adjoint source
+    adstf_tau = -ifft(ft_adstf).real # type: ignore
 
-        # repeat to fill entrie adjoint duration
-        nt = stats['nt']
-        adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / node.nt_se)))
-        adstf = adstf_tile[..., -nt:]
+    # repeat to fill entrie adjoint duration
+    nt = stats['nt']
+    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / node.nt_se)))
+    adstf = adstf_tile[..., -nt:]
 
-        if node.taper:
-            ntaper = int(node.taper * 60 / node.dt)
-            adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
-        
-        # save to adjoint.h5
-        ds = ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False) if rank == 0 else None
-
-        def save_adjoint(s, a):
-            if ds is None:
-                return
-
-            for i, sta in enumerate(s):
-                for j, cmp in enumerate(stats['cmps']):
-                    ds.add_auxiliary_data(a[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
-
-        # save data in rank 0
-        save_adjoint(stas, adstf)
-
-        for k in range(1, size):
-            if rank == k:
-                comm.send([stas, adstf], dest=0)
-            
-            elif rank == 0:
-                s, a = comm.recv(source=k)
-                save_adjoint(s, a)
-            
-            comm.barrier()
+    if node.taper:
+        ntaper = int(node.taper * 60 / node.dt)
+        adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
+    
+    return adstf, stats['cmps']
 
 
 def rotate_frequencies(node: Ortho, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):

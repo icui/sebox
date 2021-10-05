@@ -8,7 +8,7 @@ entries = d.ls()
 
 if 'config.toml' in entries:
     for entry in entries:
-        if entry != 'config.toml' and entry not in argv:
+        if entry != 'config.toml' and entry != 'job.bash' and entry not in argv:
             d.rm(entry)
 
 else:
