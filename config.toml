@@ -6,7 +6,7 @@ module_optimizer = "gd"
 module_search = "bracket"
 
 # job configuration
-job_name = "greenland"
+job_name = "north"
 job_nnodes = 64
 job_account = "GEO111"
 job_walltime = 120.0
