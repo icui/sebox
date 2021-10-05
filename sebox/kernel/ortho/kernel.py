@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox.utils.catalog import getdir, getstations
-from .ft import ft, diff, gather
+from .ft import ft, mf, gather
 
 if tp.TYPE_CHECKING:
     from .typing import Ortho
@@ -51,7 +51,7 @@ def _misfit(node: Ortho):
     node.add_mpi(ft, arg=node, arg_mpi=stas, cwd='enc_syn')
     
     # compute misfit
-    node.add_mpi(diff, arg=node, arg_mpi=stas, cwd='enc_mf')
+    node.add_mpi(mf, arg=node, arg_mpi=stas, cwd='enc_mf')
 
     # convert adjoint sources to ASDF format
     node.add(gather)

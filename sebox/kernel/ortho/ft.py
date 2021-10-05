@@ -53,7 +53,7 @@ def ft(node: Ortho, _):
     node.dump(data_rtz, f'enc_syn/{pid}.npy', mkdir=False)
 
 
-def diff(node: Ortho, stas: tp.List[str]):
+def mf(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
     from sebox.mpi import pid, rank
@@ -102,7 +102,7 @@ def diff(node: Ortho, stas: tp.List[str]):
         mf_sum = comm.gather(mf.sum(axis=0), root=0)
 
         if rank == 0:
-            node.dump(sum(mf_sum), f'{name}_mf.npy')
+            node.dump(sum(mf_sum), f'{name}_mf.npy', mkdir=False)
 
     save_misfit(phase_diff, 'phase')
 
