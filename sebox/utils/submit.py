@@ -25,7 +25,7 @@ def mkws():
     return dst
 
 
-if __name__ == '__main__':
-    # submit job
+def submit(run: bool):
+    """Create and submit job."""
     root.restore()
-    root.submit(mkws())
+    root.sys.submit('python -c "from sebox import root; root.run()"', mkws(), run)

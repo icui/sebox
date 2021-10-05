@@ -1,2 +1,2 @@
 #!/bin/sh
-python -m 'sebox.submit' $@
+python -c 'from sebox.utils.submit import submit; submit(True)' $@
