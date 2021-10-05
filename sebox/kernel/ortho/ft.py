@@ -160,7 +160,7 @@ def mf(node: Ortho, stas: tp.List[str]):
 
             # write collective trace meta data
             for i, sta in enumerate(getstations()):
-                for j, cmp in stats['cmps']:
+                for j, cmp in enumerate(stats['cmps']):
                     data = adstf[i, j]
                     info = get_info(data, sta, cmp)
                     ds._add_auxiliary_data_write_collective_information(info=info)
@@ -169,7 +169,7 @@ def mf(node: Ortho, stas: tp.List[str]):
             
             # write independent trace data
             for i, sta in enumerate(stas):
-                for j, cmp in stats['cmps']:
+                for j, cmp in enumerate(stats['cmps']):
                     data = adstf[i, j]
                     info = get_info(data, sta, cmp)
                     ds._add_auxiliary_data_write_independent_information(info=info, data=data)
