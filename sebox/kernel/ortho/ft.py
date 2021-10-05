@@ -147,7 +147,7 @@ def mf(node: Ortho, stas: tp.List[str]):
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
         # save to adjoint.h5
-        ds = ASDFDataSet('adjoint.h5', mode='w', compression=None, mpi=False) if rank == 0 else None
+        ds = ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False) if rank == 0 else None
 
         def save_adjoint(s, a):
             if ds is None:
