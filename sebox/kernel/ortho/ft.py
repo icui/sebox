@@ -56,7 +56,7 @@ def ft(node: Ortho, _):
 def mf(node: Ortho, stas: tp.List[str]):
     import numpy as np
     from scipy.fft import ifft
-    from sebox.mpi import pid, rank
+    from sebox.mpi import pid, rank, size
     from mpi4py.MPI import COMM_WORLD as comm
 
     # read data
@@ -146,35 +146,30 @@ def mf(node: Ortho, stas: tp.List[str]):
             ntaper = int(node.taper * 60 / node.dt)
             adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        with ASDFDataSet('adjoint.h5', mode='w', compression=None, mpi=True) as ds:
-            data_type = 'AdjointSources'
+        # save to adjoint.h5
+        ds = ASDFDataSet('adjoint.h5', mode='w', compression=None, mpi=False) if rank == 0 else None
 
-            def get_info(data, sta, cmp):
-                path = sta.replace('.', '_') + '_MX' + cmp
-                return ds._add_auxiliary_data_get_collective_information(
-                    data=data,
-                    data_type=data_type,
-                    tag_path=[path],
-                    parameters={}
-                )
+        def save_adjoint(s, a):
+            if ds is None:
+                return
 
-            # write collective trace meta data
-            for i, sta in enumerate(getstations()):
+            for i, sta in enumerate(s):
                 for j, cmp in enumerate(stats['cmps']):
-                    data = adstf[i, j]
-                    info = get_info(data, sta, cmp)
-                    ds._add_auxiliary_data_write_collective_information(info=info)
+                    ds.add_auxiliary_data(a[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
+
+        # save data in rank 0
+        save_adjoint(stas, adstf)
+
+        for k in range(1, size):
+            if rank == k:
+                comm.send([stas, adstf], dest=0)
+            
+            elif rank == 0:
+                s, a = comm.recv(source=k)
+                save_adjoint(s, a)
+                print(k, len(s), a.shape)
             
             comm.barrier()
-            
-            # write independent trace data
-            for i, sta in enumerate(stas):
-                for j, cmp in enumerate(stats['cmps']):
-                    data = adstf[i, j]
-                    info = get_info(data, sta, cmp)
-                    ds._add_auxiliary_data_write_independent_information(info=info, data=data)
-
-        node.dump((adstf, stas, stats['cmps']), f'enc_mf/{pid}.pickle', mkdir=False)
 
 
 def gather(node: Ortho):
@@ -185,6 +180,16 @@ def gather(node: Ortho):
         mf += node.load('amp_mf.npy').sum()
 
     node.parent.parent.misfit_kl = mf
+
+    # # merge adjoint sources into a single ASDF file
+    # if not node.misfit_only:
+    #     with ASDFDataSet(node.path('adjoint.h5'), mode='w', mpi=False) as ds:
+    #         for pid in node.ls('enc_mf', 'p*.pickle'):
+    #             adstf, stas, cmps = node.load(f'enc_mf/{pid}')
+
+    #             for i, sta in enumerate(stas):
+    #                 for j, cmp in enumerate(cmps):
+    #                     ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
 
 
 def rotate_frequencies(node: Ortho, data: ndarray, cmps_ne: tp.Tuple[str, str, str], direction: bool):
