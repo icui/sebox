@@ -40,14 +40,11 @@ class MPI(Node):
 
 
 if __name__ == '__main__':
-    try:
-        # load configuration
-        if root.has('config.toml'):
-            root._init.update(root.load('config.toml'))
-
+    try:\
         # saved function and arguments from main process
         (func, arg, arg_mpi) = root.load(f'{argv[1]}.pickle')
         root.mpi = MPI(path.dirname(argv[1]), {}, root)
+        root.restore()
 
         # determine arguments
         args = []

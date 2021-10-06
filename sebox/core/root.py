@@ -118,7 +118,7 @@ class Root(Node):
             
             self.__setstate__(node.__getstate__())
 
-        elif self.has('root.pickle'):
+        elif not self.mpi and self.has('root.pickle'):
             # restore previous state
             self.__setstate__(self.load('root.pickle'))
         
