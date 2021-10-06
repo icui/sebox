@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox.utils.catalog import getdir, getstations
-from .ft import ft, mf
+from .ft import ft, mf, mfadj
 from .main import dirs
 
 if tp.TYPE_CHECKING:
@@ -39,13 +39,10 @@ def adjoint(node: Ortho):
 
 def _misfit(node: Ortho):
     stas = getstations()
-
-    # load source encoding parameters
-    node.update(node.load('encoding.pickle'))
-    node.fslots = node.load('fslots.pickle')
+    enc = node.load('encoding.pickle')
 
     # process traces
-    node.add_mpi(ft, arg=node, arg_mpi=stas, cwd='enc_syn')
+    node.add_mpi(ft, arg=enc, arg_mpi=stas, cwd='enc_syn')
     
     # compute misfit
-    node.add_mpi(mf, arg=node, arg_mpi=stas, cwd='enc_mf')
+    node.add_mpi(mf if node.misfit_only else mfadj, arg=enc, arg_mpi=stas, cwd='enc_mf')

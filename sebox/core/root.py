@@ -6,6 +6,7 @@ import signal
 from .node import Node
 
 if tp.TYPE_CHECKING:
+    from sebox.core.mpi import MPI
     from sebox.typing.modules import System
 
 
@@ -49,6 +50,9 @@ class Root(Node):
 
     # default number of nodes to run MPI tasks (if task_nnodes is None, task_nprocs must be set)
     task_nnodes: tp.Optional[int]
+
+    # MPI workspace (only available with __main__ from sebox.core.mpi)
+    mpi: MPI
 
     # runtime global cache (use underscore to avoid being saved by __getstate__)
     _cache: tp.Dict[str, tp.Any] = {}
@@ -97,6 +101,9 @@ class Root(Node):
     
     def save(self):
         """Save state."""
+        if self.mpi:
+            raise RuntimeError('cannot save root from MPI process')
+
         self.dump(self.__getstate__(), 'root.pickle')
     
     def restore(self, node: tp.Optional[Node] = None):

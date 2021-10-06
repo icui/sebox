@@ -4,29 +4,11 @@ import typing as tp
 from sebox.typing import Kernel
 
 
-class Ortho(Kernel):
-    """Source encoded kernel computation."""
-    # number of kernel computations per iteration
-    nkernels: tp.Optional[int]
-
-    # number of kernels to randomize frequency per iteration
-    nkernels_rng: tp.Optional[int]
-
-    # alter global random seed
-    seed: int
-
-    # random seed actually used
-    seed_used: int
-
-    # index of current kernel
-    iker: int
-
-    # time duration to reach steady state for source encoding
-    transient_duration: float
-
-    # number of frequencies in a frequency band
-    frequency_increment: int
-
+class Encoding(tp.TypedDict):
+    """Source encoding parameters."""
+    # time step
+    dt: float
+    
     # index of lowest frequency
     imin: int
 
@@ -39,8 +21,14 @@ class Ortho(Kernel):
     # frequency step for observed traces
     kf: int
 
-    # number of frequency bands
-    nbands: int
+    # number of time steps in transient state
+    nt_ts: int
+
+    # number of time steps in stationary state
+    nt_se: int
+
+    # random seed actually used
+    seed_used: int
 
     # number of frequency bands actually used
     nbands_used: int
@@ -48,20 +36,8 @@ class Ortho(Kernel):
     # frequency slots assigned to events
     fslots: tp.Dict[str, tp.List[int]]
 
-    # number of time steps in transient state
-    nt_ts: int
-
-    # number of time steps in stationary state
-    nt_se: int
-
-    # determine frequency bands to by period * reference_velocity = smooth_radius
-    reference_velocity: tp.Optional[float]
-
-    # radius for smoothing kernels
-    smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
-
-    # attempt to unwrap phases
-    unwrap_phase: bool
+    # number of frequencies in a frequency band
+    frequency_increment: int
     
     # use double difference measurement
     double_difference: bool
@@ -75,5 +51,50 @@ class Ortho(Kernel):
     # taper adjoint source
     taper: tp.Optional[float]
 
+    # attempt to unwrap phases
+    unwrap_phase: bool
+
+
+class Ortho(Kernel):
+    """Source encoded kernel computation."""
+    # number of kernel computations per iteration
+    nkernels: tp.Optional[int]
+
+    # number of kernels to randomize frequency per iteration
+    nkernels_rng: tp.Optional[int]
+
+    # alter global random seed
+    seed: int
+
+    # index of current kernel
+    iker: int
+
+    # number of frequency bands
+    nbands: int
+
+    # determine frequency bands to by period * reference_velocity = smooth_radius
+    reference_velocity: tp.Optional[float]
+
+    # radius for smoothing kernels
+    smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
+
     # normalize source magnitudes
     normalize_source: bool
+
+    # number of frequencies in a frequency band
+    frequency_increment: int
+    
+    # use double difference measurement
+    double_difference: bool
+
+    # global phase weighting
+    phase_factor: float
+
+    # global amplitude weighting
+    amplitude_factor: float
+
+    # taper adjoint source
+    taper: tp.Optional[float]
+
+    # attempt to unwrap phases
+    unwrap_phase: bool

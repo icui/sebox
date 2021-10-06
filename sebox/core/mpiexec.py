@@ -110,7 +110,7 @@ async def mpiexec(cmd: tp.Union[str, tp.Callable],
             cwd = None
             d.rm(f'{name}.*')
             d.dump((cmd, arg, args), f'{name}.pickle')
-            cmd = f'python -m "sebox.mpi" {d.path(name)}'
+            cmd = f'python -m "sebox.core.mpi" {d.path(name)}'
         
         else:
             if arg is not None or arg_mpi is not None:

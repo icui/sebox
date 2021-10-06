@@ -9,7 +9,7 @@ from .main import dirs
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
-    from .typing import Ortho
+    from .typing import Ortho, Encoding
 
 
 def preprocess(node: Ortho):
@@ -32,9 +32,6 @@ def _prepare_encoding(node: Ortho):
         # determine frequencies
         node.add(_prepare_frequencies)
 
-        # create SUPERSOURCE
-        node.add(_encode_events)
-
         # encode observed traces and diffs
         node.add(_encode, concurrent=True)
 
@@ -49,19 +46,18 @@ def _seed(node: Ortho):
     return (node.iteration or 0) * rng_iter + (node.seed or 0) + (node.iker or 0)
 
 
-def _freq(node: Ortho) -> ndarray:
+def _freq(enc: Encoding) -> ndarray:
     from scipy.fft import fftfreq
-    return fftfreq(node.nt_se, node.dt)[node.imin: node.imax]
+    return fftfreq(enc['nt_se'], enc['dt'])[enc['imin']: enc['imax']]
 
 
 def _link_encoded(node: Ortho):
-    kl = node.inherit_kernel[1][node.iker] # type: ignore
-    node.cp(node.rel(kl, 'SUPERSOURCE'))
-    node.ln(node.rel(kl, 'enc_obs'))
-    node.ln(node.rel(kl, 'enc_diff'))
-    node.ln(node.rel(kl, 'enc_weight'))
-    node.ln(node.rel(kl, 'encoding.pickle'))
-    node.ln(node.rel(kl, 'fslots.pickle'))
+    cwd = tp.cast('Ortho', node.inherit_kernel).path(f'kl_{node.iker:02d}')
+    node.cp(node.rel(cwd, 'SUPERSOURCE'))
+    node.ln(node.rel(cwd, 'enc_obs'))
+    node.ln(node.rel(cwd, 'enc_diff'))
+    node.ln(node.rel(cwd, 'enc_weight'))
+    node.ln(node.rel(cwd, 'encoding.pickle'))
 
 
 def _prepare_frequencies(node: Ortho):
@@ -107,39 +103,48 @@ def _prepare_frequencies(node: Ortho):
             if node.reference_velocity / freq[(i + 1) * node.frequency_increment - 1] < rad:
                 nbands_used = i
                 break
+    
+    seed_used = _seed(node)
 
-    # save results to parent node
-    encoding = {
+    # save encoding parameters
+    enc: Encoding = {
+        'dt': node.dt,
         'df': df,
         'kf': kf,
         'nt_ts': nt_ts,
         'nt_se': nt_se,
-        'nbands': nbands,
-        'nbands_used': nbands_used,
         'imin': imin,
         'imax': imax,
-        'seed_used': _seed(node)
+        'nbands_used': nbands_used,
+        'seed_used': seed_used,
+        'fslots': {},
+        'frequency_increment': node.frequency_increment,
+        'double_difference': node.double_difference,
+        'phase_factor': node.phase_factor,
+        'amplitude_factor': node.amplitude_factor,
+        'taper': node.taper,
+        'unwrap_phase': node.unwrap_phase
     }
 
-    node.parent.update(encoding)
-    node.dump(encoding, 'encoding.pickle')
+    node.write(_encode_events(enc, node.normalize_source), 'SUPERSOURCE')
+    node.dump(enc, 'encoding.pickle')
 
 
-def _encode_events(node: Ortho):
+def _encode_events(enc: Encoding, normalize_source: bool):
     # load catalog
     cmt = ''
     cdir = getdir()
 
     # randomize frequency
-    freq = _freq(node)
-    fslots = {}
+    freq = _freq(enc)
     events = getevents()
-    nbands = node.nbands_used
-    fincr = node.frequency_increment
+    fincr = enc['frequency_increment']
+    fslots = enc['fslots']
+    nbands = enc['nbands_used']
     slots = set(range(nbands * fincr))
 
     # set random seed
-    random.seed(node.seed_used)
+    random.seed(enc['seed_used'])
 
     # get available frequency bands for each event (sumed over tations and components)
     event_bands = {}
@@ -193,7 +198,7 @@ def _encode_events(node: Ortho):
             lines[3] = f'half duration:{" " * (9 - len(str(int(1 / f0))))}{1/f0:.4f}'
 
             # normalize sources to the same order of magnitude
-            if node.normalize_source:
+            if normalize_source:
                 mref = 1e25
                 mmax = max(abs(float(lines[i].split()[-1])) for i in range(7, 13))
                 
@@ -208,33 +213,30 @@ def _encode_events(node: Ortho):
                 cmt += '\n'
 
     # save frequency slots and encoded source
-    node.parent.fslots = fslots
-    node.dump(fslots, 'fslots.pickle')
-    node.write(cmt, 'SUPERSOURCE')
+    return cmt
 
 
 def _encode(node: Ortho):
     stas = getstations()
     node.mkdir('enc_weight')
-    node.add_mpi(_enc_obs, arg=node, arg_mpi=stas, cwd='enc_obs')
-    node.add_mpi(_enc_diff, arg=node, arg_mpi=stas, cwd='enc_diff')
+    enc = node.load('encoding.pickle')
+    node.add_mpi(_enc_obs, arg=enc, arg_mpi=stas, cwd='enc_obs')
+    node.add_mpi(_enc_diff, arg=enc, arg_mpi=stas, cwd='enc_diff')
 
 
-def _enc_obs(node: Ortho, stas: tp.List[str]):
+def _enc_obs(enc: Encoding, stas: tp.List[str]):
     import numpy as np
-    from sebox.mpi import pid
 
     # kernel configuration
-    nt = node.kf * node.nt_se
-    t = np.linspace(0, (nt - 1) * node.dt, nt)
-    freq = _freq(node)
+    nt = enc['kf'] * enc['nt_se']
+    t = np.linspace(0, (nt - 1) * enc['dt'], nt)
+    freq = _freq(enc)
 
     # data from catalog
-    root.restore(node)
     cdir = getdir()
     cmps = getcomponents()
     event_data = cdir.load('event_data.pickle')
-    encoded = np.full([len(stas), 3, node.imax - node.imin], np.nan, dtype=complex)
+    encoded = np.full([len(stas), 3, enc['imax'] - enc['imin']], np.nan, dtype=complex)
 
     # get global station index
     sidx = []
@@ -247,19 +249,19 @@ def _enc_obs(node: Ortho, stas: tp.List[str]):
 
     for event in getevents():
         # read event data
-        data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{pid}.npy')
-        slots = node.fslots[event]
+        data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
+        slots = enc['fslots'][event]
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
-        sff = ft_obs(node, stf)
-        pff = np.exp(2 * np.pi * 1j * freq * (node.nt_ts * node.dt - tshift)) / sff
+        sff = ft_obs(enc, stf)
+        pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'] - tshift)) / sff
 
         # record frequency components
         for idx in slots:
-            group = idx // node.frequency_increment
+            group = idx // enc['frequency_increment']
             pshift = pff[idx]
 
             # phase shift due to the measurement of observed data
@@ -268,20 +270,18 @@ def _enc_obs(node: Ortho, stas: tp.List[str]):
                 i = np.squeeze(np.where(m))
                 encoded[i, j, idx] = data[i, j, idx] * pshift
     
-    node.dump(encoded, f'enc_obs/{pid}.npy', mkdir=False)
+    root.mpi.mpidump(encoded)
 
 
-def _enc_diff(node: Ortho, stas: tp.List[str]):
+def _enc_diff(enc: Encoding, stas: tp.List[str]):
     """Encode diff data."""
     import numpy as np
-    from sebox.mpi import pid
 
     # data from catalog
-    root.restore(node)
     cdir = getdir()
     cmps = getcomponents()
-    encoded = np.full([len(stas), 3, node.imax - node.imin], np.nan)
-    weight = np.full([len(stas), 3, node.imax - node.imin], np.nan)
+    encoded = np.full([len(stas), 3, enc['imax'] - enc['imin']], np.nan)
+    weight = np.full([len(stas), 3, enc['imax'] - enc['imin']], np.nan)
 
     # get global station index
     sidx = []
@@ -294,12 +294,12 @@ def _enc_diff(node: Ortho, stas: tp.List[str]):
 
     for event in getevents():
         # read event data
-        data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{pid}.npy')
-        slots = node.fslots[event]
+        data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
+        slots = enc['fslots'][event]
 
         # record frequency components
         for idx in slots:
-            group = idx // node.frequency_increment
+            group = idx // enc['frequency_increment']
 
             # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
@@ -308,5 +308,5 @@ def _enc_diff(node: Ortho, stas: tp.List[str]):
                 encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
     
-    node.dump(encoded, f'enc_diff/{pid}.npy', mkdir=False)
-    node.dump(weight, f'enc_weight/{pid}.npy', mkdir=False)
+    root.mpi.mpidump(encoded)
+    root.mpi.mpidump(weight, '../enc_weight')

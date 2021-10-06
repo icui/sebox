@@ -58,7 +58,6 @@ def _write(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
     from pyasdf import ASDFDataSet
 
     from sebox import Directory
-    from sebox.mpi import pid
 
     src, dst, aux, stats = arg
     cmps = stats['cmps']
@@ -87,7 +86,7 @@ def _write(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
                         data[i, j, :] = gettrace(ds, sta, cmp).data
         
         d = Directory(dst)
-        d.dump(data, f'{pid}.npy', mkdir=False)
+        d.dump(data, f'{root.mpi.pid}.npy', mkdir=False)
 
 
 async def scatter(node: Scatter):

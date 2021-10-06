@@ -29,7 +29,7 @@ def catalog(node: Ortho):
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
-        node.add_mpi(_scatter_baz, arg=node, arg_mpi=getstations())
+        node.add_mpi(_scatter_baz, arg_mpi=getstations())
 
 
 def _merge(_):
@@ -47,13 +47,11 @@ def _scatter_diff(node: Ortho):
     _scatter(node, 'diff')
 
 
-def _scatter_baz(node: Ortho, stas: tp.List[str]):
+def _scatter_baz(stas: tp.List[str]):
     import numpy as np
     from math import radians
     from obspy.geodetics import gps2dist_azimuth
-    from sebox.mpi import pid
 
-    root.restore(node)
     baz = {}
 
     for event in getevents():
@@ -64,7 +62,7 @@ def _scatter_baz(node: Ortho, stas: tp.List[str]):
             slat, slon = locate_station(sta)
             baz[event][i] = radians(gps2dist_azimuth(elat, elon, slat, slon)[2])
 
-    getdir().dump(baz, f'baz_p{root.task_nprocs}/{pid}.pickle')
+    getdir().dump(baz, f'baz_p{root.task_nprocs}/{root.mpi.pid}.pickle')
 
 
 def _scatter(node: Ortho, tag: tp.Literal['obs', 'diff']):

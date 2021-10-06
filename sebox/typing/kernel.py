@@ -17,3 +17,6 @@ class Kernel(Solver):
 
     # skip computing adjoint kernels
     misfit_only: bool
+
+    # inherit from an existing Kernel
+    inherit_kernel: tp.Optional[Kernel]
