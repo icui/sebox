@@ -66,6 +66,7 @@ def check(node: Search):
                     # index is j-1 because the first step is 0.0
                     search.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
                     search.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
+                    search.step_final = j - 1, s
                     return
             
         alpha = _polyfit(x,f)

@@ -72,6 +72,10 @@ def check_misfit():
             if val is None:
                 break
             
-            print(f' {step:.3e}: {val:.3e}')
+            if optim.done and val == min(vals):
+                print(f' {step:.3e}: {val:.3e} *')
+            
+            else:
+                print(f' {step:.3e}: {val:.3e}')
         
         print()
