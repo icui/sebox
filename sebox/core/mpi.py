@@ -40,10 +40,10 @@ class MPI(Node):
 
 
 if __name__ == '__main__':
-    try:\
+    try:
         # saved function and arguments from main process
         (func, arg, arg_mpi) = root.load(f'{argv[1]}.pickle')
-        root.mpi = MPI(path.dirname(argv[1]), {}, root)
+        root._mpi = MPI(path.dirname(argv[1]), {}, root)
         root.restore()
 
         # determine arguments

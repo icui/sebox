@@ -52,7 +52,7 @@ class Root(Node):
     task_nnodes: tp.Optional[int]
 
     # MPI workspace (only available with __main__ from sebox.core.mpi)
-    mpi: MPI
+    _mpi: tp.Optional[MPI] = None
 
     # runtime global cache (use underscore to avoid being saved by __getstate__)
     _cache: tp.Dict[str, tp.Any] = {}
@@ -67,6 +67,10 @@ class Root(Node):
     @property
     def sys(self) -> System:
         return self._sys
+    
+    @property
+    def mpi(self) -> MPI:
+        return tp.cast(MPI, self._mpi)
 
     @property
     def task_nprocs(self) -> int:
