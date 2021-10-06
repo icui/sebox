@@ -15,11 +15,8 @@ def iterate(node: Optimizer):
     """Add an iteration."""
     node.ln(node.rel(node.path_model), 'model_init.bp')
 
-    # generate or link mesh
-    node.add('solver.mesh', 'mesh')
-
     # compute kernels
-    kl = node.add('kernel', 'kernel', path_mesh=node.path('mesh'))
+    kl = node.add('kernel')
 
     # compute direction
     node.add('optimizer.direction')
@@ -72,10 +69,11 @@ def check_misfit():
             if val is None:
                 break
             
+            entry = f' {step:.3e}: {val:.3e}'
+
             if optim.done and val == min(vals):
-                print(f' {step:.3e}: {val:.3e} *')
+                entry += ' *'
             
-            else:
-                print(f' {step:.3e}: {val:.3e}')
+            print(entry)
         
         print()

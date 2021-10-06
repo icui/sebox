@@ -52,7 +52,7 @@ def _freq(enc: Encoding) -> ndarray:
 
 
 def _link_encoded(node: Ortho):
-    cwd = tp.cast('Ortho', node.inherit_kernel).path(f'kl_{node.iker:02d}')
+    cwd = node.inherit_kernel.path(f'kl_{node.iker:02d}')
     node.cp(node.rel(cwd, 'SUPERSOURCE'))
     node.ln(node.rel(cwd, 'enc_obs'))
     node.ln(node.rel(cwd, 'enc_diff'))

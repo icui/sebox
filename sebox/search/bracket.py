@@ -23,7 +23,7 @@ def step(node: Search):
     node.add('kernel', path_mesh=None, path_model=node.path('model_gll.bp'), misfit_only=True)
 
     # check bracket
-    node.add('search.check', cwd='..', name='check_bracket')
+    node.add('search.check', args=(node.parent,))
 
 
 def update(node: Search):
@@ -36,13 +36,11 @@ def check(node: Search):
     """Check bracket and add new step if necessary."""
     import numpy as np
 
-    search = tp.cast('Search', node.parent.parent)
-
     # seach step lengths and misfit values
     steps = [0.0]
-    vals = [search.inherit_kernel.misfit_value]
+    vals = [node.inherit_kernel.misfit_value]
 
-    for st in search:
+    for st in node:
         steps.append(st.step) # type: ignore
         vals.append(st[1].misfit_value) # type: ignore
     
@@ -64,14 +62,15 @@ def check(node: Search):
             for j, s in enumerate(steps):
                 if np.isclose(st, s):
                     # index is j-1 because the first step is 0.0
-                    search.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
-                    search.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
-                    search.step_final = s
+                    node.rm('mesh_new')
+                    node.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
+                    node.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
+                    node.step_final = s
                     return
             
         alpha = _polyfit(x,f)
         
-    elif len(steps) - 1 < search.nsteps:
+    elif len(steps) - 1 < node.nsteps:
         # history is monochromatically increasing or decreasing
         if all(f <= f[0]):
             alpha = 1.618034 * x[-1]
@@ -81,12 +80,14 @@ def check(node: Search):
     
     if alpha:
         # add a new search step
-        search.add(step, f'step_{len(steps)-1:02d}', step=alpha)
+        node.add(step, f'step_{len(steps)-1:02d}', step=alpha)
     
     else:
         # use initial model as new model
         print('line search failed')
-        search.ln('model_init.bp', 'model_new.bp')
+        node.rm('mesh_new')
+        node.ln('mesh', 'mesh_new')
+        node.ln('model_init.bp', 'model_new.bp')
 
 
 def _check_bracket(f):
@@ -105,7 +106,7 @@ def _good_enough(x, f):
 
     x0 = _polyfit(x, f)
 
-    return any(np.abs(np.log10(x[1:]/x0)) < np.log10(1.2))
+    return any(np.abs(np.log10(x[1:] / x0)) < np.log10(1.2))
 
 def _polyfit(x, f):
     import numpy as np
