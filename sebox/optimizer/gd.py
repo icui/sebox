@@ -7,7 +7,13 @@ if tp.TYPE_CHECKING:
     from sebox.typing import Optimizer
 
 def main(node: Optimizer):
-    if len(node) == 0:
+    if node.iteration:
+        for i in range(node.iteration):
+            node.add(None, f'iter{i:02d}')
+        
+        node.add('optimizer.iterate', f'iter_{node.iteration:02d}', iteration=node.iteration)
+
+    elif len(node) == 0:
         node.add('optimizer.iterate', 'iter_00', iteration=0)
 
 
