@@ -74,12 +74,10 @@ def mf(node: Ortho, stas: tp.List[str]):
     
     if not node.misfit_only:
         # write to adjoint.h5 in sequence
-        print(rank)
         for k in range(size):
             try:
                 if k == rank:
-                    print(k)
-                    with ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False) as ds:
+                    with ASDFDataSet(node.path('adjoint.h5'), mode='a', compression=None, mpi=False) as ds:
                         for i, sta in enumerate(stas):
                             for j, cmp in enumerate(cmps): # type: ignore
                                 ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
