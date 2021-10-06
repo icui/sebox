@@ -70,7 +70,7 @@ class Root(Node):
     
     @property
     def mpi(self) -> MPI:
-        return tp.cast(MPI, self._mpi)
+        return tp.cast('MPI', self._mpi)
 
     @property
     def task_nprocs(self) -> int:
