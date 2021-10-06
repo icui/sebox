@@ -77,6 +77,7 @@ def mf(node: Ortho, stas: tp.List[str]):
         for k in range(size):
             try:
                 if k == rank:
+                    print(k)
                     with ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False) as ds:
                         for i, sta in enumerate(stas):
                             for j, cmp in enumerate(cmps): # type: ignore
