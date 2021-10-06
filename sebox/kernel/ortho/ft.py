@@ -74,6 +74,7 @@ def mf(node: Ortho, stas: tp.List[str]):
     
     if not node.misfit_only:
         # write to adjoint.h5 in sequence
+        print(rank)
         for k in range(size):
             try:
                 if k == rank:
