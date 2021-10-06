@@ -10,20 +10,23 @@ if tp.TYPE_CHECKING:
 
 
 def ft_syn(node: Ortho, data: ndarray):
+    """Get Fourier coefficients of synthetic data."""
     from scipy.fft import fft
     return fft(data[..., node.nt_ts: node.nt_ts + node.nt_se])[..., node.imin: node.imax] # type: ignore
 
 
 def ft_obs(node: Ortho, data: ndarray):
+    """Get Fourier coefficients of observed data."""
     import numpy as np
     from scipy.fft import fft
 
     shape = data.shape
+    nt = node.kf * node.nt_se
 
-    if (nt := node.kf * node.nt_se) > len(data):
+    if nt > shape[-1]:
         # expand observed data with zeros
         pad = list(shape)
-        pad[-1] = nt - len(data)
+        pad[-1] = nt - shape[-1]
         data = np.concatenate([data, pad])
     
     else:
@@ -62,7 +65,6 @@ def mf(node: Ortho, stas: tp.List[str]):
 
     # raise error last to ensure comm.barrier() succeeds
     err = None
-    adstf = None
 
     try:
         adstf, cmps = _mf(node, stas)
@@ -71,35 +73,14 @@ def mf(node: Ortho, stas: tp.List[str]):
         err = e
     
     if not node.misfit_only:
-        # save adjoint sources to adjoint.h5
-        ds = None
-
-        def write(s, a):
-            # write data in serial (in rank 0)
-            if ds is None:
-                return
-
-            for i, sta in enumerate(s):
-                for j, cmp in enumerate(cmps): # type: ignore
-                    ds.add_auxiliary_data(a[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {})
-
+        # write to adjoint.h5 in sequence
         for k in range(size):
             try:
-                if k == 0:
-                    # write rank 0 data
-                    if rank == 0:
-                        ds = ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False)
-
-                    write(stas, adstf)
-
-                elif rank == k:
-                    # send data to rank 0
-                    comm.send([stas, adstf], dest=0)
-                
-                elif rank == 0:
-                    # write received data
-                    s, a = comm.recv(source=k)
-                    write(s, a)
+                if k == rank:
+                    with ASDFDataSet(node.path('adjoint.h5'), mode='w', compression=None, mpi=False) as ds:
+                        for i, sta in enumerate(stas):
+                            for j, cmp in enumerate(cmps): # type: ignore
+                                ds.add_auxiliary_data(adstf[i, j], 'AdjointSources', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
             
             except Exception as e:
                 err = e
