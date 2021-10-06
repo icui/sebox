@@ -31,7 +31,7 @@ def xmerge(node: Node, precond: float):
 
 def xgd(node: Node):
     """Compute gradient descent direction."""
-    _adios(node, 'xsteepDescent kernel/kernels.bp kernel/precond.bp direction.bp')
+    _adios(node, 'xsteepDescent kernels.bp precond.bp direction.bp')
 
 
 def xupdate(node: Node, step: float, path_model: str, path_mesh: str):

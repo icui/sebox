@@ -115,6 +115,8 @@ class Root(Node):
         if hasattr(self, '_sys'):
             return
         
+        print('@', self._mpi, self.mpi)
+        
         if node:
             # restore from a saved workspace (e.g. pickle file from mpiexec)
             while node.parent is not None:
