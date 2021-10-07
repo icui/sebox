@@ -93,6 +93,8 @@ def _prepare_frequencies(node: Ortho):
     nf = nbands * fincr
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
+    nbands_used = nbands
+    
     if node.reference_velocity is not None and (rad := node.smooth_kernels):
         if isinstance(rad, list):
             rad = max(rad[1], rad[0] * rad[2] ** (node.iteration or 0))
