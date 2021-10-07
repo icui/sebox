@@ -41,7 +41,7 @@ def direction(node: Optimizer):
 
 def check(node: Optimizer):
     """Add a new iteration if necessary."""
-    optim = tp.cast('Optimizer', node.parent.parent)
+    optim = node.parent.parent
     i = len(optim)
 
     if i < optim.niters and node.parent is optim[-1]:
@@ -68,7 +68,7 @@ def check_misfit():
 
         if len(optim):
             for step in optim[-2]:
-                steps.append(step.step) # type: ignore
+                steps.append(step.step)
                 vals.append(step[1].misfit_value)
         
         for step, val in zip(steps, vals):

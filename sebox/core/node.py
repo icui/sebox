@@ -11,7 +11,11 @@ import typing as tp
 from .directory import Directory
 
 
-class Node(Directory):
+# generic Node type for parent and children
+N = tp.TypeVar('N', bound='Node')
+
+
+class Node(Directory, tp.Generic[N]):
     """A directory with a task."""
     # node task
     task: Task
@@ -21,9 +25,6 @@ class Node(Directory):
 
     # whether child nodes are executed concurrently
     concurrent: tp.Optional[bool]
-
-    # node to inherit properties from
-    inherit: tp.Optional[Node]
 
     # arguments passed to task (pass Node if args is None)
     args: tp.Optional[tp.Iterable]
@@ -38,7 +39,7 @@ class Node(Directory):
     _data: dict
 
     # parent node
-    _parent: tp.Optional[Node]
+    _parent: tp.Optional[N]
 
     # time when task started
     _starttime: tp.Optional[float] = None
@@ -53,7 +54,7 @@ class Node(Directory):
     _err: tp.Optional[Exception] = None
 
     # child nodes
-    _children: tp.List[Node]
+    _children: tp.List[N]
 
     @property
     def name(self) -> str:
@@ -81,9 +82,9 @@ class Node(Directory):
         return path.basename(self.path(abs=True))
 
     @property
-    def parent(self) -> Node:
+    def parent(self) -> N:
         """Parent node."""
-        return tp.cast(Node, self._parent)
+        return tp.cast(N, self._parent)
 
     @property
     def done(self) -> bool:
@@ -105,7 +106,7 @@ class Node(Directory):
 
             return delta + sum(delta_ws)
     
-    def __init__(self, cwd: str, data: dict, parent: tp.Optional[Node]):
+    def __init__(self, cwd: str, data: dict, parent: tp.Optional[N]):
         super().__init__(cwd)
         self._init = data
         self._data = {}
@@ -123,12 +124,8 @@ class Node(Directory):
         if key in self._init:
             return self._init[key]
         
-        if key not in tp.get_type_hints(Node):
-            if self.inherit:
-                return self.inherit.__getattr__(key)
-
-            elif self._parent:
-                return self._parent.__getattr__(key)
+        if key not in tp.get_type_hints(Node) and self._parent:
+            return self._parent.__getattr__(key)
         
         return None
     
@@ -155,7 +152,7 @@ class Node(Directory):
         for key, val in state.items():
             setattr(self, key, val)
 
-    def __getitem__(self, key: int) -> Node:
+    def __getitem__(self, key: int) -> N:
         """Get child node."""
         return self._children[key]
 
@@ -331,8 +328,7 @@ class Node(Directory):
     def add(self, task: Task[tp.Any] = None, /,
         cwd: tp.Optional[str] = None, name: tp.Optional[str] = None, *,
         args: tp.Optional[tp.Union[list, tuple]] = None,
-        concurrent: tp.Optional[bool] = None, prober: Prober = None,
-        inherit: tp.Optional[Node] = None, **data) -> Node:
+        concurrent: tp.Optional[bool] = None, prober: Prober = None, **data) -> N:
         """Add a child node or a child task."""
         if task is not None:
             if isinstance(task, (list, tuple)):
@@ -346,9 +342,6 @@ class Node(Directory):
         if concurrent is not None:
             data['concurrent'] = concurrent
         
-        if inherit is not None:
-            data['inherit'] = inherit
-        
         if args is not None:
             data['args'] = args
 
@@ -360,9 +353,9 @@ class Node(Directory):
         elif cwd is not None:
             node._name = cwd
         
-        self._children.append(node)
+        self._children.append(tp.cast(N, node))
 
-        return node
+        return tp.cast(N, node)
     
     def add_mpi(self, cmd: tp.Union[str, tp.Callable], /,
         nprocs: tp.Optional[tp.Union[int, tp.Callable[[Directory], int]]] = None,
@@ -428,6 +421,6 @@ class Node(Directory):
 
 
 # type annotation for a node task function
-T = tp.TypeVar('T', bound=Node)
+T = tp.TypeVar('T', bound='Node')
 Task = tp.Optional[tp.Union[tp.Callable[[T], tp.Optional[tp.Coroutine]], tp.Tuple[str, str], str]]
 Prober = tp.Optional[tp.Callable[[Node], tp.Union[float, str, None]]]

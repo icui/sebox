@@ -8,13 +8,13 @@ from .search import *
 class Solver(tp.Protocol):
     """Required functions in a solver module."""
     # forward simulation
-    main: Task[Forward]
+    main: Task[Solver]
 
     # generate mesh
-    mesh: Task[Forward]
+    mesh: Task[Solver]
 
     # adjoint simulation
-    adjoint: Task[Adjoint]
+    adjoint: Task[Solver]
 
     # sum and smooth kernels
     postprocess: Task[Postprocess]

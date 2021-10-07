@@ -4,8 +4,7 @@ import typing as tp
 from sebox import Node
 
 
-class Postprocess(Node):
-    """A node to generate mesh."""
+class _Postprocess(tp.Protocol):
     # current iteration
     iteration: tp.Optional[int]
     
@@ -40,8 +39,8 @@ class Postprocess(Node):
     precondition: float
 
 
-class Forward(Node):
-    """A node to run forward simulation."""
+class _Solver(tp.Protocol):
+    """A node to run forward / adjoint simulation."""
     # path to CMTSOLUTION
     path_event: str
 
@@ -69,9 +68,6 @@ class Forward(Node):
     # geographical limit of the catalog (center_lat, center_lon, radius, max_epicentral_dist)
     catalog_boundary: tp.Tuple[float, float, float, float]
 
-
-class Adjoint(Node):
-    """A node to run adjiont simulation."""
     # path to adjoint source
     path_misfit: str
 
@@ -79,5 +75,9 @@ class Adjoint(Node):
     path_forward: str
 
 
-class Solver(Forward, Adjoint, Postprocess):
+class Postprocess(Node['Postprocess'], _Postprocess):
+    """A node to generate mesh."""
+
+
+class Solver(Node['Solver'], _Solver):
     """All solver configurations."""

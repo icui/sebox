@@ -23,7 +23,7 @@ def step(node: Search):
     node.add('kernel', path_mesh=None, path_model=node.path('model_gll.bp'), misfit_only=True)
 
     # check bracket
-    node.add('search.check', args=(node.parent,))
+    node.add('search.check')
 
 
 def update(node: Search):
@@ -36,13 +36,15 @@ def check(node: Search):
     """Check bracket and add new step if necessary."""
     import numpy as np
 
+    search = node.parent.parent
+
     # seach step lengths and misfit values
     steps = [0.0]
-    vals = [node.inherit_kernel.misfit_value]
+    vals = [search.inherit_kernel.misfit_value]
 
-    for st in node:
-        steps.append(st.step) # type: ignore
-        vals.append(st[1].misfit_value) # type: ignore
+    for st in search:
+        steps.append(st.step)
+        vals.append(st[1].misfit_value)
     
     # sort by step length
     x = np.array(steps)
@@ -62,15 +64,15 @@ def check(node: Search):
             for j, s in enumerate(steps):
                 if np.isclose(st, s):
                     # index is j-1 because the first step is 0.0
-                    node.rm('mesh_new')
-                    node.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
-                    node.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
-                    node.step_final = s
+                    search.rm('mesh_new')
+                    search.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
+                    search.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
+                    search.step_final = s
                     return
             
         alpha = _polyfit(x,f)
         
-    elif len(steps) - 1 < node.nsteps:
+    elif len(steps) - 1 < search.nsteps:
         # history is monochromatically increasing or decreasing
         if all(f <= f[0]):
             alpha = 1.618034 * x[-1]
@@ -80,14 +82,14 @@ def check(node: Search):
     
     if alpha:
         # add a new search step
-        node.add(step, f'step_{len(steps)-1:02d}', step=alpha)
+        search.add(step, f'step_{len(steps)-1:02d}', step=alpha)
     
     else:
         # use initial model as new model
         print('line search failed')
-        node.rm('mesh_new')
-        node.ln('mesh', 'mesh_new')
-        node.ln('model_init.bp', 'model_new.bp')
+        search.rm('mesh_new')
+        search.ln('mesh', 'mesh_new')
+        search.ln('model_init.bp', 'model_new.bp')
 
 
 def _check_bracket(f):

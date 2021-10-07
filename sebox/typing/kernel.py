@@ -1,11 +1,10 @@
 from __future__ import annotations
 import typing as tp
 
-from .solver import Solver
+from .solver import Node, _Solver
 
 
-class Kernel(Solver):
-    """Compute kernel and / or misfit."""
+class _Kernel(_Solver):
     # length of a time step
     dt: float
 
@@ -20,3 +19,7 @@ class Kernel(Solver):
 
     # inherit from an existing Kernel
     inherit_kernel: Kernel
+
+
+class Kernel(Node['Kernel'], _Kernel):
+    """Compute kernel and / or misfit."""

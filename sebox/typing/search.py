@@ -1,11 +1,10 @@
 from __future__ import annotations
 import typing as tp
 
-from .kernel import Kernel
+from .kernel import Node, _Kernel
 
 
-class Search(Kernel):
-    """Gradient optimization."""
+class _Search(_Kernel):
     # maximum number of search steps
     nsteps: int
 
@@ -17,3 +16,7 @@ class Search(Kernel):
 
     # current step length
     step: float
+
+
+class Search(Node['Search'], _Search):
+    """Gradient optimization."""
