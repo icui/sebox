@@ -24,6 +24,9 @@ class Postprocess(Node):
     # ratio between vertival and horizontal smoothing length
     smooth_vertical: tp.Optional[float]
 
+    # increase smoothing length with PREM velocity (length *= (vp / vp0) ** smooth_depth)
+    smooth_with_prem: tp.Optional[float]
+
     # names of the kernels to be smoothed
     kernel_names: tp.List[str]
 
