@@ -18,7 +18,7 @@ task = "optimizer"
 task_nnodes = 1
 
 # path to external directories
-path_mesh = "../mesh_m00"
+path_mesh = "../mesh_m15"
 path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
 path_catalog = "/gpfs/alpine/scratch/ccui/geo111/north_syn"
 path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
@@ -56,7 +56,7 @@ hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
 smooth_kernels = [150.0, 60.0, 0.9]
 smooth_hessian = [150.0, 60.0, 0.9]
 smooth_vertical = 1.0
-smooth_with_prem = 0
+smooth_with_prem = 0.5
 fixed_preconditioner = false
 precondition = 400.0
 source_mask = true
