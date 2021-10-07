@@ -14,10 +14,11 @@ job_gap = 2.0
 job_debug = false
 
 # main task
-task = "optimizer"
+task = "kernel"
 task_nnodes = 1
 
 # path to external directories
+path_mesh = "../mesh_m00"
 path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
 path_catalog = "/gpfs/alpine/scratch/ccui/geo111/north_syn"
 path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
