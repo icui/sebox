@@ -58,13 +58,13 @@ def check_misfit():
     root.restore()
 
     for i, optim in enumerate(root):
-        if len(optim) < 2 or optim[1].misfit_value is None:
+        if len(optim) < 2 or optim[0].misfit_value is None:
             continue
 
         print(f'Iteration {i}')
     
         steps = [0.0]
-        vals = [optim[1].misfit_value]
+        vals = [optim[0].misfit_value]
 
         if len(optim):
             for step in optim[-2]:
