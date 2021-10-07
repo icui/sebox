@@ -64,7 +64,7 @@ source_mask = true
 # misfit
 phase_factor = 1.0
 amplitude_factor = 0.0
-double_difference = false
+double_difference = true
 
 # optimization
 niters = 20
