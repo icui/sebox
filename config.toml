@@ -53,8 +53,8 @@ seed = 0
 # kernel processing
 kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
 hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
-smooth_kernels = [100.0, 60.0, 0.9]
-smooth_hessian = [100.0, 60.0, 0.9]
+smooth_kernels = [60.0, 60.0, 0.9]
+smooth_hessian = [60.0, 60.0, 0.9]
 smooth_vertical = 1.0
 smooth_with_prem = 0.5
 fixed_preconditioner = false
