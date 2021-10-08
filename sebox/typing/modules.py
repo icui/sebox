@@ -23,9 +23,6 @@ class Solver(tp.Protocol):
 class Kernel(tp.Protocol):
     """Required functions in a solver module."""
     main: Task[Kernel]
-    
-    # compute misfit
-    misfit: Task[Kernel]
 
 
 class Optimizer(tp.Protocol):
