@@ -1,5 +1,4 @@
 from __future__ import annotations
-from os import path
 import typing as tp
 
 from sebox import root, Node
