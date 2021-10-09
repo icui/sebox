@@ -1,7 +1,11 @@
-from sebox.utils.adios import xcg
-from .gd import main, iterate, check, Optimizer
+from sebox.utils.adios import xgd, xcg
+from .gd import *
 
 
 def direction(node: Optimizer):
     """Momentum direction."""
-    xcg(node)
+    if node.iteration == 0:
+        xgd(node)
+
+    else:
+        xcg(node)
