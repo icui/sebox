@@ -125,14 +125,16 @@ def _prepare_frequencies(node: Ortho):
         'phase_factor': node.phase_factor,
         'amplitude_factor': node.amplitude_factor,
         'taper': node.taper,
-        'unwrap_phase': node.unwrap_phase
+        'unwrap_phase': node.unwrap_phase,
+        'normalize_source': node.normalize_source,
+        'normalize_frequency': node.normalize_frequency
     }
 
-    node.write(_encode_events(enc, node.normalize_source), 'SUPERSOURCE')
+    node.write(_encode_events(enc), 'SUPERSOURCE')
     node.dump(enc, 'encoding.pickle')
 
 
-def _encode_events(enc: Encoding, normalize_source: bool):
+def _encode_events(enc: Encoding):
     # load catalog
     cmt = ''
     cdir = getdir()
@@ -200,7 +202,7 @@ def _encode_events(enc: Encoding, normalize_source: bool):
             lines[3] = f'half duration:{" " * (9 - len(str(int(1 / f0))))}{1/f0:.4f}'
 
             # normalize sources to the same order of magnitude
-            if normalize_source:
+            if enc['normalize_source']:
                 mref = 1e25
                 mmax = max(abs(float(lines[i].split()[-1])) for i in range(7, 13))
                 

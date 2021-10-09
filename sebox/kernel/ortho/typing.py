@@ -54,6 +54,12 @@ class Encoding(tp.TypedDict):
     # attempt to unwrap phases
     unwrap_phase: bool
 
+    # normalize source magnitudes
+    normalize_source: bool
+
+    # divide phase difference by frequency
+    normalize_frequency: bool
+
 
 class Ortho(Kernel):
     """Source encoded kernel computation."""
@@ -78,9 +84,6 @@ class Ortho(Kernel):
     # radius for smoothing kernels
     smooth_kernels: tp.Optional[tp.Union[float, tp.List[float]]]
 
-    # normalize source magnitudes
-    normalize_source: bool
-
     # number of frequencies in a frequency band
     frequency_increment: int
     
@@ -98,3 +101,9 @@ class Ortho(Kernel):
 
     # attempt to unwrap phases
     unwrap_phase: bool
+
+    # normalize source magnitudes
+    normalize_source: bool
+
+    # divide phase difference by frequency
+    normalize_frequency: bool

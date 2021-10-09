@@ -119,9 +119,12 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
         amp_diff -= amp_sum / weight_sum
 
     # apply measurement weightings
-    omega = np.arange(enc['imin'], enc['imax']) / enc['imin']
-    phase_diff *= weight * enc['phase_factor'] / omega
+    phase_diff *= weight * enc['phase_factor']
     amp_diff *= weight * enc['amplitude_factor']
+
+    if enc.get('normalize_frequency'):
+        omega = np.arange(enc['imin'], enc['imax']) / enc['imin']
+        phase_diff /= omega
 
     # save misfit value
     fincr = enc['frequency_increment']

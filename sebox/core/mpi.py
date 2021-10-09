@@ -44,7 +44,6 @@ if __name__ == '__main__':
         # saved function and arguments from main process
         (func, arg, arg_mpi) = root.load(f'{argv[1]}.pickle')
         root._mpi = MPI(path.dirname(argv[1]), {}, root)
-        print('@', not root._mpi, root._mpi is None)
         root.restore()
 
         # determine arguments
