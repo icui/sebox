@@ -105,6 +105,9 @@ class Root(Node):
     
     def save(self):
         """Save state."""
+        if self.job_paused:
+            return
+
         if self.mpi:
             raise RuntimeError('cannot save root from MPI process')
 
@@ -124,7 +127,6 @@ class Root(Node):
 
         elif self.mpi is None and self.has('root.pickle'):
             # restore previous state
-            print('@root')
             self.__setstate__(self.load('root.pickle'))
         
         elif self.has('config.toml'):
