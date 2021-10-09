@@ -261,6 +261,8 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
         # source time function of observed data and its frequency component
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
         sff = ft_obs(enc, stf)
+
+        # phase difference from source time function
         pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'] - tshift)) / sff
 
         # record frequency components
@@ -268,7 +270,6 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
             group = idx // enc['frequency_increment']
             pshift = pff[idx]
 
-            # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
                 m = getmeasurements(event, None, cmp, group)[sidx]
                 i = np.squeeze(np.where(m))
@@ -305,7 +306,6 @@ def _enc_diff(enc: Encoding, stas: tp.List[str]):
         for idx in slots:
             group = idx // enc['frequency_increment']
 
-            # phase shift due to the measurement of observed data
             for j, cmp in enumerate(cmps):
                 w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
                 i = np.squeeze(np.where(w > 0))
