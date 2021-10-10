@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from .mesh import setup as setup_mesh
-from .shared import setpars, xmeshfem, xspecfem, getsize
+from .shared import setpars, xmeshfem, xspecfem
 
 if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
@@ -38,53 +38,6 @@ def setup(node: Specfem):
         pars['STEADY_STATE_KERNEL'] = False
     
     setpars(node, pars)
-
-
-def scatter(node: Specfem):
-    """Convert output seismograms with processing format."""
-    from sebox.utils.catalog import getstations
-
-    stamap = {}
-    
-    for i in range(getsize(node)):
-        if node.has(fname := f'OUTPUT_FILES/array_stations_node_{i:05d}.txt'):
-            for line in node.readlines(fname):
-                if '.' in line:
-                    stamap[line.lstrip()] = i
-
-    print(stamap)
-    print(len(stamap.keys()))
-    node.mkdir('traces')
-    node.add_mpi(_scatter, arg=stamap, arg_mpi=getstations())
-
-
-def _scatter(stamap: tp.Dict[str, int], stas: tp.List[str]):
-    import numpy as np
-    from scipy.io import FortranFile
-    from sebox import root
-
-    nt = None
-    nsta = len(stas)
-    data = None
-    cache = {}
-
-    for i, sta in enumerate(stas):
-        for j in range(3):
-            p = stamap[sta]
-
-            if p not in cache:
-                d = FortranFile(f'OUTPUT_FILES/array_seismograms_node_{p:05d}.bin').read_reals(dtype='float32')
-                
-                if nt is None:
-                    nt = int(len(d) / 3 / nsta)
-                    data = np.zeros((3, nsta, nt))
-                
-                cache[p] = d.reshape((nt, nsta, 3)) # type: ignore
-            
-            data[i, j, :] = cache[p][:, i, j] # type: ignore
-    
-    root.mpi.mpidump(data, 'traces')
-
 
 
 def forward(node: Specfem):
