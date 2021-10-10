@@ -83,7 +83,7 @@ def _scatter(arg: tp.Tuple[tp.Dict[str, tp.Tuple[int, int, int]], int], stas: tp
                 d = FortranFile(f'OUTPUT_FILES/array_seismograms_node_{p:05d}.bin').read_reals(dtype='float32')
                 cache[p] = d.reshape([nt, n, 3]) # type: ignore
             
-            data[i, j, :] = cache[p][:, k, i]
+            data[i, j, :] = cache[p][:, k, j]
     
     root.mpi.mpidump(data, 'traces')
 
