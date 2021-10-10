@@ -37,8 +37,8 @@ def xgd(node: Node):
 def xcg(node: Node):
     """Compute conjugate gradient direction."""
     dir0 = f'iter_{tp.cast(int, node.iteration)-1:02d}'
-    _adios(node, f'xcg_direction {dir0}/kernels.bp {dir0}/precond.bp kernels.bp precond.bp ' +
-        f'{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
+    _adios(node, f'xcg_direction ../{dir0}/kernels.bp ../{dir0}/precond.bp kernels.bp precond.bp ' +
+        f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
 def xupdate(node: Node, step: float, path_model: str, path_mesh: str):
