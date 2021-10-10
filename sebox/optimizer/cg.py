@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from sebox.utils.adios import xgd, xcg
 from .gd import *
 
