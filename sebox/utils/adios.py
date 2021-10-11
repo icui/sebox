@@ -41,6 +41,13 @@ def xcg(node: Node):
         f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
+def xmm(node: Node):
+    """Compute conjugate gradient direction."""
+    dir0 = f'iter_{tp.cast(int, node.iteration)-1:02d}'
+    _adios(node, f'xmm_direction {node.momentum} kernels.bp precond.bp ' +
+        f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
+
+
 def xupdate(node: Node, step: float, path_model: str, path_mesh: str):
     """Update model."""
     _adios(node, f'xupdate_model {step} {path_model} {path_mesh}/DATABASES_MPI/solver_data.bp ../direction.bp .')
