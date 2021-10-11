@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sebox.utils.adios import xgd, xcg
+from sebox.utils.adios import xgd, xmm
 from .gd import *
 
 
@@ -10,4 +10,4 @@ def direction(node: Optimizer):
         xgd(node)
 
     else:
-        xcg(node)
+        xmm(node)
