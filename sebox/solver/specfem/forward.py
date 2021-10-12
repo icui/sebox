@@ -51,7 +51,7 @@ def setup(node: Specfem):
     setpars(node, pars)
 
 
-def scatter(node: Specfem):
+def align(node: Specfem):
     """Convert output seismograms with processing format."""
     from sebox.utils.catalog import getstations
 
@@ -75,10 +75,10 @@ def scatter(node: Specfem):
                     nodes[p].append(sta)
 
     node.dump(stats, 'traces/stats.pickle')
-    node.add_mpi(_scatter, arg=(stats, nodes), arg_mpi=getstations())
+    node.add_mpi(_align, arg=(stats, nodes), arg_mpi=getstations())
 
 
-def _scatter(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str]):
+def _align(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str]):
     import numpy as np
     from scipy.io import FortranFile
     from sebox import root
@@ -104,4 +104,4 @@ def forward(node: Specfem):
     node.add(setup)
     xmeshfem(node)
     xspecfem(node)
-    node.add('solver.scatter')
+    node.add('solver.align')
