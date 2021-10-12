@@ -88,7 +88,7 @@ def _align(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str])
 
     for p, pstas in nodes.items():
         if any(sta in stas for sta in pstas):
-            d = FortranFile(f'OUTPUT_FILES/array_seismograms_node_{p:05d}.bin').read_reals(dtype='float32')
+            d = FortranFile(root.mpi.path(f'OUTPUT_FILES/array_seismograms_node_{p:05d}.bin')).read_reals(dtype='float32')
             d = d.reshape([nt, len(pstas), 3]) # type: ignore
             
             for k, sta in enumerate(pstas):
