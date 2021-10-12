@@ -122,9 +122,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     phase_diff *= weight * enc['phase_factor']
     amp_diff *= weight * enc['amplitude_factor']
 
-    ###
-    if True:
-    # if enc.get('normalize_frequency'):
+    if enc.get('normalize_frequency'):
         omega = np.arange(enc['imin'], enc['imax']) / enc['imin']
         phase_diff /= omega
 
