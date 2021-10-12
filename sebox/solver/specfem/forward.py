@@ -72,7 +72,7 @@ def _scatter(stats: Stats, stas: tp.List[str]):
     import numpy as np
     from obspy import read
 
-    data = np.zeros([len(stas), len(stats['cmps']), stats['nt']], dtype='float32')
+    data = np.zeros([len(stas), len(stats['cmps']), stats['nt']])
 
     for i, sta in enumerate(stas):
         for j, cmp in enumerate(stats['cmps']):
