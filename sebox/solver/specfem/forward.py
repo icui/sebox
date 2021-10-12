@@ -88,6 +88,4 @@ def forward(node: Specfem):
     node.add(setup)
     xmeshfem(node)
     xspecfem(node)
-    node.add(('sebox.utils.asdf', 'scatter'),
-        path_input=node.path('OUTPUT_FILES/synthetic.h5'), path_output=node.path('traces'),
-        stats={'cmps': ['N', 'E', 'Z']})
+    node.add('solver.scatter')
