@@ -25,7 +25,7 @@ def xspecfem(node: Specfem):
 def xmeshfem(node: Specfem):
     """Add task to call xmeshfem3D."""
     if node.path_mesh:
-        node.add(node.ln, name='link_mesh', args=(node.rel(node.path_mesh, 'DATABASES_MPI/*.bp'), 'DATABASES_MPI'))
+        node.add(node.ln, name='link_mesh', args=(node.rel(node.path_mesh, 'DATABASES_MPI/*'), 'DATABASES_MPI'))
     
     else:
         node.add_mpi('bin/xmeshfem3D', getsize, data={'prober': probe_mesher})
