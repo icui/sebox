@@ -57,8 +57,8 @@ def align(node: Specfem):
 
     lines = node.readlines('OUTPUT_FILES/seismogram_stats.txt')
     stats: Stats = {
-        'nt': int(lines[0].split('=')[-1]),
         'dt': float(lines[0].split('=')[-1]),
+        'nt': int(lines[1].split('=')[-1]),
         'cmps': ('N', 'E', 'Z')
     }
     nodes = {}
