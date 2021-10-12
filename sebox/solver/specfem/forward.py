@@ -3,7 +3,7 @@ import typing as tp
 
 from sebox import root
 from .mesh import setup as setup_mesh
-from .shared import setpars, xmeshfem, xspecfem
+from .shared import setpars, xmeshfem, xspecfem, getsize
 
 if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
@@ -54,33 +54,49 @@ def setup(node: Specfem):
 def scatter(node: Specfem):
     """Convert output seismograms with processing format."""
     from sebox.utils.catalog import getstations
-    from obspy import read
 
-    stas = getstations()
-    tr = read(node.path(f'OUTPUT_FILES/{stas[0]}.MXE.sem.sac'))[0]
+    lines = node.readlines('OUTPUT_FILES/seismogram_stats.txt')
     stats: Stats = {
-        'nt': tr.stats.npts,
-        'dt': tr.stats.delta,
+        'nt': int(lines[0].split('=')[-1]),
+        'dt': float(lines[0].split('=')[-1]),
         'cmps': ('N', 'E', 'Z')
     }
+    nodes = {}
+
+    
+    for p in range(getsize(node)):
+        if node.has(fname := f'OUTPUT_FILES/array_stations_node_{p:05d}.txt'):
+            lines = node.readlines(fname)
+            nodes[p] = []
+
+            for line in lines:
+                if '#' in line:
+                    sta = line.split('#')[1].rstrip().split(' ')[-1]
+                    nodes[p].append(sta)
 
     node.dump(stats, 'traces/stats.pickle')
-    node.add_mpi(_scatter, arg=stats, arg_mpi=stas)
+    node.add_mpi(_scatter, arg=(stats, nodes), arg_mpi=getstations())
 
 
-def _scatter(stats: Stats, stas: tp.List[str]):
+def _scatter(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str]):
     import numpy as np
-    from obspy import read
-
+    from scipy.io import FortranFile
+    from sebox import root
+    
+    stats, nodes = arg
     data = np.zeros([len(stas), len(stats['cmps']), stats['nt']])
 
-    for i, sta in enumerate(stas):
-        for j, cmp in enumerate(stats['cmps']):
-            tr = read(root.mpi.path(f'OUTPUT_FILES/{sta}.MX{cmp}.sem.sac'))[0]
-            data[i, j] = tr.data
+    for p, pstas in nodes.items():
+        if any(sta in stas for sta in pstas):
+            d = FortranFile(f'OUTPUT_FILES/array_seismograms_node_{p:05d}.bin').read_reals(dtype='float32')
+            d = d.reshape([nt, len(pstas), 3]) # type: ignore
+            
+            for k, sta in enumerate(pstas):
+                if sta in stas:
+                    for j in range(3):
+                        data[stas.index(sta), j] = d[:, k, j]
     
     root.mpi.mpidump(data, 'traces')
-
 
 
 def forward(node: Specfem):
