@@ -57,7 +57,7 @@ def scatter(node: Specfem):
     from obspy import read
 
     stas = getstations()
-    tr = read(node.path(f'OUTPUT_FILES/{stas[0]}.MXE.sac'))[0]
+    tr = read(node.path(f'OUTPUT_FILES/{stas[0]}.MXE.sem.sac'))[0]
     stats: Stats = {
         'nt': tr.stats.npts,
         'dt': tr.stats.delta,
@@ -76,7 +76,7 @@ def _scatter(stats: Stats, stas: tp.List[str]):
 
     for i, sta in enumerate(stas):
         for j, cmp in enumerate(stats['cmps']):
-            tr = read(root.mpi.path(f'OUTPUT_FILES/{sta}.MX{cmp}.sac'))[0]
+            tr = read(root.mpi.path(f'OUTPUT_FILES/{sta}.MX{cmp}.sem.sac'))[0]
             data[i, j] = tr.data
     
     root.mpi.mpidump(data, 'traces')
