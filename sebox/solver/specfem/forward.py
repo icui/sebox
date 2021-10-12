@@ -79,7 +79,7 @@ def _scatter(stats: Stats, stas: tp.List[str]):
             tr = read(root.mpi.path(f'OUTPUT_FILES/{sta}.MX{cmp}.sem.sac'))[0]
             data[i, j] = tr.data
     
-    root.mpi.mpidump(data, 'traces')
+    root.mpi.mpidump(data, 'traces/stats.pickle')
 
 
 
