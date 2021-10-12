@@ -17,7 +17,7 @@ def forward(node: Ortho):
             path_stations= getdir().path('SUPERSTATION'),
             path_mesh= node.path('mesh'),
             monochromatic_source= True,
-            save_forward= True)
+            save_forward=not node.misfit_only)
 
 
 def misfit(node: Ortho):
