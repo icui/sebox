@@ -64,7 +64,7 @@ def scatter(node: Specfem):
         'cmps': ('N', 'E', 'Z')
     }
 
-    node.dump(stats, 'traces')
+    node.dump(stats, 'traces/stats.pickle')
     node.add_mpi(_scatter, arg=stats, arg_mpi=stas)
 
 
@@ -79,7 +79,7 @@ def _scatter(stats: Stats, stas: tp.List[str]):
             tr = read(root.mpi.path(f'OUTPUT_FILES/{sta}.MX{cmp}.sem.sac'))[0]
             data[i, j] = tr.data
     
-    root.mpi.mpidump(data, 'traces/stats.pickle')
+    root.mpi.mpidump(data, 'traces')
 
 
 
