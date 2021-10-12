@@ -1,11 +1,22 @@
 from __future__ import annotations
 import typing as tp
 
+from sebox import root
 from .mesh import setup as setup_mesh
-from .shared import setpars, xmeshfem, xspecfem, getsize
+from .shared import setpars, xmeshfem, xspecfem
 
 if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
+
+    class Stats(tp.TypedDict, total=False):
+        # total number of timesteps
+        nt: int
+
+        # length of a timestep
+        dt: float
+
+        # trace components
+        cmps: tp.Tuple[str, str, str]
 
 
 def setup(node: Specfem):
@@ -38,6 +49,38 @@ def setup(node: Specfem):
         pars['STEADY_STATE_KERNEL'] = False
     
     setpars(node, pars)
+
+
+def scatter(node: Specfem):
+    """Convert output seismograms with processing format."""
+    from sebox.utils.catalog import getstations
+    from obspy import read
+
+    stas = getstations()
+    tr = read(node.path(f'OUTPUT_FILES/{stas[0]}.MXE.sac'))[0]
+    stats: Stats = {
+        'nt': tr.stats.npts,
+        'dt': tr.stats.delta,
+        'cmps': ('N', 'E', 'Z')
+    }
+
+    node.dump(stats, 'traces')
+    node.add_mpi(_scatter, arg=stats, arg_mpi=stas)
+
+
+def _scatter(stats: Stats, stas: tp.List[str]):
+    import numpy as np
+    from obspy import read
+
+    data = np.zeros([len(stas), len(stats['cmps']), stats['nt']], dtype='float32')
+
+    for i, sta in enumerate(stas):
+        for j, cmp in enumerate(stats['cmps']):
+            tr = read(root.mpi.path(f'OUTPUT_FILES/{sta}.MX{cmp}.sac'))[0]
+            data[i, j] = tr.data
+    
+    root.mpi.mpidump(data, 'traces')
+
 
 
 def forward(node: Specfem):
