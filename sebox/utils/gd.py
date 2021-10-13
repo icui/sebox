@@ -50,7 +50,7 @@ if __name__ == '__main__':
                         break
 
                 if mf > 0.0:
-                    print('', mf)
+                    print(f' {mf:.3e}')
                 
                 print(mf, m, root.has(m))
             
