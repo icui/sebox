@@ -39,7 +39,7 @@ if __name__ == '__main__':
                 mf = 0.0
 
                 for j in range(len(root.ls(cwd))):
-                    if root.has(kl := f'cwd/kl_{j:02d}'):
+                    if root.has(kl := f'{cwd}/kl_{j:02d}'):
                         if root.has(m := f'{kl}/phase_mf.npy'):
                             mf += root.load(m).sum()
 
@@ -51,6 +51,8 @@ if __name__ == '__main__':
 
                 if mf > 0.0:
                     print('', mf)
+                
+                print(mf, m, root.has(m))
             
             else:
                 break
