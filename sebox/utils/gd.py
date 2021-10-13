@@ -33,26 +33,37 @@ if __name__ == '__main__':
             print()
     
     except:
+        def getmf(d, pre=False):
+            mf = 0.0
+
+            for j in range(len(d.ls())):
+                if d.has(kl := f'kl_{j:02d}'):
+                    if root.has(m := f'{kl}/phase_mf.npy'):
+                        mf += d.load(m).sum()
+
+                    if root.has(m := f'{kl}/amp_mf.npy'):
+                        mf += d.load(m).sum()
+                    
+                else:
+                    break
+
+            if mf > 0.0:
+                if pre:
+                    print(d.path())
+
+                print(f' {mf:.3e}')
+                return True
+            
+            return False
+
+
         for i in range(len(root.ls())):
-            if root.has(cwd := f'iter_{i:02d}'):
-                print(cwd)
-                mf = 0.0
+            d_i = root.subdir(f'iter_{i:02d}')
 
-                for j in range(len(root.ls(cwd))):
-                    if root.has(kl := f'{cwd}/kl_{j:02d}'):
-                        if root.has(m := f'{kl}/phase_mf.npy'):
-                            mf += root.load(m).sum()
-
-                        if root.has(m := f'{kl}/amp_mf.npy'):
-                            mf += root.load(m).sum()
-                        
-                    else:
+            if getmf(d_i, True):
+                for k in range(len(d_i.ls())):
+                    if not getmf(d_i.subdir(f'step_{k:02d}')):
                         break
-
-                if mf > 0.0:
-                    print(f' {mf:.3e}')
-                
-                print(mf, m, root.has(m))
             
             else:
                 break
