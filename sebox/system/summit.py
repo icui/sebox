@@ -45,7 +45,6 @@ def requeue():
     """Run current job again."""
     if environ.get('LSB_INTERACTIVE') != 'Y':
         check_call('brequeue ' + environ['LSB_JOBID'], shell=True)
-        exit()
 
     else:
         root.job_paused = False
