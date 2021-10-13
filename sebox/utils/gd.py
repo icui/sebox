@@ -37,7 +37,6 @@ if __name__ == '__main__':
             mf = 0.0
 
             for j in range(len(d.ls())):
-                print(d.path(), d.has(f'kl_{j:02d}'))
                 if d.has(kl := f'kl_{j:02d}'):
                     if d.has(m := f'{kl}/phase_mf.npy'):
                         mf += d.load(m).sum()
