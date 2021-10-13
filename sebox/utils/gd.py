@@ -39,10 +39,10 @@ if __name__ == '__main__':
             for j in range(len(d.ls())):
                 print(d.path(), d.has(f'kl_{j:02d}'))
                 if d.has(kl := f'kl_{j:02d}'):
-                    if root.has(m := f'{kl}/phase_mf.npy'):
+                    if d.has(m := f'{kl}/phase_mf.npy'):
                         mf += d.load(m).sum()
 
-                    if root.has(m := f'{kl}/amp_mf.npy'):
+                    if d.has(m := f'{kl}/amp_mf.npy'):
                         mf += d.load(m).sum()
                     
                 else:
