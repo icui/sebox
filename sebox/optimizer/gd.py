@@ -10,7 +10,7 @@ def main(node: Optimizer):
     if len(node) == 0:
         if node.iteration_start:
             for i in range(node.iteration_start):
-                node.add(None, f'iter{i:02d}', iteration=i)
+                node.add(None, f'iter_{i:02d}', iteration=i)
             
             node[-1].add('optimizer.check')
 
