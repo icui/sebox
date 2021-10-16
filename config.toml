@@ -72,3 +72,4 @@ niters = 20
 nsteps = 5
 step_init = 0.01
 mem = 5
+momentum = 0.1

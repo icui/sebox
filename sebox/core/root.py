@@ -108,7 +108,7 @@ class Root(Node):
             self.sys.requeue()
     
     def save(self):
-        """Save state."""
+        """Save state from event loop."""
         if self.job_paused or self._saving:
             # job is already being saved
             return
@@ -119,6 +119,10 @@ class Root(Node):
         
         self._saving = True
         asyncio.create_task(self._save())
+    
+    def pickle(self):
+        """Directly save state as root.pickle."""
+        self.dump(self.__getstate__(), 'root.pickle')
     
     def restore(self, node: tp.Optional[Node] = None):
         """Restore state."""
@@ -146,10 +150,11 @@ class Root(Node):
     async def _save(self):
         """Save to root.pickle"""
         if self._saving:
-            self.dump(self.__getstate__(), 'root.pickle')
+            self.pickle()
 
-            if self.job_paused and not self.job_aborted:
-                self.sys.requeue()
+            if self.job_paused:
+                if not self.job_aborted:
+                    self.sys.requeue()
             
             else:
                 self._saving = False
