@@ -107,3 +107,6 @@ class Ortho(Kernel):
 
     # divide phase difference by frequency
     normalize_frequency: bool
+
+    # try to assign an event with all frequency bands
+    prioritize_band: bool

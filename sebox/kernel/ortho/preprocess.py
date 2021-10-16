@@ -130,11 +130,11 @@ def _prepare_frequencies(node: Ortho):
         'normalize_frequency': node.normalize_frequency
     }
 
-    node.write(_encode_events(enc), 'SUPERSOURCE')
+    node.write(_encode_events(enc, node.prioritize_band), 'SUPERSOURCE')
     node.dump(enc, 'encoding.pickle')
 
 
-def _encode_events(enc: Encoding):
+def _encode_events(enc: Encoding, prioritize_band: bool):
     # load catalog
     cmt = ''
     cdir = getdir()
@@ -157,7 +157,6 @@ def _encode_events(enc: Encoding):
         fslots[event] = []
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
 
-    # fill frequency slots
     len_slots = 0
 
     while len(slots) > 0 and len(slots) != len_slots:
@@ -180,13 +179,14 @@ def _encode_events(enc: Encoding):
                     k = i * fincr + j
 
                     if k in slots:
-                        # assign slot to current event
+                        # slot found in current band
                         idx = k
                         slots.remove(k)
                         fslots[event].append(k)
                         break
                 
-                if idx is not None:
+                if idx is not None and not prioritize_band:
+                    # stop if a slot is found and prioritize_band == False
                     break
             
             if len(slots) == 0:
