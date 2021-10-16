@@ -101,7 +101,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     weight = root.mpi.mpiload(f'../enc_weight')
 
     # clip phases
-    weight[np.where(abs(ref) > np.pi)] = 0.0
+    # weight[np.where(abs(ref) > np.pi)] = 0.0
 
     # compute diff
     phase_diff = np.angle(syn / obs) * weight
