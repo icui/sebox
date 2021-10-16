@@ -2,6 +2,7 @@ from __future__ import annotations
 from importlib import import_module
 import typing as tp
 import signal
+import asyncio
 
 from .node import Node
 
@@ -59,6 +60,9 @@ class Root(Node):
 
     # module of job scheduler
     _sys: System
+
+    # currently being saved
+    _saving = False
     
     @property
     def cache(self):
@@ -105,13 +109,16 @@ class Root(Node):
     
     def save(self):
         """Save state."""
-        if self.job_paused:
+        if self.job_paused or self._saving:
+            # job is already being saved
             return
 
         if self.mpi:
+            # root can only be saved from main process
             raise RuntimeError('cannot save root from MPI process')
-
-        self.dump(self.__getstate__(), 'root.pickle')
+        
+        self._saving = True
+        asyncio.create_task(self._save())
     
     def restore(self, node: tp.Optional[Node] = None):
         """Restore state."""
@@ -135,14 +142,23 @@ class Root(Node):
 
         # load module of job scheduler
         self._sys = tp.cast('System', import_module(f'sebox.system.{self.module_system}'))
-        
+
+    async def _save(self):
+        """Save to root.pickle"""
+        if self._saving:
+            self.dump(self.__getstate__(), 'root.pickle')
+
+            if self.job_paused and not self.job_aborted:
+                self.sys.requeue()
+            
+            else:
+                self._saving = False
     
     def _signal(self, *_):
         """Requeue due to insufficient time."""
         if not self.job_aborted:
             self.job_paused = True
             self.save()
-            self.sys.requeue()
 
 
 # create root node
