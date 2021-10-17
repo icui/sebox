@@ -163,7 +163,7 @@ def _prepare_frequencies(node: Ortho):
             n = []
             for f in fslots:
                 for sl in f[event]:
-                    n.append(sl // 150)
+                    n.append(sl // 180)
 
             print(event, n)
 
