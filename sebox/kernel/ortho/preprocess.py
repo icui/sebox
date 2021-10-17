@@ -166,7 +166,7 @@ def _encode_events(enc: Encoding, band_interval: int):
         events = random.sample(events, len(events))
 
         for event in events:
-            for l in range(0, nbands, band_interval):
+            for l in range(0, nbands, band_interval or nbands):
                 for i in range(l, min(l + band_interval, nbands)):
                     idx = None
                     m = event_bands[event][i]
