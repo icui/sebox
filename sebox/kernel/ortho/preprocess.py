@@ -156,6 +156,13 @@ def _prepare_frequencies(node: Ortho):
             if len(slots) == 0:
                 break
 
+            n = []
+            for f in fslots:
+                n.append(len(f[event]))
+
+            print(event, n)
+
+
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
         # CMTSOLUTION striing
