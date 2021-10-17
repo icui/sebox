@@ -114,9 +114,13 @@ def _prepare_frequencies(node: Ortho):
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
-    fslots = [{}] * nkl
-    slots = set(range(nbands * fincr * nkl))
+    fslots = []
+    slots = []
     band_interval = max(1, int(round(nbands / (nfreq * nkl / len(events)))))
+    
+    for _ in range(nkl):
+        fslots.append({})
+        slots.append(set(range(nbands)))
 
     # get available frequency bands for each event (sumed over stations and components)
     for event in events:
@@ -139,10 +143,8 @@ def _prepare_frequencies(node: Ortho):
                 k = i * fincr + j
 
                 for iker in range(nkl):
-                    l = k + iker * nfreq
-
-                    if l in slots:
-                        slots.remove(l)
+                    if k in slots[iker]:
+                        slots[iker].remove(k)
                         fslots[iker][e].append(k)
                         return
 
