@@ -132,7 +132,6 @@ def _prepare_frequencies(node: Ortho):
 
     node.write(_encode_events(enc, node.frequencies_per_event), 'SUPERSOURCE')
     node.dump(enc, 'encoding.pickle')
-    exit()
 
 
 def _encode_events(enc: Encoding, frequencies_per_event: int):
