@@ -130,12 +130,12 @@ def _prepare_frequencies(node: Ortho):
         'normalize_frequency': node.normalize_frequency
     }
 
-    node.write(_encode_events(enc, node.band_interval), 'SUPERSOURCE')
+    node.write(_encode_events(enc, node.frequencies_per_event), 'SUPERSOURCE')
     node.dump(enc, 'encoding.pickle')
     exit()
 
 
-def _encode_events(enc: Encoding, band_interval: int):
+def _encode_events(enc: Encoding, frequencies_per_event: int):
     # load catalog
     cmt = ''
     cdir = getdir()
@@ -159,6 +159,7 @@ def _encode_events(enc: Encoding, band_interval: int):
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
 
     len_slots = 0
+    band_interval = int(round(nbands / frequencies_per_event)) or 1
 
     while len(slots) > 0 and len(slots) != len_slots:
         # stop iteration if no slot is selected
@@ -166,8 +167,8 @@ def _encode_events(enc: Encoding, band_interval: int):
         events = random.sample(events, len(events))
 
         for event in events:
-            for l in range(0, nbands, band_interval or nbands):
-                for i in range(l, min(l + (band_interval or nbands), nbands)):
+            for l in range(0, nbands, band_interval):
+                for i in range(l, min(l + band_interval, nbands)):
                     idx = None
                     m = event_bands[event][i]
 
