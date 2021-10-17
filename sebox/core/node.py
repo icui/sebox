@@ -261,7 +261,7 @@ class Node(Directory, tp.Generic[N]):
                 task = getattr(import_module(path), func)
 
             # call task function
-            args = self.args or [self]
+            args = self.args if self.args is not None else [self]
             if task and (result := task(*args)) and asyncio.iscoroutine(result):
                 await result
         
