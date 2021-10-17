@@ -70,7 +70,6 @@ def _prepare_frequencies(node: Ortho):
     nbands = nf // fincr
     imax = imin + nbands * fincr
     nf = nbands * fincr
-    nfreq = len(freq)
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     nbands_used = nbands
@@ -111,12 +110,13 @@ def _prepare_frequencies(node: Ortho):
     # assign frequency slots to events
     random.seed(enc['seed_used'])
     freq = _freq(enc)
+    nfreq = len(freq)
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
     fslots = [{}] * nkl
     slots = set(range(nbands * fincr * nkl))
-    band_interval = int(round(nbands / (nfreq * nkl / len(events))))
+    band_interval = int(round(nbands / (nfreq * nkl / len(events)))) or 1
     print(band_interval, nbands, nfreq, nkl, len(events))
 
     # get available frequency bands for each event (sumed over stations and components)
