@@ -228,13 +228,14 @@ def index_stations():
     lines = {}
     cdir = getdir()
     d = cdir.subdir('stations')
+    stations = getstations()
 
     for src in d.ls():
         for line in d.readlines(src):
             if len(ll := line.split()) == 6:
                 station = ll[1] + '.' + ll[0]
 
-                if station in lines:
+                if station in lines or station not in stations:
                     continue
 
                 _format_station(lines, ll)
@@ -253,8 +254,6 @@ def index_events():
         for j, station in enumerate(getstations()):
             if m[i, j] >= 1:
                 event_stations[event].append(station)
-        
-        print(event, len(event_stations[event]))
     
     getdir().dump(event_stations, 'event_stations.pickle')
 
