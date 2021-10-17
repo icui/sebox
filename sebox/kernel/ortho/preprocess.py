@@ -159,17 +159,6 @@ def _prepare_frequencies(node: Ortho):
 
             if not has_slot():
                 break
-    m = 0
-    for event in events:
-            n = []
-            for f in fslots:
-                for sl in f[event]:
-                    n.append(sl // 180)
-            m += len(n)
-            print(event, len(n))
-    
-    print(m)
-
 
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
@@ -207,9 +196,6 @@ def _prepare_frequencies(node: Ortho):
         enc['fslots'] = fslots[iker]
         node.write(cmt, cwd + '/SUPERSOURCE')
         node.dump(enc, cwd + '/encoding.pickle')
-    
-    node.dump(fslots, 'e.pickle')
-    exit()
 
 
 def _encode(node: Ortho):
