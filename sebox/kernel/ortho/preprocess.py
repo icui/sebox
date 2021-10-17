@@ -131,6 +131,7 @@ def _prepare_frequencies(node: Ortho):
     
     def find_slot(e: str, b: int):
         for i in range(b, min(b + band_interval, nbands)):
+            print(e, i)
             # check if current band has trace
             if event_bands[e][i] < 1:
                 continue
