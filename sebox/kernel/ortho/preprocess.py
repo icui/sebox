@@ -159,14 +159,16 @@ def _prepare_frequencies(node: Ortho):
 
             if not has_slot():
                 break
-    
+    m = 0
     for event in events:
             n = []
             for f in fslots:
                 for sl in f[event]:
                     n.append(sl // 180)
-
+            m += len(n)
             print(event, len(n))
+    
+    print(m)
 
 
     # get encoding parameters for individual kernels
