@@ -218,7 +218,7 @@ def _format_station(lines: dict, ll: tp.List[str]):
         
         line += num
     
-    lines['.'.join(ll[:2])] = line
+    lines[ll[1] + '.' + ll[0]] = line
 
 
 def index_stations():
