@@ -221,27 +221,15 @@ def _format_station(lines: dict, ll: tp.List[str]):
     lines['.'.join(ll[:2])] = line
 
 
-def merge_stations(d: Directory, dst: Directory, use_catalog: bool = False):
-    """Merge multiple stations into one."""
-    lines = {}
+def index_stations():
+    """Create an index of stations."""
+    from sebox.utils.catalog import getstations
 
-    if use_catalog:
-        # exclude events and stations that are not in the catalog
-        from sebox.utils.catalog import getevents, getstations
-        events = getevents()
-        stations = getstations()
-    
-    else:
-        # include all events and stations
-        events = None
-        stations = None
+    lines = {}
+    cdir = getdir()
+    d = cdir.subdir('stations')
 
     for src in d.ls():
-        event = src.split('.')[1]
-
-        if events and event not in events:
-            continue
-
         for line in d.readlines(src):
             if len(ll := line.split()) == 6:
                 station = ll[1] + '.' + ll[0]
@@ -249,12 +237,28 @@ def merge_stations(d: Directory, dst: Directory, use_catalog: bool = False):
                 if station in lines:
                     continue
 
-                if stations and station not in stations:
-                    continue
-
                 _format_station(lines, ll)
     
-    dst.writelines(lines.values(), 'SUPERSTATION')
+    cdir.dump(lines, 'station_lines.pickle')
+
+
+def merge_stations(dst: Directory, events: tp.List[str]):
+    """Merge multiple stations into one."""
+    from sebox.utils.catalog import getstations
+
+    stations = set()
+
+    for event in events:
+        for station in getstations(event):
+            stations.add(station)
+
+    lines = getdir().load('station_lines.pickle')
+    sta = ''
+    
+    for station in stations:
+        sta += lines[station] + '\n'
+    
+    dst.write(sta, 'SUPERSTATION')
 
 
 def extract_stations(d: Directory, dst: Directory):

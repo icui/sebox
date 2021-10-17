@@ -15,8 +15,8 @@ def forward(node: Ortho):
 
     for cwd in dirs(node):
         node.add('solver', f'{cwd}/forward', cwd,
-            path_event= node.path(f'{cwd}/SUPERSOURCE'),
-            path_stations= getdir().path('SUPERSTATION'),
+            path_event=node.path(f'{cwd}/SUPERSOURCE'),
+            path_stations=node.path(f'{cwd}/SUPERSTATION'),
             path_mesh= node.path('mesh'),
             monochromatic_source= True,
             save_forward=not node.misfit_only)

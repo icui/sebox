@@ -3,7 +3,7 @@ import typing as tp
 import random
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, getcomponents, getmeasurements
+from sebox.utils.catalog import getdir, getevents, getstations, getcomponents, getmeasurements, merge_stations
 from .ft import ft_obs
 from .main import dirs
 
@@ -36,6 +36,7 @@ def _freq(enc: Encoding) -> ndarray:
 def _link_encoded(node: Ortho):
     cwd = node.inherit_kernel.path(f'kl_{node.iker:02d}')
     node.cp(node.rel(cwd, 'SUPERSOURCE'))
+    node.cp(node.rel(cwd, 'SUPERSTATION'))
     node.ln(node.rel(cwd, 'enc_obs'))
     node.ln(node.rel(cwd, 'enc_diff'))
     node.ln(node.rel(cwd, 'enc_weight'))
@@ -162,6 +163,8 @@ def _prepare_frequencies(node: Ortho):
 
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
+        d = node.subdir(cwd)
+
         # CMTSOLUTION striing
         cmt = ''
 
@@ -194,8 +197,17 @@ def _prepare_frequencies(node: Ortho):
 
         # save frequency slots and encoded source
         enc['fslots'] = fslots[iker]
-        node.write(cmt, cwd + '/SUPERSOURCE')
-        node.dump(enc, cwd + '/encoding.pickle')
+        d.write(cmt, 'SUPERSOURCE')
+        d.dump(enc, 'encoding.pickle')
+
+        # create SUPERSTATION
+        evts = []
+
+        for event in fslots[iker]:
+            if len(fslots[iker][event]):
+                evts.append(event)
+        
+        merge_stations(d, evts)
 
 
 def _encode(node: Ortho):

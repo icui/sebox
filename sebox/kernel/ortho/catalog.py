@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, merge_stations, locate_event, locate_station
+from sebox.utils.catalog import getdir, getevents, getstations, index_stations, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
     from .typing import Ortho
@@ -16,8 +16,8 @@ def catalog(node: Ortho):
     cdir = getdir()
 
     # merge stations into a single file
-    if not cdir.has('SUPERSTATION'):
-        node.add(_merge)
+    if not cdir.has('station_lines.pickle'):
+        node.add(index_stations, args=()) # type: ignore
     
     #FIXME create_catalog (measurements.npy, weightings.npy, noise.npy, ft_obs, ft_diff)
 
@@ -32,11 +32,6 @@ def catalog(node: Ortho):
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
         node.add_mpi(_scatter_baz, arg_mpi=getstations())
-
-
-def _merge(_):
-    cdir = getdir()
-    merge_stations(cdir.subdir('stations'), cdir, True)
 
 
 def _scatter_obs(node: Ortho):
