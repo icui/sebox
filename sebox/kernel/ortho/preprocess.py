@@ -130,9 +130,6 @@ def _prepare_frequencies(node: Ortho):
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
     
     def find_slot(e: str, b: int):
-        if len(slots) == 0:
-            return
-
         for i in range(b, min(b + band_interval, nbands)):
             # check if current band has trace
             if event_bands[e][i] < 1:
@@ -147,15 +144,20 @@ def _prepare_frequencies(node: Ortho):
                         slots[iker].remove(k)
                         fslots[iker][e].append(k)
                         return
+    
+    def has_slot():
+        return any(len(s) for s in slots)
 
-    while len(slots) > 0:
-        print('?', len(slots))
+    while has_slot():
         for event in random.sample(events, len(events)):
             # find slots from different frequency sections
             for i in range(0, nbands, band_interval):
                 find_slot(event, i)
 
-            if len(slots) == 0:
+                if not has_slot():
+                    break
+
+            if not has_slot():
                 break
 
             n = []
