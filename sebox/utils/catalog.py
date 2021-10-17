@@ -253,6 +253,8 @@ def index_events():
         for j, station in getstations():
             if m[i, j] >= 1:
                 event_stations[event].append(station)
+        
+        print(event, len(event_stations[event]))
     
     getdir().dump(event_stations, 'event_stations.pickle')
 
