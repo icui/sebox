@@ -197,7 +197,6 @@ def _prepare_frequencies(node: Ortho):
         node.write(cmt, cwd + '/SUPERSOURCE')
         node.dump(enc, cwd + '/encoding.pickle')
 
-    exit()
 
 def _encode(node: Ortho):
     stas = getstations()
