@@ -167,7 +167,7 @@ def _encode_events(enc: Encoding, band_interval: int):
 
         for event in events:
             for l in range(0, nbands, band_interval or nbands):
-                for i in range(l, min(l + band_interval, nbands)):
+                for i in range(l, min(l + (band_interval or nbands), nbands)):
                     idx = None
                     m = event_bands[event][i]
 
