@@ -54,6 +54,9 @@ class Search(tp.Protocol):
     # check and add new step
     check: Task[Search]
 
+    # get search steps lengths and misfit values
+    hist: Task[Search]
+
 
 class System(tp.Protocol):
     """Required functions in a kernel module."""

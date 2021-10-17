@@ -12,14 +12,7 @@ def postprocess(node: Ortho):
     node.concurrent = True
     
     # sum misfit
-    mf = 0.0
-    for cwd in dirs(node):
-        mf += node.load(f'{cwd}/phase_mf.npy').sum()
-
-        if node.amplitude_factor > 0:
-            mf += node.load(f'{cwd}/amp_mf.npy').sum()
-
-    node.parent.misfit_value = mf
+    node.add(_sum_misfit)
 
     if not node.misfit_only:        
         # link kernels
@@ -27,6 +20,21 @@ def postprocess(node: Ortho):
         node.ln('postprocess/precond.bp')
 
         # process kernels
-        node.add('solver.postprocess', 'postprocess',
+        node.add('solver.postprocess', 'postprocess', 'sum_smooth_precond',
             path_kernels=[node.path(kl, 'adjoint') for kl in dirs(node)],
             path_mesh= node.path('mesh'))
+
+def _sum_misfit(node: Ortho):
+    mf = None
+
+    for cwd in dirs(node):
+        if mf is None:
+            mf = node.load(f'{cwd}/phase_mf.npy')
+
+        else:
+            mf += node.load(f'{cwd}/phase_mf.npy')
+
+        if node.amplitude_factor > 0:
+            mf += node.load(f'{cwd}/amp_mf.npy')
+
+    node.dump(mf, 'misfit.npy')

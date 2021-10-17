@@ -14,9 +14,6 @@ class _Kernel(_Solver):
     # period range
     period_range: tp.List[float]
 
-    # kernel misfit value
-    misfit_value: float
-
     # skip computing adjoint kernels
     misfit_only: bool
 

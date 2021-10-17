@@ -9,13 +9,12 @@ if tp.TYPE_CHECKING:
 
 def main(node: Search):
     """Perform line search"""
-    node.add('search.step', 'step_00', step=node.step_init)
+    node.dump(node.step_init, 'step_00/step.pickle')
+    node.add('search.step', 'step_00')
 
 
 def step(node: Search):
     """Perform a search step."""
-    node.mkdir()
-
     # update model
     node.add('search.update')
 
@@ -29,7 +28,8 @@ def step(node: Search):
 def update(node: Search):
     """Update model and mesh."""
     kl = node.inherit_kernel
-    xupdate(node, node.step, node.rel(kl.path_model), node.rel(kl.path_mesh))
+    step = node.load('step.pickle')
+    xupdate(node, step, node.rel(kl.path_model), node.rel(kl.path_mesh))
 
 
 def check(node: Search):
@@ -37,20 +37,7 @@ def check(node: Search):
     import numpy as np
 
     search = node.parent.parent
-
-    # seach step lengths and misfit values
-    steps = [0.0]
-    vals = [search.inherit_kernel.misfit_value]
-
-    for st in search:
-        steps.append(st.step)
-        vals.append(st[1].misfit_value)
-    
-    # sort by step length
-    x = np.array(steps)
-    f = np.array(vals)
-    f = f[abs(x).argsort()]
-    x = x[abs(x).argsort()]
+    x, f, steps = hist(node)
 
     # new step length
     alpha = None
@@ -67,7 +54,7 @@ def check(node: Search):
                     search.rm('mesh_new')
                     search.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
                     search.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
-                    search.step_final = s
+                    search.dump(j - 1, 'step_final.pickle')
                     return
             
         alpha = _polyfit(x,f)
@@ -90,6 +77,33 @@ def check(node: Search):
         search.rm('mesh_new')
         search.ln('mesh', 'mesh_new')
         search.ln('model_init.bp', 'model_new.bp')
+
+
+def hist(node: Search):
+    """Get search history."""
+    import numpy as np
+
+    # seach step lengths and misfit values
+    steps = [0.0]
+    vals = [node.inherit_kernel.load('misfit.npy').sum()]
+
+    for i in range(node.nsteps):
+        cwd = f'step_{i:02d}'
+        
+        if node.has(f'{cwd}/step.pickle') and node.has(f'{cwd}/misfit.npy'):
+            steps.append(node.load(f'{cwd}/step.pickle'))
+            vals.append(node.load(f'{cwd}/misfit.npy').sum())
+        
+        else:
+            break
+    
+    # sort by step length
+    x = np.array(steps)
+    f = np.array(vals)
+    f = f[abs(x).argsort()]
+    x = x[abs(x).argsort()]
+
+    return x, f, steps
 
 
 def _check_bracket(f):

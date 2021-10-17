@@ -11,9 +11,6 @@ class _Search(_Kernel):
     # initial step length
     step_init: float
 
-    # index and length of the final step
-    step_final: tp.Optional[float]
-
     # current step length
     step: float
 
