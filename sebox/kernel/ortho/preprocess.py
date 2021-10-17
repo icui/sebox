@@ -159,7 +159,8 @@ def _prepare_frequencies(node: Ortho):
 
             if not has_slot():
                 break
-
+    
+    for event in events:
             n = []
             for f in fslots:
                 for sl in f[event]:
