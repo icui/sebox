@@ -116,8 +116,7 @@ def _prepare_frequencies(node: Ortho):
     nkl = node.nkernels or 1
     fslots = [{}] * nkl
     slots = set(range(nbands * fincr * nkl))
-    band_interval = int(round(nbands / (nfreq * nkl / len(events)))) or 1
-    print(band_interval, nbands, nfreq, nkl, len(events))
+    band_interval = max(1, int(round(nbands / (nfreq * nkl / len(events)))))
 
     # get available frequency bands for each event (sumed over stations and components)
     for event in events:
@@ -187,7 +186,7 @@ def _prepare_frequencies(node: Ortho):
 
         # save frequency slots and encoded source
         enc['fslots'] = fslots[iker]
-        node.dump(cmt, cwd + '/SUPERSOURCE')
+        node.write(cmt, cwd + '/SUPERSOURCE')
         node.dump(enc, cwd + '/encoding.pickle')
     
     node.dump(fslots, 'e.pickle')
