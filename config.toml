@@ -48,7 +48,7 @@ nkernels_rng = 4
 reference_velocity = 12.0
 normalize_source = true
 normalize_frequency = false
-frequency_per_event = 1
+frequencies_per_event = 1
 taper = 5.0
 seed = 0
 
