@@ -105,5 +105,5 @@ class Ortho(Kernel):
     # divide phase difference by frequency
     normalize_frequency: bool
 
-    # ideal number of frequencies per event
-    frequencies_per_event: int
+    # for a certain event, assign slots from different band sections if possible
+    band_sections: int

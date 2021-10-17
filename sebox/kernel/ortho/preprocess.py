@@ -124,7 +124,7 @@ def _prepare_frequencies(node: Ortho):
 
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
 
-    band_interval = int(round(nbands / node.frequencies_per_event)) or 1
+    band_interval = int(round(nbands / node.band_sections)) or 1
     len_slots = 0
 
     while len(slots) > 0 and len(slots) != len_slots:
@@ -134,7 +134,7 @@ def _prepare_frequencies(node: Ortho):
 
         for event in events:
             for b in range(0, nbands, band_interval):
-                # frequency slot available in band within [b, b + band_interval]
+                # frequency slot found in band [b, b + band_interval]
                 found = False
 
                 for i in range(b, min(b + band_interval, nbands)):
@@ -160,7 +160,7 @@ def _prepare_frequencies(node: Ortho):
                                 break
 
                         if found:
-                                break
+                            break
 
                     if found:
                         break
