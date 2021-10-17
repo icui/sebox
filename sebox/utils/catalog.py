@@ -242,14 +242,25 @@ def index_stations():
     cdir.dump(lines, 'station_lines.pickle')
 
 
+def index_events():
+    """Create an index of available stations of events."""
+    event_stations = {}
+
+    for event in getevents():
+        event_stations[event] = getstations(event)
+    
+    getdir().dump(event_stations, 'event_stations.pickle')
+
+
 def merge_stations(dst: Directory, events: tp.List[str]):
     """Merge multiple stations into one."""
     from sebox.utils.catalog import getstations
 
     stations = set()
+    event_stations = getdir().load('event_stations.pickle')
 
     for event in events:
-        for station in getstations(event):
+        for station in event_stations[event]:
             stations.add(station)
 
     lines = getdir().load('station_lines.pickle')

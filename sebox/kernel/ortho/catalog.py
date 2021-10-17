@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import getdir, getevents, getstations, index_stations, locate_event, locate_station
+from sebox.utils.catalog import getdir, getevents, getstations, index_events, index_stations, locate_event, locate_station
 
 if tp.TYPE_CHECKING:
     from .typing import Ortho
@@ -14,6 +14,10 @@ def catalog(node: Ortho):
     
     # prepare catalog (executed only once for a catalog)
     cdir = getdir()
+
+    # get available stations of an event
+    if not cdir.has('event_stations.pickle'):
+        node.add(index_events, args=()) # type: ignore
 
     # merge stations into a single file
     if not cdir.has('station_lines.pickle'):
