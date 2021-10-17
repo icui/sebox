@@ -130,11 +130,12 @@ def _prepare_frequencies(node: Ortho):
         'normalize_frequency': node.normalize_frequency
     }
 
-    node.write(_encode_events(enc, node.prioritize_band), 'SUPERSOURCE')
+    node.write(_encode_events(enc, node.band_interval), 'SUPERSOURCE')
     node.dump(enc, 'encoding.pickle')
+    exit()
 
 
-def _encode_events(enc: Encoding, prioritize_band: bool):
+def _encode_events(enc: Encoding, band_interval: int):
     # load catalog
     cmt = ''
     cdir = getdir()
@@ -165,32 +166,32 @@ def _encode_events(enc: Encoding, prioritize_band: bool):
         events = random.sample(events, len(events))
 
         for event in events:
-            idx = None
+            for l in range(0, nbands, band_interval):
+                for i in range(l, min(l + band_interval, nbands)):
+                    idx = None
+                    m = event_bands[event][i]
 
-            for i in range(nbands):
-                m = event_bands[event][i]
+                    if m < 1:
+                        # no available trace in current band
+                        continue
+                    
+                    # loop over frequency indices of current band
+                    for j in range(fincr):
+                        k = i * fincr + j
 
-                if m < 1:
-                    # no available trace in current band
-                    continue
-                
-                # loop over frequency indices of current band
-                for j in range(fincr):
-                    k = i * fincr + j
-
-                    if k in slots:
-                        # slot found in current band
-                        idx = k
-                        slots.remove(k)
-                        fslots[event].append(k)
+                        if k in slots:
+                            # slot found in current band
+                            idx = k
+                            slots.remove(k)
+                            fslots[event].append(k)
+                            break
+                    
+                    if idx is not None:
+                        # stop if a slot is found
                         break
                 
-                if idx is not None and not prioritize_band:
-                    # stop if a slot is found and prioritize_band == False
+                if len(slots) == 0:
                     break
-            
-            if len(slots) == 0:
-                break
 
     # encode events
     for event in fslots:
