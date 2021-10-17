@@ -14,36 +14,18 @@ if tp.TYPE_CHECKING:
 
 def preprocess(node: Ortho):
     """Determine encoding parameters and run mesher."""
-    for iker, cwd in enumerate(dirs(node)):
-        # create node for individual kernels
-        node.add(_prepare_encoding, cwd, iker=iker)
-
-    # run mesher
-    node.add('solver.mesh', 'mesh')
-
-
-def _prepare_encoding(node: Ortho):
-    """Prepare source encoding data."""
-    if node.inherit_kernel:
-        # link existing encoding node
-        node.add(_link_encoded)
-
-    else:
-        # determine frequencies
+    # assign frequencies for all kernels
+    if node.inherit_kernel is None:
         node.add(_prepare_frequencies)
 
-        # encode observed traces and diffs
-        node.add(_encode, concurrent=True)
+    # create or link individual kernel encodings
+    enc = node.add(name='encode', concurrent=True)
 
+    for iker, cwd in enumerate(dirs(node)):
+        enc.add(_link_encoded if node.inherit_kernel else _encode, cwd, iker=iker, concurrent=True)
 
-def _seed(node: Ortho):
-    if isinstance(node.nkernels_rng, int):
-        rng_iter = node.nkernels_rng
-    
-    else:
-        rng_iter = node.nkernels or 1
-    
-    return (node.iteration or 0) * rng_iter + (node.seed or 0) + (node.iker or 0)
+    # run mesher while encoding
+    enc.add('solver.mesh', 'mesh')
 
 
 def _freq(enc: Encoding) -> ndarray:
@@ -63,9 +45,6 @@ def _link_encoded(node: Ortho):
 def _prepare_frequencies(node: Ortho):
     import numpy as np
     from scipy.fft import fftfreq
-
-    if node.fmax:
-        return
 
     if node.duration <= node.transient_duration:
         raise ValueError('duration should be larger than transient_duration')
@@ -91,6 +70,7 @@ def _prepare_frequencies(node: Ortho):
     nbands = nf // fincr
     imax = imin + nbands * fincr
     nf = nbands * fincr
+    nfreq = len(freq)
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     nbands_used = nbands
@@ -105,8 +85,6 @@ def _prepare_frequencies(node: Ortho):
             if node.reference_velocity / freq[(i + 1) * node.frequency_increment - 1] < rad:
                 nbands_used = i
                 break
-    
-    seed_used = _seed(node)
 
     # save encoding parameters
     enc: Encoding = {
@@ -118,7 +96,7 @@ def _prepare_frequencies(node: Ortho):
         'imin': imin,
         'imax': imax,
         'nbands_used': nbands_used,
-        'seed_used': seed_used,
+        'seed_used': (node.iteration or 0) + (node.seed or 0),
         'fslots': {},
         'frequency_increment': node.frequency_increment,
         'double_difference': node.double_difference,
@@ -130,95 +108,105 @@ def _prepare_frequencies(node: Ortho):
         'normalize_frequency': node.normalize_frequency
     }
 
-    node.write(_encode_events(enc, node.frequencies_per_event), 'SUPERSOURCE')
-    node.dump(enc, 'encoding.pickle')
-
-
-def _encode_events(enc: Encoding, frequencies_per_event: int):
-    # load catalog
-    cmt = ''
-    cdir = getdir()
-
-    # randomize frequency
+    # assign frequency slots to events
+    random.seed(enc['seed_used'])
     freq = _freq(enc)
     events = getevents()
-    fincr = enc['frequency_increment']
-    fslots = enc['fslots']
-    nbands = enc['nbands_used']
-    slots = set(range(nbands * fincr))
-
-    # set random seed
-    random.seed(enc['seed_used'])
-
-    # get available frequency bands for each event (sumed over tations and components)
     event_bands = {}
+    nkl = node.nkernels or 1
+    fslots = [{}] * nkl
+    slots = set(range(nbands * fincr * nkl))
 
+    # get available frequency bands for each event (sumed over stations and components)
     for event in events:
-        fslots[event] = []
+        for s in fslots:
+            s[event] = []
+
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
 
+    band_interval = int(round(nbands / node.frequencies_per_event)) or 1
     len_slots = 0
-    band_interval = int(round(nbands / frequencies_per_event)) or 1
 
     while len(slots) > 0 and len(slots) != len_slots:
-        # stop iteration if no slot is selected
+        # stop iteration if no new slot is assigned
         len_slots = len(slots)
         events = random.sample(events, len(events))
 
         for event in events:
-            for l in range(0, nbands, band_interval):
-                for i in range(l, min(l + band_interval, nbands)):
-                    idx = None
-                    m = event_bands[event][i]
+            for b in range(0, nbands, band_interval):
+                # frequency slot available in band within [b, b + band_interval]
+                found = False
 
-                    if m < 1:
-                        # no available trace in current band
+                for i in range(b, min(b + band_interval, nbands)):
+                    # check if current band has trace
+                    if event_bands[event][i] < 1:
                         continue
                     
                     # loop over frequency indices of current band
                     for j in range(fincr):
                         k = i * fincr + j
 
-                        if k in slots:
-                            # slot found in current band
-                            idx = k
-                            slots.remove(k)
-                            fslots[event].append(k)
-                            break
-                    
-                    if idx is not None:
-                        # stop if a slot is found
+                        for iker in range(nkl):
+                            l = k + iker * nfreq
+
+                            if l in slots:
+                                # slot found in current band
+                                found = True
+                                slots.remove(l)
+                                fslots[iker][event].append(k)
+                                break
+
+                            if found:
+                                break
+
+                        if found:
+                                break
+
+                    if found:
                         break
-                
+
                 if len(slots) == 0:
                     break
 
-    # encode events
-    for event in fslots:
-        lines = cdir.readlines(f'events/{event}')
+    # get encoding parameters for individual kernels
+    for iker, cwd in enumerate(dirs(node)):
+        # CMTSOLUTION striing
+        cmt = ''
 
-        for idx in fslots[event]:
-            f0 = freq[idx]
-            lines[2] = 'time shift:           0.0000'
-            lines[3] = f'half duration:{" " * (9 - len(str(int(1 / f0))))}{1/f0:.4f}'
+        # catalog directory
+        cdir = getdir()
 
-            # normalize sources to the same order of magnitude
-            if enc['normalize_source']:
-                mref = 1e25
-                mmax = max(abs(float(lines[i].split()[-1])) for i in range(7, 13))
-                
-                for j in range(7, 13):
-                    line = lines[j].split()
-                    line[-1] = f'{(float(line[-1]) * mref / mmax):.6e}'
-                    lines[j] = '           '.join(line)
+        # encode events
+        for event in fslots[iker]:
+            lines = cdir.readlines(f'events/{event}')
 
-            cmt += '\n'.join(lines)
+            for idx in fslots[iker][event]:
+                f0 = freq[idx]
+                lines[2] = 'time shift:           0.0000'
+                lines[3] = f'half duration:{" " * (9 - len(str(int(1 / f0))))}{1/f0:.4f}'
 
-            if cmt[-1] != '\n':
-                cmt += '\n'
+                # normalize sources to the same order of magnitude
+                if enc['normalize_source']:
+                    mref = 1e25
+                    mmax = max(abs(float(lines[i].split()[-1])) for i in range(7, 13))
+                    
+                    for j in range(7, 13):
+                        line = lines[j].split()
+                        line[-1] = f'{(float(line[-1]) * mref / mmax):.6e}'
+                        lines[j] = '           '.join(line)
 
-    # save frequency slots and encoded source
-    return cmt
+                cmt += '\n'.join(lines)
+
+                if cmt[-1] != '\n':
+                    cmt += '\n'
+
+        # save frequency slots and encoded source
+        enc['fslots'] = fslots[iker]
+        node.dump(cmt, cwd + '/SUPERSOURCE')
+        node.dump(enc, cwd + '/encoding.pickle')
+    
+    node.dump(fslots, 'e.pickle')
+    exit()
 
 
 def _encode(node: Ortho):

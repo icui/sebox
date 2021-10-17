@@ -10,6 +10,8 @@ if tp.TYPE_CHECKING:
 
 def catalog(node: Ortho):
     """Create a catalog (run only once for each catalog directory)."""
+    node.concurrent = True
+    
     # prepare catalog (executed only once for a catalog)
     cdir = getdir()
 

@@ -66,11 +66,8 @@ class Ortho(Kernel):
     # number of kernel computations per iteration
     nkernels: tp.Optional[int]
 
-    # number of kernels to randomize frequency per iteration
-    nkernels_rng: tp.Optional[int]
-
     # alter global random seed
-    seed: int
+    seed: tp.Optional[int]
 
     # index of current kernel
     iker: int

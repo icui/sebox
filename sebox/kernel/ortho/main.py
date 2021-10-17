@@ -7,22 +7,22 @@ if tp.TYPE_CHECKING:
 
 def main(node: Ortho):
     # prepare catalog (executed only once for a catalog)
-    node.add('kernel.catalog', 'catalog', concurrent=True)
+    node.add('kernel.catalog', 'catalog')
 
     # mesher and preprocessing
-    node.add('kernel.preprocess', concurrent=True)
+    node.add('kernel.preprocess')
 
     # forward simulation
-    node.add('kernel.forward', concurrent=True)
+    node.add('kernel.forward')
 
     # misfit calculation
-    node.add('kernel.misfit', concurrent=True)
+    node.add('kernel.misfit')
 
     # adjoint simulation
-    node.add('kernel.adjoint', concurrent=True)
+    node.add('kernel.adjoint')
 
     # sum and smooth kernels
-    node.add('kernel.postprocess', concurrent=True)
+    node.add('kernel.postprocess')
 
 
 def dirs(node: Ortho):

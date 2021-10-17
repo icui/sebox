@@ -5,6 +5,9 @@ from .solver import Node, _Solver
 
 
 class _Kernel(_Solver):
+    # current iteration
+    iteration: tp.Optional[int]
+
     # length of a time step
     dt: float
 

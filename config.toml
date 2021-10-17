@@ -44,7 +44,6 @@ dt = 0.16
 unwrap_phase = false
 period_range = [17.0, 150.0]
 nkernels = 4
-nkernels_rng = 4
 reference_velocity = 12.0
 normalize_source = true
 normalize_frequency = false
@@ -69,7 +68,7 @@ amplitude_factor = 0.0
 double_difference = true
 
 # optimization
-niters = 20
+niters = 50
 nsteps = 5
 step_init = 0.01
 mem = 5

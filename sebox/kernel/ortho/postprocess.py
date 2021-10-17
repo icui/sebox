@@ -9,6 +9,8 @@ if tp.TYPE_CHECKING:
 
 def postprocess(node: Ortho):
     """Sum misfit and process kernels."""
+    node.concurrent = True
+    
     # sum misfit
     mf = 0.0
     for cwd in dirs(node):

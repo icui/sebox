@@ -11,6 +11,8 @@ if tp.TYPE_CHECKING:
 
 def forward(node: Ortho):
     """Forward simulation."""
+    node.concurrent = True
+
     for cwd in dirs(node):
         node.add('solver', f'{cwd}/forward', cwd,
             path_event= node.path(f'{cwd}/SUPERSOURCE'),
@@ -22,6 +24,8 @@ def forward(node: Ortho):
 
 def misfit(node: Ortho):
     """Compute misfit and adjoint source."""
+    node.concurrent = True
+
     for cwd in dirs(node):
         node.add(_misfit, cwd)
 
@@ -30,6 +34,8 @@ def adjoint(node: Ortho):
     """Adjoint simulation."""
     if node.misfit_only:
         return
+
+    node.concurrent = True
 
     for cwd in dirs(node):
         node.add('solver.adjoint', f'{cwd}/adjoint', cwd,
