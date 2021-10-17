@@ -28,5 +28,5 @@ def postprocess(node: Ortho):
 
         # process kernels
         node.add('solver.postprocess', 'postprocess',
-            path_kernels=[kl.path('adjoint') for kl in node.parent[1]][:node.nkernels],
+            path_kernels=[node.path(kl, 'adjoint') for kl in dirs(node)],
             path_mesh= node.path('mesh'))
