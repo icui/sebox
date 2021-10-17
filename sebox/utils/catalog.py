@@ -247,10 +247,10 @@ def index_events():
     event_stations = {}
     m = getmeasurements().sum(axis=-1).sum(axis=-1)
 
-    for i, event in getevents():
+    for i, event in enumerate(getevents()):
         event_stations[event] = []
 
-        for j, station in getstations():
+        for j, station in enumerate(getstations()):
             if m[i, j] >= 1:
                 event_stations[event].append(station)
         
