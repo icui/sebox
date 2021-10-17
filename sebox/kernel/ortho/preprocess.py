@@ -116,6 +116,7 @@ def _prepare_frequencies(node: Ortho):
     nkl = node.nkernels or 1
     fslots = [{}] * nkl
     slots = set(range(nbands * fincr * nkl))
+    band_interval = int(round(nbands / (nfreq * nkl / len(events))))
 
     # get available frequency bands for each event (sumed over stations and components)
     for event in events:
@@ -123,47 +124,30 @@ def _prepare_frequencies(node: Ortho):
             s[event] = []
 
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
+    
+    def find_slot(e: str, b: int):
+        for i in range(b, min(b + band_interval, nbands)):
+            # check if current band has trace
+            if event_bands[e][i] < 1:
+                continue
+            
+            # loop over frequency indices of current band
+            for j in range(fincr):
+                k = i * fincr + j
 
-    band_interval = int(round(nbands / node.band_sections)) or 1
-    len_slots = 0
+                for iker in range(nkl):
+                    l = k + iker * nfreq
 
-    while len(slots) > 0 and len(slots) != len_slots:
-        # stop iteration if no new slot is assigned
-        len_slots = len(slots)
-        events = random.sample(events, len(events))
+                    if l in slots:
+                        slots.remove(l)
+                        fslots[iker][e].append(k)
+                        return
 
-        for event in events:
-            for b in range(0, nbands, band_interval):
-                # frequency slot found in band [b, b + band_interval]
-                found = False
-
-                for i in range(b, min(b + band_interval, nbands)):
-                    # check if current band has trace
-                    if event_bands[event][i] < 1:
-                        continue
-                    
-                    # loop over frequency indices of current band
-                    for j in range(fincr):
-                        k = i * fincr + j
-
-                        for iker in range(nkl):
-                            l = k + iker * nfreq
-
-                            if l in slots:
-                                # slot found in current band
-                                found = True
-                                slots.remove(l)
-                                fslots[iker][event].append(k)
-                                break
-
-                            if found:
-                                break
-
-                        if found:
-                            break
-
-                    if found:
-                        break
+    while len(slots) > 0:
+        for event in random.sample(events, len(events)):
+            # find slots from different frequency sections
+            for i in range(0, nbands, band_interval):
+                find_slot(event, i)
 
                 if len(slots) == 0:
                     break
