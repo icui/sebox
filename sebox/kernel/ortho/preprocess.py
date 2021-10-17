@@ -114,9 +114,9 @@ def _prepare_frequencies(node: Ortho):
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
+    band_interval = max(1, int(round(nbands / (nfreq * nkl / len(events)))))
     fslots = []
     slots = []
-    band_interval = max(1, int(round(nbands / (nfreq * nkl / len(events)))))
     
     for _ in range(nkl):
         fslots.append({})
@@ -154,17 +154,23 @@ def _prepare_frequencies(node: Ortho):
             for i in range(0, nbands, band_interval):
                 find_slot(event, i)
 
+                n = []
+                for f in fslots:
+                    n.append(len(f[event]))
+
+                print(event, n)
+
                 if not has_slot():
                     break
 
             if not has_slot():
                 break
 
-            n = []
-            for f in fslots:
-                n.append(len(f[event]))
+            # n = []
+            # for f in fslots:
+            #     n.append(len(f[event]))
 
-            print(event, n)
+            # print(event, n)
 
 
     # get encoding parameters for individual kernels
