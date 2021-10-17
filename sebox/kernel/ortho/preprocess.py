@@ -165,7 +165,7 @@ def _prepare_frequencies(node: Ortho):
                 for sl in f[event]:
                     n.append(sl // 180)
 
-            print(event, n)
+            print(event, len(n))
 
 
     # get encoding parameters for individual kernels
