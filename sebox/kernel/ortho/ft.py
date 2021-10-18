@@ -97,10 +97,10 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     stats = root.mpi.load('../forward/traces/stats.pickle')
     syn = root.mpi.mpiload(f'../enc_syn')
     obs = root.mpi.mpiload(f'../enc_obs')
-    ref = root.mpi.mpiload(f'../enc_diff')
+    # ref = root.mpi.mpiload(f'../enc_diff')
     weight = root.mpi.mpiload(f'../enc_weight')
 
-    # clip phases
+    # unwrap phases
     # weight[np.where(abs(ref) > np.pi)] = 0.0
 
     # compute diff
