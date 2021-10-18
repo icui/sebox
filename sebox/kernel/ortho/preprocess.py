@@ -105,7 +105,8 @@ def _prepare_frequencies(node: Ortho):
         'taper': node.taper,
         'unwrap_phase': node.unwrap_phase,
         'normalize_source': node.normalize_source,
-        'normalize_frequency': node.normalize_frequency
+        'normalize_frequency': node.normalize_frequency,
+        'test_encoding': node.test_encoding
     }
 
     # assign frequency slots to events
@@ -278,9 +279,13 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
             pshift = pff[idx]
 
             for j, cmp in enumerate(cmps):
-                m = getmeasurements(event, None, cmp, group)[sidx]
-                i = np.squeeze(np.where(m))
-                encoded[i, j, idx] = data[i, j, idx] * pshift
+                if enc['test_encoding']:
+                    encoded[:, j, idx] = data[:, j, idx] * pshift
+                
+                else:
+                    m = getmeasurements(event, None, cmp, group)[sidx]
+                    i = np.squeeze(np.where(m))
+                    encoded[i, j, idx] = data[i, j, idx] * pshift
     
     root.mpi.mpidump(encoded)
 

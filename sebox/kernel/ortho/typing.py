@@ -60,6 +60,9 @@ class Encoding(tp.TypedDict):
     # divide phase difference by frequency
     normalize_frequency: bool
 
+    # encode all frequencies
+    test_encoding: bool
+
 
 class Ortho(Kernel):
     """Source encoded kernel computation."""
@@ -104,3 +107,6 @@ class Ortho(Kernel):
 
     # divide phase difference by frequency
     normalize_frequency: bool
+
+    # encode all frequencies
+    test_encoding: bool
