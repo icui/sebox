@@ -262,7 +262,7 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
     for event in getevents():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
-        slots = enc['fslots'][event]
+        slots = range(len(freq)) if enc['test_encoding'] else enc['fslots'][event]
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
