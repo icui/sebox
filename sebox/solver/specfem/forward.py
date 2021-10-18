@@ -84,7 +84,7 @@ def _align(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str])
     from sebox import root
     
     stats, nodes = arg
-    data = np.zeros([len(stas), len(stats['cmps']), stats['nt']])
+    data = np.full([len(stas), len(stats['cmps']), stats['nt']], np.nan)
 
     for p, pstas in nodes.items():
         if any(sta in stas for sta in pstas):
