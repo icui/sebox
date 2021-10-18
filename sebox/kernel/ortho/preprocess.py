@@ -115,7 +115,7 @@ def _prepare_frequencies(node: Ortho):
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
-    band_interval = max(1, int(round(nbands / (nfreq * nkl / len(events)))))
+    band_interval = max(1, int(np.ceil(nbands / (nfreq * nkl / len(events)))))
     fslots = []
     slots = []
     
