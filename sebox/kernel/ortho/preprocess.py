@@ -149,8 +149,8 @@ def _prepare_frequencies(node: Ortho):
     def has_slot():
         return any(len(s) for s in slots)
 
+    # find slots from different frequency sections
     for event in random.sample(events, len(events)):
-        # find slots from different frequency sections
         for i in range(0, nbands, band_interval):
             find_slot(event, i)
 
