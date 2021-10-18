@@ -149,17 +149,16 @@ def _prepare_frequencies(node: Ortho):
     def has_slot():
         return any(len(s) for s in slots)
 
-    while has_slot():
-        for event in random.sample(events, len(events)):
-            # find slots from different frequency sections
-            for i in range(0, nbands, band_interval):
-                find_slot(event, i)
-
-                if not has_slot():
-                    break
+    for event in random.sample(events, len(events)):
+        # find slots from different frequency sections
+        for i in range(0, nbands, band_interval):
+            find_slot(event, i)
 
             if not has_slot():
                 break
+
+        if not has_slot():
+            break
 
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
