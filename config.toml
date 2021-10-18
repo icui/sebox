@@ -60,6 +60,7 @@ smooth_with_prem = 0
 fixed_preconditioner = false
 precondition = 400.0
 source_mask = true
+test_encoding = false
 
 # misfit
 phase_factor = 1.0

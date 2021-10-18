@@ -130,8 +130,14 @@ def _prepare_frequencies(node: Ortho):
 
         event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
     
-    def find_slot(e: str, b: int):
-        for i in range(b, min(b + band_interval, nbands)):
+    def find_slot(e: str, b: tp.Optional[int]):
+        if b is None:
+            br = range(nbands)
+        
+        else:
+            br = range(b, min(b + band_interval, nbands))
+
+        for i in br:
             # check if current band has trace
             if event_bands[e][i] < 1:
                 continue
@@ -159,6 +165,10 @@ def _prepare_frequencies(node: Ortho):
 
         if not has_slot():
             break
+    
+    while has_slot():
+        for event in random.sample(events, len(events)):
+            find_slot(event, None)
 
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
