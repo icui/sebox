@@ -14,7 +14,7 @@ job_gap = 2.0
 job_debug = false
 
 # main task
-task = "kernel"
+task = "optimizer"
 task_nnodes = 1
 
 # path to external directories
@@ -43,7 +43,7 @@ catalog_boundary = [85.0, -115.0, 70.0, 90.0]
 dt = 0.16
 unwrap_phase = false
 period_range = [17.0, 150.0]
-nkernels = 4
+nkernels = 5
 reference_velocity = 12.0
 normalize_source = true
 normalize_frequency = false
