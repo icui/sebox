@@ -14,7 +14,7 @@ job_gap = 2.0
 job_debug = false
 
 # main task
-task = "optimizer"
+task = "kernel"
 task_nnodes = 1
 
 # path to external directories
