@@ -100,6 +100,9 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     # ref = root.mpi.mpiload(f'../enc_diff')
     weight = root.mpi.mpiload(f'../enc_weight')
 
+    if enc['test_encoding']:
+        weight[...] = 1.0
+
     # unwrap phases
     # weight[np.where(abs(ref) > np.pi)] = 0.0
 
