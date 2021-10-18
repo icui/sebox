@@ -137,7 +137,7 @@ def _prepare_frequencies(node: Ortho):
                 continue
             
             # loop over frequency indices of current band
-            for j in range(fincr):
+            for j in random.sample(range(fincr), fincr):
                 k = i * fincr + j
 
                 for iker in range(nkl):
