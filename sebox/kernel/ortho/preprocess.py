@@ -123,6 +123,7 @@ def _prepare_frequencies(node: Ortho):
 
         for nfreq in range(1, len(freq)):
             if radf[nfreq] < rad and radf[nfreq - 1] > rad:
+                print('***', nfreq)
                 break
     
     print('#', nfreq, rad, node.reference_velocity)
