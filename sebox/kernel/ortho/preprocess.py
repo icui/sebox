@@ -154,6 +154,7 @@ def _prepare_frequencies(node: Ortho):
                         return
     
     def has_slot():
+        print(len(slots))
         return any(len(s) for s in slots)
 
     # find slots from different frequency sections
