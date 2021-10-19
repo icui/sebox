@@ -168,7 +168,7 @@ def _prepare_frequencies(node: Ortho):
             break
 
     while has_slot():
-        nmin = min(sum(f[e] for f in fslots) for e in events)
+        nmin = min(sum(len(f[e]) for f in fslots) for e in events)
         print('#', nmin)
 
         for event in random.sample(events, len(events)):
@@ -224,7 +224,7 @@ def _prepare_frequencies(node: Ortho):
         merge_stations(d, evts)
     
     for e in events:
-        print(sum(f[e] for f in fslots))
+        print(sum(len(f[e]) for f in fslots))
 
     exit()
 
