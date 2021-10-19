@@ -225,7 +225,7 @@ def _prepare_frequencies(node: Ortho):
     
     for e in events:
         print(sum(len(f[e]) for f in fslots))
-
+    print('@', nbands_used, 1/freq[nbands_used * fincr])
     exit()
 
 
