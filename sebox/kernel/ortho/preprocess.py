@@ -122,12 +122,13 @@ def _prepare_frequencies(node: Ortho):
         radf = node.reference_velocity / freq # type: ignore
 
         for nfreq in range(1, len(freq)):
+            print(rad, radf[nfreq] < rad, radf[nfreq - 1] >= rad, radf[nfreq], radf[nfreq-1])
             if radf[nfreq] < rad and radf[nfreq - 1] >= rad:
                 print('***', nfreq)
                 break
     
     print('#', nfreq, rad, node.reference_velocity)
-    print(radf)
+    # print(radf)
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
