@@ -168,6 +168,7 @@ def _prepare_frequencies(node: Ortho):
             break
     
     while has_slot():
+        print(1)
         for event in random.sample(events, len(events)):
             find_slot(event, None)
 
