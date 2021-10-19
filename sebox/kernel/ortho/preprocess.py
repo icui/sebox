@@ -223,8 +223,8 @@ def _prepare_frequencies(node: Ortho):
         
         merge_stations(d, evts)
     
-    # for e in events:
-    #     print(sum(f[e] for f in fslots))
+    for e in events:
+        print(sum(f[e] for f in fslots))
 
     exit()
 
