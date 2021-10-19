@@ -61,7 +61,7 @@ smooth_with_prem = 0
 fixed_preconditioner = false
 precondition = 400.0
 source_mask = true
-test_encoding = false
+test_encoding = true
 save_vtu = ['bulk_betav_kl']
 
 # misfit
