@@ -56,9 +56,11 @@ def _misfit(node: Ortho):
     enc = node.load('encoding.pickle')
 
     # process traces
+    node.mkdir('enc_syn')
     node.add_mpi(ft, arg=enc, arg_mpi=stas)
 
     if node.test_encoding:
+        node.mkdir('enc_obs')
         node.add_mpi(ft2, arg=enc, arg_mpi=stas)
     
     # compute misfit
