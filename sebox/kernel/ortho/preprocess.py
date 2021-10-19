@@ -222,11 +222,35 @@ def _prepare_frequencies(node: Ortho):
                 evts.append(event)
         
         merge_stations(d, evts)
+
+
+def check_encoding(node: Ortho):
+    fslots = []
+    freq: tp.Any = None
+
+    for iker in range(node.nkernels or 1):
+        enc = root.load(f'kl_{iker:02d}/encoding.pickle')
+        fslots.append(enc['fslots'])
+
+        if freq is None:
+            freq = _freq(enc)
     
-    for e in events:
-        print(sum(len(f[e]) for f in fslots))
-    print('@', nbands_used, 1/freq[nbands_used * fincr])
-    exit()
+    imin = len(freq)
+    imax = 0
+
+    for event in getevents():
+        line = '@'
+
+        for f in fslots:
+            for idx in f[event]:
+                imin = min(imin, idx)
+                imax = max(imax, idx)
+                line += f' {1/freq[idx]:.2f}'
+        
+        print(line)
+
+    print(f'pmin: {1/freq[imax]:.2f}')
+    print(f'pmax: {1/freq[imin]:.2f}')
 
 
 def _encode(node: Ortho):

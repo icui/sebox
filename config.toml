@@ -14,8 +14,8 @@ job_gap = 2.0
 job_debug = false
 
 # main task
-task = "kernel"
-task_nnodes = 2
+task = "kernel.check_encoding"
+task_nnodes = 1
 
 # path to external directories
 path_mesh = "../mesh_m00"
