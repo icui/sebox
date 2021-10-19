@@ -225,6 +225,8 @@ def _prepare_frequencies(node: Ortho):
 
 
 def check_encoding(node: Ortho):
+    _prepare_frequencies(node)
+
     fslots = []
     freq: tp.Any = None
 
