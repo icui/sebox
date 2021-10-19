@@ -155,7 +155,7 @@ def _prepare_frequencies(node: Ortho):
     
     def has_slot():
         return any(len(s) for s in slots)
-
+    print('@', sum(len(s) for s in slots))
     # find slots from different frequency sections
     for event in random.sample(events, len(events)):
         for i in range(0, nbands_used, band_interval):
@@ -166,10 +166,12 @@ def _prepare_frequencies(node: Ortho):
 
         if not has_slot():
             break
-    
+    print('@', sum(len(s) for s in slots))
     while has_slot():
         for event in random.sample(events, len(events)):
             find_slot(event, None)
+
+    print('@', sum(len(s) for s in slots))
 
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
@@ -219,12 +221,12 @@ def _prepare_frequencies(node: Ortho):
         
         merge_stations(d, evts)
     
-    for event in events:
-        n = 0
-        for f in fslots:
-            n += len(f[event])
+    # for event in events:
+    #     n = 0
+    #     for f in fslots:
+    #         n += len(f[event])
         
-        print(n)
+    #     print(n)
     exit()
 
 
