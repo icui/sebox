@@ -75,7 +75,7 @@ def _vtu(node: Postprocess):
             'kernels_precond.bp'
             'DATABASES_MPI/solver_data.bp',
             '. 0 1'
-        ]), getsize, name=f'save_vtu_{kl}')
+        ]), 1, name=f'save_vtu_{kl}')
 
 
 def probe_smoother(kl: str, node: Postprocess):
