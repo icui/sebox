@@ -7,7 +7,7 @@ module_search = "bracket"
 
 # job configuration
 job_name = "north"
-job_nnodes = 64
+job_nnodes = 65
 job_account = "GEO111"
 job_walltime = 120.0
 job_gap = 2.0
