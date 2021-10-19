@@ -223,10 +223,10 @@ def _prepare_frequencies(node: Ortho):
         
         merge_stations(d, evts)
     
-    for e in events:
-        print(sum(len(f[e]) for f in fslots))
-    print('@', nbands_used, 1/freq[nbands_used * fincr])
-    exit()
+    # for e in events:
+    #     print(sum(len(f[e]) for f in fslots))
+    # print('@', nbands_used, 1/freq[nbands_used * fincr])
+    # exit()
 
 
 def _encode(node: Ortho):
