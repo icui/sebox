@@ -243,13 +243,15 @@ def check_encoding(node: Ortho):
 
     fslots = []
     freq: tp.Any = None
+    nfreq = None
 
     for iker in range(node.nkernels or 1):
-        enc = root.load(f'kl_{iker:02d}/encoding.pickle')
+        enc: Encoding = root.load(f'kl_{iker:02d}/encoding.pickle')
         fslots.append(enc['fslots'])
 
         if freq is None:
             freq = _freq(enc)
+            nfreq = enc['nfreq']
     
     imin = len(freq)
     imax = 0
@@ -269,6 +271,7 @@ def check_encoding(node: Ortho):
 
     print(f'pmin: {1/freq[imax]:.2f}')
     print(f'pmax: {1/freq[imin]:.2f}')
+    print(f'nfreq: {nfreq}')
 
 
 def _encode(node: Ortho):
