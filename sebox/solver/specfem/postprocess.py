@@ -70,7 +70,7 @@ def _xsmooth(node: Postprocess, kl: str, length: float):
 def _vtu(node: Postprocess):
     for kl in tp.cast(list, node.save_vtu):    
         node.add_mpi('bin/xcombine_vol_data_vtu_adios ' + ' '.join([
-            'OUTPUT_FILES/addressing.txt',
+            '../mesh/OUTPUT_FILES/addressing.txt',
             kl,
             'kernels_precond.bp'
             'DATABASES_MPI/solver_data.bp',
