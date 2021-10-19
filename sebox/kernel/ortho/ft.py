@@ -53,6 +53,7 @@ def _ft(enc: Encoding, src: str, dst: str):
     # FFT
     data_nez = ft_syn(enc, data)
     data_rtz = rotate_frequencies(enc, data_nez, stats['cmps'], True)
+    data_rtz[..., enc['nfreq']:] = np.nan
     root.mpi.mpidump(data_rtz, dst)
 
 
