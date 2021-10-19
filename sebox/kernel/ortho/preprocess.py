@@ -128,7 +128,7 @@ def _prepare_frequencies(node: Ortho):
                 break
     
     print('#', nfreq, rad, node.reference_velocity)
-    # print(radf)
+    print(radf)
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
