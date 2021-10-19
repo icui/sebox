@@ -172,7 +172,7 @@ def _prepare_frequencies(node: Ortho):
         print('#', nmin)
 
         for event in random.sample(events, len(events)):
-            if sum(f[event] for f in fslots) == nmin:
+            if sum(len(f[event] )for f in fslots) == nmin:
                 find_slot(event, None)
 
     # get encoding parameters for individual kernels
