@@ -72,7 +72,7 @@ def _vtu(node: Postprocess):
         node.add_mpi('bin/xcombine_vol_data_vtu_adios ' + ' '.join([
             '../mesh/OUTPUT_FILES/addressing.txt',
             kl,
-            'kernels_precond.bp'
+            'kernels_precond.bp',
             'DATABASES_MPI/solver_data.bp',
             '. 0 1'
         ]), 1, name=f'save_vtu_{kl}')
