@@ -247,7 +247,7 @@ def check_encoding(node: Ortho):
             for idx in f[event]:
                 imin = min(imin, idx)
                 imax = max(imax, idx)
-                period = f'{1/freq[idx]:.2f}'
+                period = f'{1/freq[idx]:.1f}'
                 period += ' ' * (6 - len(period))
                 line += f' {period}'
         
