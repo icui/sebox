@@ -232,7 +232,10 @@ def _encode(node: Ortho):
     stas = getstations()
     node.mkdir('enc_weight')
     enc = node.load('encoding.pickle')
-    node.add_mpi(_enc_obs, arg=enc, arg_mpi=stas, cwd='enc_obs')
+
+    if not node.test_encoding:
+        node.add_mpi(_enc_obs, arg=enc, arg_mpi=stas, cwd='enc_obs')
+
     node.add_mpi(_enc_diff, arg=enc, arg_mpi=stas, cwd='enc_diff')
 
 
@@ -279,13 +282,9 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
             pshift = pff[idx]
 
             for j, cmp in enumerate(cmps):
-                if enc['test_encoding']:
-                    encoded[:, j, idx] = data[:, j, idx] * pshift
-                
-                else:
-                    m = getmeasurements(event, None, cmp, group)[sidx]
-                    i = np.squeeze(np.where(m))
-                    encoded[i, j, idx] = data[i, j, idx] * pshift
+                m = getmeasurements(event, None, cmp, group)[sidx]
+                i = np.squeeze(np.where(m))
+                encoded[i, j, idx] = data[i, j, idx] * pshift
     
     root.mpi.mpidump(encoded)
 

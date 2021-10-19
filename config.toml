@@ -19,6 +19,7 @@ task_nnodes = 1
 
 # path to external directories
 path_mesh = "../mesh_m00"
+path_mesh2 = "../mesh_m25"
 path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
 path_catalog = "/gpfs/alpine/scratch/ccui/geo111/north_syn"
 path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"

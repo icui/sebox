@@ -1,8 +1,8 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox.utils.catalog import getdir, getstations
-from .ft import ft, mf, mfadj
+from sebox.utils.catalog import getstations
+from .ft import ft, ft2, mf, mfadj
 from .main import dirs
 
 if tp.TYPE_CHECKING:
@@ -20,6 +20,14 @@ def forward(node: Ortho):
             path_mesh= node.path('mesh'),
             monochromatic_source= True,
             save_forward=not node.misfit_only)
+        
+        if node.test_encoding:
+            node.add('solver', f'{cwd}/observed', cwd,
+                path_event=node.path(f'{cwd}/SUPERSOURCE'),
+                path_stations=node.path(f'{cwd}/SUPERSTATION'),
+                path_mesh= node.path_mesh2,
+                monochromatic_source= True,
+                save_forward=not node.misfit_only)
 
 
 def misfit(node: Ortho):
@@ -48,7 +56,10 @@ def _misfit(node: Ortho):
     enc = node.load('encoding.pickle')
 
     # process traces
-    node.add_mpi(ft, arg=enc, arg_mpi=stas, cwd='enc_syn')
+    node.add_mpi(ft, arg=enc, arg_mpi=stas)
+
+    if node.test_encoding:
+        node.add_mpi(ft2, arg=enc, arg_mpi=stas)
     
     # compute misfit
     node.add_mpi(mf if node.misfit_only else mfadj, arg=enc, arg_mpi=stas, cwd='enc_mf')
