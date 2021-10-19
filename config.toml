@@ -62,6 +62,7 @@ fixed_preconditioner = false
 precondition = 400.0
 source_mask = true
 test_encoding = false
+save_vtu = ['bulk_betav_kl']
 
 # misfit
 phase_factor = 1.0

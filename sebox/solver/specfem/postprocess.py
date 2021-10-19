@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 from functools import partial
 
-from sebox.utils.adios import xsum, xmerge
+from sebox.utils.adios import xsum, xmerge, xprecond
 from .shared import getsize
 
 if tp.TYPE_CHECKING:
@@ -32,6 +32,10 @@ def postprocess(node: Postprocess):
     node.add(_smooth, concurrent=True)
     xmerge(node, node.precondition)
 
+    if node.save_vtu:
+        xprecond(node)
+        node.add(_vtu, concurrent=True)
+
 
 def _smooth(node: Postprocess):
     klen = node.smooth_kernels
@@ -53,16 +57,25 @@ def _smooth(node: Postprocess):
 
 
 def _xsmooth(node: Postprocess, kl: str, length: float):
-    args = [
+    node.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join([
         f'{length} {length*(node.smooth_vertical or 1)}', kl,
         'kernels_masked.bp' if node.source_mask else 'kernels_raw.bp',
         'DATABASES_MPI/',
         f'smooth/kernels_smooth_{kl}_crust_mantle.bp',
         f'{node.smooth_with_prem or 0}',
         f'> OUTPUT_FILES/smooth_{kl}.txt'
-    ]
-    node.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join(args),
-        getsize, name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
+    ]), getsize, name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
+
+
+def _vtu(node: Postprocess):
+    for kl in tp.cast(list, node.save_vtu):    
+        node.add_mpi('bin/xcombine_vol_data_vtu_adios ' + ' '.join([
+            'OUTPUT_FILES/addressing.txt',
+            kl,
+            'kernels_precond.bp'
+            'DATABASES_MPI/solver_data.bp',
+            '. 0 1'
+        ]), getsize, name=f'save_vtu_{kl}')
 
 
 def probe_smoother(kl: str, node: Postprocess):

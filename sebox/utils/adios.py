@@ -29,6 +29,11 @@ def xmerge(node: Node, precond: float):
     _adios(node, f'xprepare_vp_vs_precond hess.bp precond.bp {1/precond}')
 
 
+def xprecond(node: Node):
+    """Merge smoothed kernels and create preconditioner."""
+    _adios(node, 'xprecond_kernels kernels.bp precond.bp kernels_precond.bp')
+
+
 def xgd(node: Node):
     """Compute gradient descent direction."""
     _adios(node, 'xsteepDescent kernels.bp precond.bp direction.bp')

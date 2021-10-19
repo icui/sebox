@@ -38,6 +38,9 @@ class _Postprocess(tp.Protocol):
     # precondition threshold
     precondition: float
 
+    # save VTU of preconditioned kernel
+    save_vtu: tp.Optional[tp.List[str]]
+
 
 class _Solver(tp.Protocol):
     """A node to run forward / adjoint simulation."""
