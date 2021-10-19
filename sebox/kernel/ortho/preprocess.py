@@ -99,6 +99,7 @@ def _prepare_frequencies(node: Ortho):
         'nbands_used': nbands_used,
         'seed_used': (node.iteration or 0) + (node.seed or 0),
         'fslots': {},
+        'nfreq': 0,
         'frequency_increment': node.frequency_increment,
         'double_difference': node.double_difference,
         'phase_factor': node.phase_factor,
@@ -125,6 +126,7 @@ def _prepare_frequencies(node: Ortho):
             if radf[nfreq] < rad and radf[nfreq - 1] >= rad:
                 break
     
+    enc['nfreq'] = nfreq
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1

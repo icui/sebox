@@ -33,6 +33,9 @@ class Encoding(tp.TypedDict):
     # number of frequency bands actually used
     nbands_used: int
 
+    # number of frequencies actually used
+    nfreq: int
+
     # frequency slots assigned to events
     fslots: tp.Dict[str, tp.List[int]]
 
