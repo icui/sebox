@@ -116,7 +116,7 @@ def _prepare_frequencies(node: Ortho):
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
-    band_interval = max(1, int(np.ceil(nbands / (nfreq * nkl / len(events)))))
+    band_interval = max(1, int(np.ceil(nbands_used / (nfreq * nkl / len(events)))))
     fslots = []
     slots = []
     
@@ -133,10 +133,10 @@ def _prepare_frequencies(node: Ortho):
     
     def find_slot(e: str, b: tp.Optional[int]):
         if b is None:
-            br = range(nbands)
+            br = range(nbands_used)
         
         else:
-            br = range(b, min(b + band_interval, nbands))
+            br = range(b, min(b + band_interval, nbands_used))
 
         for i in br:
             # check if current band has trace
@@ -158,7 +158,7 @@ def _prepare_frequencies(node: Ortho):
 
     # find slots from different frequency sections
     for event in random.sample(events, len(events)):
-        for i in range(0, nbands, band_interval):
+        for i in range(0, nbands_used, band_interval):
             find_slot(event, i)
 
             if not has_slot():
@@ -219,13 +219,13 @@ def _prepare_frequencies(node: Ortho):
         
         merge_stations(d, evts)
     
-    # for event in events:
-    #     n = 0
-    #     for f in fslots:
-    #         n += len(f[event])
+    for event in events:
+        n = 0
+        for f in fslots:
+            n += len(f[event])
         
-    #     print(n)
-    # exit()
+        print(n)
+    exit()
 
 
 def _encode(node: Ortho):
