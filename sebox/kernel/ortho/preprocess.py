@@ -74,6 +74,7 @@ def _prepare_frequencies(node: Ortho):
     
     # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
     nbands_used = nbands
+    rad = None
     
     if node.reference_velocity is not None and (rad := node.smooth_kernels):
         if isinstance(rad, list):
@@ -112,7 +113,17 @@ def _prepare_frequencies(node: Ortho):
     # assign frequency slots to events
     random.seed(enc['seed_used'])
     freq = _freq(enc)
-    nfreq = len(freq) if nbands_used == nbands else nbands_used * fincr
+
+    if rad is None:
+        nfreq = len(freq)
+    
+    else:
+        nfreq = 0
+
+        for nfreq in range(1, len(freq)):
+            if node.reference_velocity / freq[freq] < rad and node.reference_velocity / freq[freq-1] > rad:
+                break
+
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
