@@ -15,7 +15,7 @@ job_debug = false
 
 # main task
 task = "kernel"
-task_nnodes = 1
+task_nnodes = 2
 
 # path to external directories
 path_mesh = "../mesh_m00"
