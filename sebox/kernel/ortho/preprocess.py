@@ -76,6 +76,7 @@ def _prepare_frequencies(node: Ortho):
             rad = max(rad[1], rad[0] * rad[2] ** (node.iteration or 0))
 
         nfreq = int(round((node.reference_velocity / rad - fullfreq[imin]) / df))
+        nfreq = min(nfreq, nbands * fincr)
         nbands_used = int(np.ceil(nfreq / fincr))
         print('$', nfreq, nbands_used)
     
@@ -110,7 +111,6 @@ def _prepare_frequencies(node: Ortho):
     # assign frequency slots to events
     random.seed(enc['seed_used'])
     freq = _freq(enc)
-    print(1/freq[nfreq])
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
