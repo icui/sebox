@@ -114,12 +114,12 @@ def _prepare_frequencies(node: Ortho):
     event_bands = {}
     nkl = node.nkernels or 1
     band_interval = max(1, int(np.ceil(nbands_used / (nfreq * nkl / len(events)))))
-    fslots = {}
-    slots = {}
+    fslots = []
+    slots = []
     
     for iker in range(nkl):
-        fslots[iker] = {}
-        slots[iker] = set(range(nfreq))
+        fslots.append({})
+        slots.append(set(range(nfreq)))
 
     # get available frequency bands for each event (sumed over stations and components)
     for event in events:
@@ -171,6 +171,10 @@ def _prepare_frequencies(node: Ortho):
         for event in random.sample(events, len(events)):
             if sum(len(f[event] )for f in fslots) == nmin:
                 find_slot(event, None)
+        
+        for event in random.sample(events, len(events)):
+            find_slot(event, None)
+        
 
     # get encoding parameters for individual kernels
     for iker, cwd in enumerate(dirs(node)):
