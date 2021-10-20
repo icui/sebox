@@ -110,6 +110,7 @@ def _prepare_frequencies(node: Ortho):
     # assign frequency slots to events
     random.seed(enc['seed_used'])
     freq = _freq(enc)
+    print(1/freq[nfreq])
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
