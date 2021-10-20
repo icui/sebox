@@ -63,29 +63,25 @@ def _prepare_frequencies(node: Ortho):
     kf = int(np.ceil(nt_ts / nt_se))
 
     # frequencies to be encoded
-    freq = fftfreq(nt_se, node.dt)
+    fullfreq = fftfreq(nt_se, node.dt)
     fincr = node.frequency_increment
     imin = int(np.ceil(1 / node.period_range[1] / df))
     imax = int(np.floor(1 / node.period_range[0] / df))
-    nf = imax - imin + 1
-    nbands = nf // fincr
+    nbands = (imax - imin + 1) // fincr
     imax = imin + nbands * fincr
-    nf = nbands * fincr
     
-    # get number of frequency bands actually used (based on referency_velocity and smooth_kernels)
-    nbands_used = nbands
-    rad = None
-    
+    # get frequencies actually used (based on referency_velocity and smooth_kernels)
     if node.reference_velocity is not None and (rad := node.smooth_kernels):
         if isinstance(rad, list):
             rad = max(rad[1], rad[0] * rad[2] ** (node.iteration or 0))
 
-        # exclude band where reference_volocity * period < smooth_radius
-        for i in range(nbands):
-            # compare smooth radius with the highest frequency of current band
-            if node.reference_velocity / freq[(i + 1) * node.frequency_increment - 1] < rad:
-                nbands_used = i
-                break
+        nfreq = int(round((node.reference_velocity / rad - fullfreq[imin]) / df))
+        nbands_used = int(np.ceil(nfreq / fincr))
+        print('$', nfreq, nbands_used)
+    
+    else:
+        nbands_used = nbands
+        nfreq = nbands * fincr
 
     # save encoding parameters
     enc: Encoding = {
@@ -96,10 +92,10 @@ def _prepare_frequencies(node: Ortho):
         'nt_se': nt_se,
         'imin': imin,
         'imax': imax,
+        'nfreq': nfreq,
         'nbands_used': nbands_used,
         'seed_used': (node.iteration or 0) + (node.seed or 0),
         'fslots': {},
-        'nfreq': 0,
         'frequency_increment': node.frequency_increment,
         'double_difference': node.double_difference,
         'phase_factor': node.phase_factor,
@@ -114,29 +110,16 @@ def _prepare_frequencies(node: Ortho):
     # assign frequency slots to events
     random.seed(enc['seed_used'])
     freq = _freq(enc)
-
-    if rad is None:
-        nfreq = len(freq)
-    
-    else:
-        nfreq = 0
-        radf = node.reference_velocity / freq # type: ignore
-
-        for nfreq in range(1, len(freq)):
-            if radf[nfreq] < rad and radf[nfreq - 1] >= rad:
-                break
-    
-    enc['nfreq'] = nfreq
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
     band_interval = max(1, int(np.ceil(nbands_used / (nfreq * nkl / len(events)))))
-    fslots = []
-    slots = []
+    fslots = {}
+    slots = {}
     
-    for _ in range(nkl):
-        fslots.append({})
-        slots.append(set(range(nfreq)))
+    for iker in range(nkl):
+        fslots[iker] = {}
+        slots[iker] = set(range(nfreq))
 
     # get available frequency bands for each event (sumed over stations and components)
     for event in events:
