@@ -104,24 +104,20 @@ class Root(Node):
         await super().execute()
 
         # requeue job if task failed
-        if self.job_failed and not self.job_aborted and not self.job_debug:
+        if self.job_failed and not self.job_aborted and not self.job_debug and not self.job_paused:
+            self.job_paused = True
             self.sys.requeue()
     
     def save(self):
         """Save state from event loop."""
-        if self.job_paused or self._saving:
-            # job is already being saved
+        if self.job_paused:
+            # job is being requeued
             return
 
         if self.mpi:
             # root can only be saved from main process
             raise RuntimeError('cannot save root from MPI process')
         
-        self._saving = True
-        asyncio.create_task(self._save())
-    
-    def pickle(self):
-        """Directly save state as root.pickle."""
         self.dump(self.__getstate__(), 'root.pickle')
     
     def restore(self, node: tp.Optional[Node] = None):
@@ -147,23 +143,12 @@ class Root(Node):
         # load module of job scheduler
         self._sys = tp.cast('System', import_module(f'sebox.system.{self.module_system}'))
 
-    async def _save(self):
-        """Save to root.pickle"""
-        if self._saving:
-            self.pickle()
-
-            if self.job_paused:
-                if not self.job_aborted:
-                    self.sys.requeue()
-            
-            else:
-                self._saving = False
-    
     def _signal(self, *_):
         """Requeue due to insufficient time."""
         if not self.job_aborted:
-            self.job_paused = True
             self.save()
+            self.job_paused = True
+            self.sys.requeue()
 
 
 # create root node
