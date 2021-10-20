@@ -67,7 +67,6 @@ def _prepare_frequencies(node: Ortho):
     fincr = node.frequency_increment
     imin = int(np.ceil(1 / node.period_range[1] / df))
     imax = int(np.floor(1 / node.period_range[0] / df))
-    print(imax - imin + 1)
     nbands = (imax - imin + 1) // fincr
     imax = imin + nbands * fincr
     
@@ -79,7 +78,6 @@ def _prepare_frequencies(node: Ortho):
         nfreq = int(round((node.reference_velocity / rad - fullfreq[imin]) / df))
         nfreq = min(nfreq, nbands * fincr)
         nbands_used = int(np.ceil(nfreq / fincr))
-        print('$', nfreq, nbands_used)
     
     else:
         nbands_used = nbands
