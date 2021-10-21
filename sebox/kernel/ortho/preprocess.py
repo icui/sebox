@@ -16,7 +16,7 @@ def preprocess(node: Ortho):
     """Determine encoding parameters and run mesher."""
     # assign frequencies for all kernels
     if node.inherit_kernel is None:
-        node.add(_prepare_frequencies)
+        node.add(prepare_frequencies)
 
     # create or link individual kernel encodings
     enc = node.add(name='encode', concurrent=True)
@@ -43,7 +43,7 @@ def _link_encoded(node: Ortho):
     node.ln(node.rel(cwd, 'encoding.pickle'))
 
 
-def _prepare_frequencies(node: Ortho):
+def prepare_frequencies(node: Ortho):
     import numpy as np
     from scipy.fft import fftfreq
 
@@ -226,8 +226,8 @@ def _prepare_frequencies(node: Ortho):
 
 
 def check_encoding(node: Ortho):
-    _prepare_frequencies(node)
-
+    prepare_frequencies(node)
+    
     fslots = []
     freq: tp.Any = None
     nfreq = None

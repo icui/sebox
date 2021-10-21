@@ -14,16 +14,16 @@ job_gap = 2.0
 job_debug = false
 
 # main task
-task = "kernel"
+task = "kernel.test_traces"
 task_nnodes = 1
 
 # path to external directories
-path_mesh = "../mesh_m00_25"
+path_mesh = "../mesh_m00_crust25"
 path_mesh2 = "../mesh_m25"
 path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
 path_catalog = "/gpfs/alpine/scratch/ccui/geo111/north_syn"
 path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
-path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m00_25.bp"
+path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m00_crust25.bp"
 
 # catalog
 frequency_increment = 60
@@ -50,6 +50,7 @@ normalize_source = true
 normalize_frequency = false
 taper = 5.0
 seed = 0
+test_event = 'C201205242247A'
 
 # kernel processing
 kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']

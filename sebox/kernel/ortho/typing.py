@@ -113,3 +113,6 @@ class Ortho(Kernel):
 
     # encode all frequencies
     test_encoding: bool
+
+    # check the trace orthogonality of a specific event
+    test_event: str
