@@ -12,7 +12,7 @@ if tp.TYPE_CHECKING:
 
 def test_traces(node: Ortho):
     """Check the orthogonality of traces."""
-    node.add(_catalog, path_catalog=node.path('catalog'), nkernels=1)
+    node.add(_catalog, path_catalog=node.path('catalog'), nkernels=1, reference_velocity=None)
 
     # node.add('solver', cwd='forward_mono',
     #     path_event=node.path('SUPERSOURCE'),
