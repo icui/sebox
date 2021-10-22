@@ -114,8 +114,8 @@ def _read(node: Ortho):
         idx = np.unravel_index(d.argmax(), d.shape)
         str_idx = f'{idx}'
         str_idx += ' ' * (15 - len(str_idx))
-        lines.append(f'p{p:02d}: {idx} {d[idx]:.2f}  {d[idx[:2]].std():.2f}')
-    
+        lines.append(f'p{p:02d}: {str_idx} {d[idx]:.2f}  {d[idx[:2]].std():.2f}')
+
     lines.append('')
 
     node.writelines(lines, 'mf.txt')
