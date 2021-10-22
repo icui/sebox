@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import merge_stations, getevents, getstations, getdir, getmeasurements, getcomponents
+from sebox.utils.catalog import merge_stations, getevents, getstations, getdir
 from .preprocess import _prepare_frequencies, _freq
 from .ft import ft, ft_obs
 
@@ -14,17 +14,18 @@ def test_traces(node: Ortho):
     """Check the orthogonality of traces."""
     node.add(_catalog, nkernels=1, reference_velocity=None)
 
-    node.add('solver', cwd='forward_mono',
+    node.add('solver', cwd='forward_syn',
         path_event=node.path('kl_00/SUPERSOURCE'),
         path_stations=node.path('SUPERSTATION'),
         monochromatic_source=True,
         save_forward=False)
 
-    node.add('solver', cwd='forward_regular',
-        path_event=getdir().path('events', node.test_event),
-        path_stations=node.path('SUPERSTATION'),
-        monochromatic_source=False,
-        save_forward=False)
+    for event in node.test_events:
+        node.add('solver', cwd=f'forward_event',
+            path_event=getdir().path('events', event),
+            path_stations=node.path('SUPERSTATION'),
+            monochromatic_source=False,
+            save_forward=False)
     
     node.add(_ft)
 
@@ -35,20 +36,27 @@ def _catalog(node: Ortho):
     node.rm('catalog/events')
     node.mkdir('catalog/events')
     merge_stations(node, getevents())
-    node.ln(getdir().path('events', node.test_event), 'catalog/events')
-    root.cache['events'] = [node.test_event]
+
+    for event in node.test_events:
+        node.ln(getdir().path('events', event), 'catalog/events')
+        node.mkdir(f'enc_{event}')
+
+    root.cache['events'] = node.test_events
     _prepare_frequencies(node)
     root.path_catalog = node.path('catalog')
-    node.mkdir('enc_mono')
-    node.mkdir('enc_regular')
-    node.mkdir('enc_shifted')
+
+    node.mkdir('enc_syn')
+    node.mkdir('enc_obs')
 
 
 def _ft(node: Ortho):
     stas = getstations()
     enc = node.load('kl_00/encoding.pickle')
-    node.add_mpi(ft, arg=(enc, 'forward_mono', 'enc_syn', True), arg_mpi=stas)
-    node.add_mpi(ft, arg=(enc, 'forward_regular', f'enc_regular', False), arg_mpi=stas)
+    node.add_mpi(ft, arg=(enc, 'forward_syn', 'enc_syn', True), arg_mpi=stas)
+
+    for event in node.test_events:
+        node.add_mpi(ft, arg=(enc, f'forward_{event}', f'enc_{event}', False), arg_mpi=stas)
+
     node.add_mpi(_enc, arg=enc, arg_mpi=stas)
 
 
@@ -61,7 +69,6 @@ def _enc(enc: Encoding, stas: tp.List[str]):
     freq = _freq(enc)
 
     # data from catalog
-    cmps = getcomponents()
     event_data = getdir().load('event_data.pickle')
     encoded = np.full([len(stas), 3, enc['imax'] - enc['imin']], np.nan, dtype=complex)
 
@@ -75,22 +82,21 @@ def _enc(enc: Encoding, stas: tp.List[str]):
     sidx = np.array(sidx)
 
     # read event data
-    data = root.mpi.mpiload('enc_regular')
-    event = list(enc['fslots'].keys())[0]
-    slots = enc['fslots'][event]
-    hdur = event_data[event][-1]
-    tshift = 1.5 * hdur
-    
-    # source time function of observed data and its frequency component
-    stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
-    sff = ft_obs(enc, stf)
+    for event, slots in enc['fslots'].items():
+        data = root.mpi.mpiload(f'enc_{event}')
+        hdur = event_data[event][-1]
+        tshift = 1.5 * hdur
+        
+        # source time function of observed data and its frequency component
+        stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
+        sff = ft_obs(enc, stf)
 
-    # phase difference from source time function
-    pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'])) / sff
+        # phase difference from source time function
+        pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'])) / sff
 
-    # record frequency components
-    for idx in slots:
-        pshift = pff[idx]
-        encoded[:, :, idx] = data[:, :, idx] * pshift
+        # record frequency components
+        for idx in slots:
+            pshift = pff[idx]
+            encoded[:, :, idx] = data[:, :, idx] * pshift
 
     root.mpi.mpidump(encoded, 'enc_obs')

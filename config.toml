@@ -50,7 +50,7 @@ normalize_source = true
 normalize_frequency = false
 taper = 5.0
 seed = 0
-test_event = 'C201205242247A'
+test_events = ['C201205242247A', 'C201904232015A']
 
 # kernel processing
 kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']

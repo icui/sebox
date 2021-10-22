@@ -295,10 +295,9 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
     
     sidx = np.array(sidx)
 
-    for event in enc['fslots']:
+    for event, slots in enc['fslots'].items():
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
-        slots = enc['fslots'][event]
         hdur = event_data[event][-1]
         tshift = 1.5 * hdur
         
@@ -307,7 +306,8 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
         sff = ft_obs(enc, stf)
 
         # phase difference from source time function
-        pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'] - tshift)) / sff
+        #FIXME
+        pff = np.exp(2 * np.pi * 1j * freq * enc['nt_ts'] * enc['dt']) / sff
 
         # record frequency components
         for idx in slots:
