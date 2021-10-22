@@ -102,7 +102,7 @@ def _enc(enc: Encoding, stas: tp.List[str]):
             encoded[:, :, idx] = data[:, :, idx] * pshift
 
     root.mpi.mpidump(encoded, 'enc_obs')
-    root.mpi.mpidump(stas, 'enc_sta')
+    root.mpi.mpidump(stas, 'enc_stas')
 
 def _read(node: Ortho):
     import numpy as np
@@ -112,11 +112,12 @@ def _read(node: Ortho):
     for p in range(root.task_nprocs):
         syn = node.load(f'enc_syn/p{p:02d}.npy')
         obs = node.load(f'enc_obs/p{p:02d}.npy')
+        stas = node.load(f'enc_stas/p{p:02d}.pickle')
         d = abs(np.angle(syn / obs))
         idx = np.unravel_index(d.argmax(), d.shape)
         str_idx = f'{idx}'
         str_idx += ' ' * (15 - len(str_idx))
-        lines.append(f'p{p:02d}:  {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
+        lines.append(f'p{p:02d} {stas[idx[0]]}:  {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
 
     lines.append('')
 
