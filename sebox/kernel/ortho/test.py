@@ -13,7 +13,6 @@ if tp.TYPE_CHECKING:
 
 def test_traces(node: Ortho):
     """Check the orthogonality of traces."""
-    root.path_catalog = node.path('catalog')
     node.add(_catalog, nkernels=1, reference_velocity=None)
 
     # node.add('solver', cwd='forward_mono',
@@ -39,6 +38,7 @@ def _catalog(node: Ortho):
     node.rm('catalog/events')
     node.mkdir('catalog/events')
     node.ln(getdir().path('events', node.test_event), 'catalog/events')
+    root.path_catalog = node.path('catalog')
     prepare_frequencies(node)
     merge_stations(node, getevents())
 
