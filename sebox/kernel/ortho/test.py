@@ -47,7 +47,7 @@ def _catalog(node: Ortho):
 def _ft(node: Ortho):
     stas = getstations()
     enc = node.load('kl_00/encoding.pickle')
-    node.add_mpi(ft, arg=(enc, 'forward_mono', 'enc_mono', True), arg_mpi=stas)
+    node.add_mpi(ft, arg=(enc, 'forward_mono', 'enc_syn', True), arg_mpi=stas)
     node.add_mpi(ft, arg=(enc, 'forward_regular', f'enc_regular', False), arg_mpi=stas)
     node.add_mpi(_enc, arg=enc, arg_mpi=stas)
 
@@ -90,12 +90,7 @@ def _enc(enc: Encoding, stas: tp.List[str]):
 
     # record frequency components
     for idx in slots:
-        group = idx // enc['frequency_increment']
         pshift = pff[idx]
+        encoded[:, :, idx] = data[:, :, idx] * pshift
 
-        for j, cmp in enumerate(cmps):
-            m = getmeasurements(event, None, cmp, group)[sidx]
-            i = np.squeeze(np.where(m))
-            encoded[i, j, idx] = data[i, j, idx] * pshift
-
-    root.mpi.mpidump(encoded, 'enc_shifted')
+    root.mpi.mpidump(encoded, 'enc_obs')
