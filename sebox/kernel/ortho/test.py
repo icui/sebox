@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing as tp
+from obspy.geodetics import locations2degrees
 
 from sebox import root
 from sebox.utils.catalog import merge_stations, getevents, getstations, getdir, locate_station
@@ -120,7 +121,8 @@ def _read(node: Ortho):
         sta = stas[idx[0]]
         str_sta = sta +  ' ' * (8 - len(sta))
         lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
-        print(sta, locate_station(sta))
+        lat, lon = locate_station(sta)
+        print(sta, lat, lon, locations2degrees(lat, lon, 67, 91))
 
     lines.append('')
 
