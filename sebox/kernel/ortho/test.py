@@ -125,8 +125,11 @@ def _read(node: Ortho):
         print(lines[-1], locations2degrees(lat, lon, 67, 91))
 
         if sta == 'YY.021':
-            from psh import pls
-            pls(np.angle(syn / obs)[idx[:2]])
+            from psh import plt
+            plt.plot(np.angle(syn[idx[:2]]))
+            plt.plot(np.angle(obs[idx[:2]]))
+            plt.plot(np.angle((syn/obs)[idx[:2]]))
+            plt.show()
 
     lines.append('')
 
