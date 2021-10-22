@@ -37,7 +37,7 @@ def _catalog(node: Ortho):
     node.ln(getdir().path('*'), 'catalog')
     node.rm('catalog/events')
     node.mkdir('catalog/events')
-    merge_stations(node, getevents())
+    merge_stations(node, getevents(), node.test_bury)
 
     for event in node.test_events:
         node.ln(getdir().path('events', event), 'catalog/events')

@@ -258,7 +258,7 @@ def index_events():
     getdir().dump(event_stations, 'event_stations.pickle')
 
 
-def merge_stations(dst: Directory, events: tp.List[str]):
+def merge_stations(dst: Directory, events: tp.List[str], bury: tp.Optional[float] = None):
     """Merge multiple stations into one."""
     stations = set()
     event_stations = getdir().load('event_stations.pickle')
@@ -271,6 +271,11 @@ def merge_stations(dst: Directory, events: tp.List[str]):
     sta = ''
     
     for station in stations:
+        if bury is not None and bury > 1:
+            ll = lines[station].split(' ')
+            ll[-1] = f'{float(ll[-1]) + bury*1000:.1f}'
+            lines[station] = ' '.join(ll)
+
         sta += lines[station] + '\n'
     
     dst.write(sta, 'SUPERSTATION')

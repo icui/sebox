@@ -116,3 +116,6 @@ class Ortho(Kernel):
 
     # check the trace orthogonality of a specific event
     test_events: tp.List[str]
+
+    # bury the stations (depth in km) if test_events is enabled
+    test_bury: float
