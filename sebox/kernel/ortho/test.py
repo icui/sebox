@@ -21,7 +21,7 @@ def test_traces(node: Ortho):
         save_forward=False)
 
     for event in node.test_events:
-        node.add('solver', cwd=f'forward_event',
+        node.add('solver', cwd=f'forward_{event}',
             path_event=getdir().path('events', event),
             path_stations=node.path('SUPERSTATION'),
             monochromatic_source=False,
