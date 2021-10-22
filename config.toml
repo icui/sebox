@@ -38,7 +38,8 @@ remove_response = [0.00533, 0.00666, 0.0589, 0.0735]
 duration = 348.0
 transient_duration = 60.0
 lddrk = false
-catalog_boundary = [85.0, -115.0, 70.0, 90.0]
+# catalog_boundary = [85.0, -115.0, 70.0, 90.0]
+catalog_boundary = [67.0, 91.0, 50.0, 90.0]
 
 # kernel
 dt = 0.16

@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 
 from sebox import root
-from sebox.utils.catalog import merge_stations, getevents, getstations, getdir
+from sebox.utils.catalog import merge_stations, getevents, getstations, getdir, locate_station
 from .preprocess import _prepare_frequencies, _freq
 from .ft import ft, ft_obs
 
@@ -28,7 +28,7 @@ def test_traces(node: Ortho):
             save_forward=False)
 
     node.add(_ft)
-    node.add(_read)
+    node.add(check)
 
 
 def _catalog(node: Ortho):
@@ -104,7 +104,7 @@ def _enc(enc: Encoding, stas: tp.List[str]):
     root.mpi.mpidump(encoded, 'enc_obs')
     root.mpi.mpidump(stas, 'enc_stas')
 
-def _read(node: Ortho):
+def check(node: Ortho):
     import numpy as np
 
     lines = []
@@ -117,9 +117,10 @@ def _read(node: Ortho):
         idx = np.unravel_index(d.argmax(), d.shape)
         str_idx = f'{idx}'
         str_idx += ' ' * (15 - len(str_idx))
-        str_sta = stas[idx[0]]
-        str_sta += ' ' * (8 - len(str_sta))
+        sta = stas[idx[0]]
+        str_sta = sta +  ' ' * (8 - len(sta))
         lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
+        print(sta, locate_station(sta))
 
     lines.append('')
 
