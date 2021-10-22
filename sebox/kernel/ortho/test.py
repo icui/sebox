@@ -28,6 +28,7 @@ def test_traces(node: Ortho):
             save_forward=False)
     
     node.add(_ft)
+    node.add(_read)
 
 
 def _catalog(node: Ortho):
@@ -100,3 +101,15 @@ def _enc(enc: Encoding, stas: tp.List[str]):
             encoded[:, :, idx] = data[:, :, idx] * pshift
 
     root.mpi.mpidump(encoded, 'enc_obs')
+
+def _read(node: Ortho):
+    import numpy as np
+
+    mf = []
+
+    for p in range(root.task_nprocs):
+        syn = node.load(f'enc_syn/p{p:02d}.npy')
+        obs = node.load(f'enc_obs/p{p:02d}.npy')
+        mf.append(abs(np.angle(syn / obs)).max())
+    
+    node.dump(mf, 'mf.pickle')
