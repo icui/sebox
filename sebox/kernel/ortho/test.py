@@ -26,7 +26,7 @@ def test_traces(node: Ortho):
             path_stations=node.path('SUPERSTATION'),
             monochromatic_source=False,
             save_forward=False)
-    
+
     node.add(_ft)
     node.add(_read)
 
@@ -105,11 +105,13 @@ def _enc(enc: Encoding, stas: tp.List[str]):
 def _read(node: Ortho):
     import numpy as np
 
-    mf = []
+    lines = []
 
     for p in range(root.task_nprocs):
         syn = node.load(f'enc_syn/p{p:02d}.npy')
         obs = node.load(f'enc_obs/p{p:02d}.npy')
-        mf.append(abs(np.angle(syn / obs)).max())
+        d = abs(np.angle(syn / obs))
+        idx = np.unravel_index(d.argmax(), d.shape)
+        lines.append(f'p{p:02d}: {idx} {d[idx]} {d[idx[:2]].std()}')
     
-    node.dump(mf, 'mf.pickle')
+    node.writelines(lines, 'mf.txt')
