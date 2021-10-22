@@ -75,6 +75,7 @@ def align(node: Specfem):
                     nodes[p].append(sta)
 
     node.dump(stats, 'traces/stats.pickle')
+    node.mkdir('stations')
     node.add_mpi(_align, arg=(stats, nodes), arg_mpi=getstations())
 
 
@@ -97,6 +98,7 @@ def _align(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str])
                         data[stas.index(sta), j] = d[:, k, j]
     
     root.mpi.mpidump(data, 'traces')
+    root.mpi.mpidump(stas, 'stations')
 
 
 def forward(node: Specfem):
