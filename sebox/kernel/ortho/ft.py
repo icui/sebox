@@ -35,12 +35,12 @@ def ft_obs(enc: Encoding, data: ndarray):
     return fft(data)[..., ::enc['kf']][..., enc['imin']: enc['imax']] # type: ignore
 
 
-def ft(arg: tp.Tuple[Encoding, str, str], _):
+def ft(arg: tp.Tuple[Encoding, str, str, bool], _):
     """Process synthetic traces."""
     import numpy as np
     from sebox import root
     
-    enc, src, dst = arg
+    enc, src, dst, syn = arg
     stats = root.mpi.load(f'{src}/traces/stats.pickle')
     data = root.mpi.mpiload(f'{src}/traces')
     
@@ -52,7 +52,7 @@ def ft(arg: tp.Tuple[Encoding, str, str], _):
         resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
 
     # FFT
-    data_nez = ft_syn(enc, data)
+    data_nez = (ft_syn if syn else ft_obs)(enc, data)
     data_rtz = rotate_frequencies(enc, data_nez, stats['cmps'], True)
     data_rtz[..., enc['nfreq']:] = np.nan
     root.mpi.mpidump(data_rtz, dst)

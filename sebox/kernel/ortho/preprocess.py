@@ -16,7 +16,7 @@ def preprocess(node: Ortho):
     """Determine encoding parameters and run mesher."""
     # assign frequencies for all kernels
     if node.inherit_kernel is None:
-        node.add(prepare_frequencies)
+        node.add(_prepare_frequencies)
 
     # create or link individual kernel encodings
     enc = node.add(name='encode', concurrent=True)
@@ -43,7 +43,7 @@ def _link_encoded(node: Ortho):
     node.ln(node.rel(cwd, 'encoding.pickle'))
 
 
-def prepare_frequencies(node: Ortho):
+def _prepare_frequencies(node: Ortho):
     import numpy as np
     from scipy.fft import fftfreq
 
@@ -226,8 +226,8 @@ def prepare_frequencies(node: Ortho):
 
 
 def check_encoding(node: Ortho):
-    prepare_frequencies(node)
-    
+    _prepare_frequencies(node)
+
     fslots = []
     freq: tp.Any = None
     nfreq = None
@@ -295,7 +295,7 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
     
     sidx = np.array(sidx)
 
-    for event in getevents():
+    for event in enc['fslots']:
         # read event data
         data = cdir.load(f'ft_obs_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
         slots = enc['fslots'][event]
@@ -341,7 +341,7 @@ def _enc_diff(enc: Encoding, stas: tp.List[str]):
     
     sidx = np.array(sidx)
 
-    for event in getevents():
+    for event in enc['fslots']:
         # read event data
         data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
         slots = enc['fslots'][event]
