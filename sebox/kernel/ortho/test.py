@@ -112,6 +112,8 @@ def _read(node: Ortho):
         obs = node.load(f'enc_obs/p{p:02d}.npy')
         d = abs(np.angle(syn / obs))
         idx = np.unravel_index(d.argmax(), d.shape)
-        lines.append(f'p{p:02d}: {idx} {d[idx]} {d[idx[:2]].std()}')
+        lines.append(f'p{p:02d}: {idx} {d[idx]:.2f} {d[idx[:2]].std():.2f}')
+    
+    lines.append('')
     
     node.writelines(lines, 'mf.txt')
