@@ -117,5 +117,5 @@ def _read(node: Ortho):
         lines.append(f'p{p:02d}: {idx} {d[idx]:.2f}  {d[idx[:2]].std():.2f}')
     
     lines.append('')
-(230, 2, 179)  
+
     node.writelines(lines, 'mf.txt')
