@@ -122,7 +122,7 @@ def _read(node: Ortho):
         str_sta = sta +  ' ' * (8 - len(sta))
         lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
         lat, lon = locate_station(sta)
-        print(f'{str_sta} {d[idx]:.2f}', locations2degrees(lat, lon, 67, 91))
+        print(lines[-1], locations2degrees(lat, lon, 67, 91))
 
     lines.append('')
 
