@@ -121,15 +121,15 @@ def _read(node: Ortho):
         sta = stas[idx[0]]
         str_sta = sta +  ' ' * (8 - len(sta))
         lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
-        # lat, lon = locate_station(sta)
-        # print(lines[-1], locations2degrees(lat, lon, 67, 91))
 
-        # if sta == 'YY.021':
-        #     from psh import plt
-        #     plt.plot(np.angle(syn[idx[:2]]))
-        #     plt.plot(np.angle(obs[idx[:2]]))
-        #     plt.plot(np.angle((syn/obs)[idx[:2]]))
-        #     plt.show()
+        if d[idx[:2]].std() < 0.1:
+            from psh import plt
+            lat, lon = locate_station(sta)
+            print(lines[-1], locations2degrees(lat, lon, 67, 91))
+            plt.plot(np.angle(syn[idx[:2]]))
+            plt.plot(np.angle(obs[idx[:2]]))
+            plt.plot(np.angle((syn/obs)[idx[:2]]))
+            plt.show()
 
     lines.append('')
 
