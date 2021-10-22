@@ -39,6 +39,9 @@ def _catalog(node: Ortho):
     root.cache['events'] = [node.test_event]
     _prepare_frequencies(node)
     root.path_catalog = node.path('catalog')
+    node.mkdir('enc_mono')
+    node.mkdir('enc_regular')
+    node.mkdir('enc_shifted')
 
 
 def _ft(node: Ortho):
