@@ -17,14 +17,12 @@ def test_traces(node: Ortho):
     node.add('solver', cwd='forward_mono',
         path_event=node.path('kl_00/SUPERSOURCE'),
         path_stations=node.path('SUPERSTATION'),
-        path_mesh=node.path('mesh'),
         monochromatic_source=True,
         save_forward=False)
 
     node.add('solver', cwd='forward_regular',
         path_event=getdir().path('events', node.test_event),
         path_stations=node.path('SUPERSTATION'),
-        path_mesh=node.path('mesh'),
         monochromatic_source=False,
         save_forward=False)
     
