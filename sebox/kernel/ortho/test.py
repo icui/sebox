@@ -37,10 +37,10 @@ def _catalog(node: Ortho):
     node.ln(getdir().path('*'), 'catalog')
     node.rm('catalog/events')
     node.mkdir('catalog/events')
-    node.ln(getdir().path('events', node.test_event), 'catalog/events')
-    root.path_catalog = node.path('catalog')
-    prepare_frequencies(node)
     merge_stations(node, getevents())
+    node.ln(getdir().path('events', node.test_event), 'catalog/events')
+    root.cache['events'] = [node.test_event]
+    prepare_frequencies(node)
 
 
 def _ft(node: Ortho):
