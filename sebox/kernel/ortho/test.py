@@ -48,6 +48,7 @@ def _catalog(node: Ortho):
 
     node.mkdir('enc_syn')
     node.mkdir('enc_obs')
+    node.mkdir('enc_sta')
 
 
 def _ft(node: Ortho):
@@ -101,6 +102,7 @@ def _enc(enc: Encoding, stas: tp.List[str]):
             encoded[:, :, idx] = data[:, :, idx] * pshift
 
     root.mpi.mpidump(encoded, 'enc_obs')
+    root.mpi.mpidump(stas, 'enc_sta')
 
 def _read(node: Ortho):
     import numpy as np
