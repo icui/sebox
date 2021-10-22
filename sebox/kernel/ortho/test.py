@@ -28,7 +28,7 @@ def test_traces(node: Ortho):
             save_forward=False)
 
     node.add(_ft)
-    node.add(check)
+    node.add(_read)
 
 
 def _catalog(node: Ortho):
@@ -104,7 +104,7 @@ def _enc(enc: Encoding, stas: tp.List[str]):
     root.mpi.mpidump(encoded, 'enc_obs')
     root.mpi.mpidump(stas, 'enc_stas')
 
-def check(node: Ortho):
+def _read(node: Ortho):
     import numpy as np
 
     lines = []
