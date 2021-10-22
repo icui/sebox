@@ -91,7 +91,7 @@ def _enc(enc: Encoding, stas: tp.List[str]):
         stf = np.exp(-((t - tshift) / (hdur / 1.628)) ** 2) / np.sqrt(np.pi * (hdur / 1.628) ** 2)
         sff = ft_obs(enc, stf)
 
-        # phase difference from source time function
+        # phase difference from source time function (note: pff is different from _enc_obs because ft_obs in catalog is trimed to event starttime)
         pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'])) / sff
 
         # record frequency components

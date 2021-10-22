@@ -306,8 +306,7 @@ def _enc_obs(enc: Encoding, stas: tp.List[str]):
         sff = ft_obs(enc, stf)
 
         # phase difference from source time function
-        #FIXME
-        pff = np.exp(2 * np.pi * 1j * freq * enc['nt_ts'] * enc['dt']) / sff
+        pff = np.exp(2 * np.pi * 1j * freq * (enc['nt_ts'] * enc['dt'] - tshift)) / sff
 
         # record frequency components
         for idx in slots:
