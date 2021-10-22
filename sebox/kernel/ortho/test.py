@@ -48,7 +48,7 @@ def _catalog(node: Ortho):
 
     node.mkdir('enc_syn')
     node.mkdir('enc_obs')
-    node.mkdir('enc_sta')
+    node.mkdir('enc_stas')
 
 
 def _ft(node: Ortho):
