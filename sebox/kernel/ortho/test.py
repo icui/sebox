@@ -122,7 +122,7 @@ def _read(node: Ortho):
         str_sta = sta +  ' ' * (8 - len(sta))
         lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
 
-        if d[idx[:2]].std() < 0.1:
+        if d[idx[:2]].std() > 0.1:
             from psh import plt
             lat, lon = locate_station(sta)
             print(lines[-1], locations2degrees(lat, lon, 67, 91))
