@@ -126,9 +126,10 @@ def _read(node: Ortho):
             from psh import plt
             lat, lon = locate_station(sta)
             print(lines[-1], locations2degrees(lat, lon, 67, 91))
-            plt.plot(np.angle(syn[idx[:2]]))
-            plt.plot(np.angle(obs[idx[:2]]))
+            plt.plot(np.angle(syn[idx[:2]]), label='syn')
+            plt.plot(np.angle(obs[idx[:2]]), label='obs')
             plt.plot(np.angle((syn/obs)[idx[:2]]))
+            plt.legend()
             plt.show()
 
     lines.append('')
