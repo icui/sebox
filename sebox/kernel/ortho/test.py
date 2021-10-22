@@ -1,6 +1,7 @@
 from __future__ import annotations
 import typing as tp
 
+from sebox import root
 from sebox.utils.catalog import merge_stations, getevents, getstations, getdir
 from .preprocess import prepare_frequencies
 from .ft import ft
@@ -12,7 +13,8 @@ if tp.TYPE_CHECKING:
 
 def test_traces(node: Ortho):
     """Check the orthogonality of traces."""
-    node.add(_catalog, path_catalog=node.path('catalog'), nkernels=1, reference_velocity=None)
+    root.path_catalog = node.path('catalog')
+    node.add(_catalog, nkernels=1, reference_velocity=None)
 
     # node.add('solver', cwd='forward_mono',
     #     path_event=node.path('SUPERSOURCE'),
@@ -36,6 +38,7 @@ def _catalog(node: Ortho):
     node.ln(getdir().path('*'), 'catalog')
     node.rm('catalog/events')
     node.mkdir('catalog/events')
+    node.ln(getdir().path('events', node.test_event), 'catalog/events')
     prepare_frequencies(node)
     merge_stations(node, getevents())
 
