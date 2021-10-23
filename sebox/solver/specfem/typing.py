@@ -50,6 +50,12 @@ class Par_file(tp.TypedDict, total=False):
     # radius of the sponge
     SPONGE_RADIUS_IN_DEGREES: float
 
+    # output seismograms in 3D array
+    OUTPUT_SEISMOS_3D_ARRAY: bool
+
+    # output seismograms in ASDF
+    OUTPUT_SEISMOS_ASDF: bool
+
 
 class Specfem(Solver):
     # specfem directory
@@ -57,3 +63,6 @@ class Specfem(Solver):
 
     # use LDDRK time scheme
     lddrk: bool
+
+    # output ASDF traces instead of 3D array
+    use_asdf: bool

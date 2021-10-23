@@ -45,6 +45,9 @@ if tp.TYPE_CHECKING:
         # use auxiliary data instead of waveform data
         aux: tp.Optional[bool]
 
+        # save station list
+        save_stations: tp.Optional[str]
+
 
 def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
     """Get trace based on station and component."""
@@ -52,13 +55,13 @@ def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
     return tp.cast('Trace', wav[wav.get_waveform_tags()[0]].select(component=cmp)[0])
 
 
-def _write(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
+def _write(arg: tp.Tuple[str, str, bool, str, Stats], stas: tp.List[str]):
     import numpy as np
     from pyasdf import ASDFDataSet
 
     from sebox import Directory
 
-    src, dst, aux, stats = arg
+    src, dst, aux, save_stations, stats = arg
     cmps = stats['cmps']
     cha = stats['cha'] if aux else None
 
@@ -86,6 +89,10 @@ def _write(arg: tp.Tuple[str, str, bool, Stats], stas: tp.List[str]):
         
         d = Directory(dst)
         d.dump(data, f'{root.mpi.pid}.npy', mkdir=False)
+    
+    if save_stations:
+        d = Directory(save_stations)
+        d.dump(stas, f'{root.mpi.pid}.pickle', mkdir=False)
 
 
 async def scatter(node: Scatter):
@@ -130,4 +137,4 @@ async def scatter(node: Scatter):
 
         # save stats
         node.dump(stats, node.rel(node.path_output, 'stats.pickle'))
-        node.add_mpi(_write, arg=(node.path_input, node.path_output, node.aux, stats), arg_mpi=stats['stas'])
+        node.add_mpi(_write, arg=(node.path_input, node.path_output, node.aux, node.save_stations, stats), arg_mpi=stats['stas'])
