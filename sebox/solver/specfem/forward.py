@@ -53,8 +53,8 @@ def setup(node: Specfem):
         pars['OUTPUT_SEISMOS_3D_ARRAY'] = False
     
     else:
-        pars['OUTPUT_SEISMOS_ASDF'] = True
-        pars['OUTPUT_SEISMOS_3D_ARRAY'] = False
+        pars['OUTPUT_SEISMOS_ASDF'] = False
+        pars['OUTPUT_SEISMOS_3D_ARRAY'] = True
     
     setpars(node, pars)
 
