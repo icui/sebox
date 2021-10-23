@@ -101,6 +101,9 @@ async def scatter(node: Scatter):
 
     node.mkdir(node.rel(node.path_output))
 
+    if node.save_stations:
+        node.mkdir(node.rel(node.save_stations))
+
     with ASDFDataSet(node.path_input, mode='r', mpi=False) as ds:
         stats = tp.cast('Stats', node.stats or {})
 
