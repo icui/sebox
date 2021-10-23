@@ -49,8 +49,11 @@ if tp.TYPE_CHECKING:
         save_stations: tp.Optional[str]
 
 
-def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
+def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> tp.Optional[Trace]:
     """Get trace based on station and component."""
+    if sta not in ds.waveforms.list():
+        return None
+
     wav = ds.waveforms[sta]
     return tp.cast('Trace', wav[wav.get_waveform_tags()[0]].select(component=cmp)[0])
 
@@ -85,7 +88,10 @@ def _write(arg: tp.Tuple[str, str, bool, str, Stats], stas: tp.List[str]):
                 
                 else:
                     if sta in tags:
-                        data[i, j, :] = gettrace(ds, sta, cmp).data
+                        tr = gettrace(ds, sta, cmp)
+
+                        if tr is not None:
+                            data[i, j, :] = tr.data
         
         d = Directory(dst)
         d.dump(data, f'{root.mpi.pid}.npy', mkdir=False)
