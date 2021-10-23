@@ -35,8 +35,8 @@ station_weighting = [0.125, 0.5, 2.0, 5.0]
 remove_response = [0.00533, 0.00666, 0.0589, 0.0735]
 
 # solver
-duration = 300.0
-transient_duration = 200.0
+duration = 480.0
+transient_duration = 240.0
 lddrk = false
 catalog_boundary = [85.0, -115.0, 70.0, 90.0]
 # catalog_boundary = [67.0, 91.0, 50.0, 90.0]
