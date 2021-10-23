@@ -128,7 +128,7 @@ async def scatter(node: Scatter):
         
         else:
             wav = ds.waveforms[ds.waveforms.list()[0]]
-            trace = tp.cast(Trace, wav[wav.get_waveform_tags()[0]][0])
+            trace = tp.cast('Trace', wav[wav.get_waveform_tags()[0]][0])
             
             if 'nt' not in stats:
                 stats['nt'] = trace.stats.npts
