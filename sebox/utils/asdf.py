@@ -52,6 +52,9 @@ if tp.TYPE_CHECKING:
 def gettrace(ds: ASDFDataSet, sta: str, cmp: str) -> Trace:
     """Get trace based on station and component."""
     wav = ds.waveforms[sta]
+
+    tags = wav.get_waveform_tags()[0]
+    print(tags)
     return tp.cast('Trace', wav[wav.get_waveform_tags()[0]].select(component=cmp)[0])
 
 
