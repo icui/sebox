@@ -48,6 +48,14 @@ def setup(node: Specfem):
     else:
         pars['STEADY_STATE_KERNEL'] = False
     
+    if node.use_asdf:
+        pars['OUTPUT_SEISMOS_ASDF'] = True
+        pars['OUTPUT_SEISMOS_3D_ARRAY'] = False
+    
+    else:
+        pars['OUTPUT_SEISMOS_ASDF'] = True
+        pars['OUTPUT_SEISMOS_3D_ARRAY'] = False
+    
     setpars(node, pars)
 
 
