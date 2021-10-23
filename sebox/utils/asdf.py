@@ -103,6 +103,7 @@ async def scatter(node: Scatter):
 
     with ASDFDataSet(node.path_input, mode='r', mpi=False) as ds:
         stats = tp.cast('Stats', node.stats or {})
+        print(stats)
 
         # fill stattions and components
         if 'stas' not in stats:
