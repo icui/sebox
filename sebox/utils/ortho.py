@@ -26,5 +26,5 @@ def ft_obs(node: Node):
     for event in cdir.ls(f'raw_obs_p{root.task_nprocs}'):
         src = f'raw_obs_p{root.task_nprocs}/{event}'
         dst = f'ft_obs_p{root.task_nprocs}/{event}'
-        cdir.mkdir(dst)
+        node.cp('stats.pickle', cdir.path(dst))
         node.add_mpi(ft, arg=(enc, src, dst, False), arg_mpi=stas)
