@@ -33,7 +33,7 @@ def ft_obs(enc: Encoding, data: ndarray):
             ntaper = int(enc['taper'] * 60 / enc['dt'])
             data[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
-        data = np.concatenate([data, taper])
+        data = np.concatenate([data, taper], axis=-1)
     
     else:
         data = data[..., :nt]
