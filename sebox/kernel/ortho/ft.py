@@ -196,7 +196,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     adstf = adstf_tile[..., -nt:]
 
     if enc['taper']:
-        ntaper = int(enc['taper'] * 60 / enc['dt'])
+        ntaper = int(enc['taper'] * 60 / enc['dt'] * sampling)
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
     
     return adstf, stats['cmps']
