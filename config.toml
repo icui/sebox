@@ -26,7 +26,7 @@ path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
 path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m00.bp"
 
 # catalog
-frequency_increment = 60
+frequency_increment = 50
 deglitch = [1, 200, 95]
 measurement_threshold = 0
 noise_threshold = 1e-8
