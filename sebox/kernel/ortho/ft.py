@@ -185,11 +185,11 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     nt = stats['nt_adj']
     nt_se = int(enc['nt_se'] * sampling)
     ft_adstf = np.zeros([len(stas), 3, nt_se], dtype=complex)
-    ft_adstf[..., enc['imin']: enc['imax']] = ft_adj / sampling
-    ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj) / sampling
+    ft_adstf[..., enc['imin']: enc['imax']] = ft_adj
+    ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj)
 
     # stationary adjoint source
-    adstf_tau = -ifft(ft_adstf).real # type: ignore
+    adstf_tau = -ifft(ft_adstf).real / sampling # type: ignore
 
     # repeat to fill entrie adjoint duration
     adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
