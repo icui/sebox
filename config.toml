@@ -42,7 +42,7 @@ catalog_boundary = [85.0, -115.0, 70.0, 90.0]
 # catalog_boundary = [67.0, 91.0, 50.0, 90.0]
 
 # kernel
-dt = 0.16
+dt = 1.6
 unwrap_phase = false
 period_range = [17.0, 150.0]
 nkernels = 1
