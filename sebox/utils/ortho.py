@@ -4,6 +4,7 @@ from .catalog import getdir
 
 def scatter_obs(node: Node):
     """Generate observed frequencies."""
+    node.concurrent = True
     cdir = getdir()
 
     for src in cdir.ls('raw_obs'):
