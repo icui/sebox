@@ -15,6 +15,12 @@ if tp.TYPE_CHECKING:
         # length of a timestep
         dt: float
 
+        # total number of timesteps for adjoint simulation
+        nt_adj: int
+
+        # length of a timestep for adjoint simulation
+        dt_adj: float
+
         # trace components
         cmps: tp.Tuple[str, str, str]
 
@@ -65,13 +71,14 @@ def align(node: Specfem):
 
     lines = node.readlines('OUTPUT_FILES/seismogram_stats.txt')
     stats: Stats = {
-        'dt': float(lines[0].split('=')[-1]),
-        'nt': int(lines[1].split('=')[-1]),
+        'dt_adj': float(lines[0].split('=')[-1]),
+        'nt_adj': int(lines[1].split('=')[-1]),
+        'dt': float(lines[2].split('=')[-1]),
+        'nt': int(lines[3].split('=')[-1]),
         'cmps': ('N', 'E', 'Z')
     }
     nodes = {}
 
-    
     for p in range(getsize(node)):
         if node.has(fname := f'OUTPUT_FILES/array_stations_node_{p:05d}.txt'):
             lines = node.readlines(fname)
@@ -114,11 +121,4 @@ def forward(node: Specfem):
     node.add(setup)
     xmeshfem(node)
     xspecfem(node)
-
-    if node.use_asdf:
-        node.add(('sebox.utils.asdf', 'scatter'),
-            stats={'cmps': ['N', 'E', 'Z']}, save_stations=node.path('stations'),
-            path_input=node.path('OUTPUT_FILES/synthetic.h5'), path_output=node.path('traces'))
-    
-    else:
-        node.add('solver.align')
+    node.add('solver.align')
