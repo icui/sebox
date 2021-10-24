@@ -77,6 +77,9 @@ class _Solver(tp.Protocol):
     # path to forward simulation directory
     path_forward: str
 
+    # interval between output seismogram
+    sample_interval: int
+
 
 class Postprocess(Node['Postprocess'], _Postprocess):
     """A node to generate mesh."""

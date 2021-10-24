@@ -167,11 +167,11 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     nan = np.where(np.isnan(phase_diff))
     syn[nan] = 1.0
 
-    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
+    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2 / enc['sample_interval']
     phase_adj[nan] = 0.0
 
     if enc['amplitude_factor'] > 0:
-        amp_adj = amp_diff * syn / abs(syn) ** 2
+        amp_adj = amp_diff * syn / abs(syn) ** 2 / enc['sample_interval']
         amp_adj[nan] = 0.0
     
     else:
@@ -181,22 +181,21 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     ft_adj = rotate_frequencies(enc, phase_adj + amp_adj, stats['cmps'], False)
 
     # fill full frequency band
-    sampling = stats['dt'] / stats['dt_adj']
     nt = stats['nt_adj']
-    nt_se = int(enc['nt_se'] * sampling)
+    nt_se = enc['nt_se'] * enc['sample_interval']
     ft_adstf = np.zeros([len(stas), 3, nt_se], dtype=complex)
     ft_adstf[..., enc['imin']: enc['imax']] = ft_adj
     ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj)
 
     # stationary adjoint source
-    adstf_tau = -ifft(ft_adstf).real / sampling # type: ignore
+    adstf_tau = -ifft(ft_adstf).real # type: ignore
 
     # repeat to fill entrie adjoint duration
     adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
     adstf = adstf_tile[..., -nt:]
 
     if enc['taper']:
-        ntaper = int(enc['taper'] * 60 / enc['dt'] * sampling)
+        ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
     
     return adstf, stats['cmps']
