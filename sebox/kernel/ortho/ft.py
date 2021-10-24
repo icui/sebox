@@ -27,7 +27,13 @@ def ft_obs(enc: Encoding, data: ndarray):
         # expand observed data with zeros
         pad = list(shape)
         pad[-1] = nt - shape[-1]
-        data = np.concatenate([data, pad])
+        taper = np.zeros(pad, dtype=data.dtype)
+        
+        if enc['taper']:
+            ntaper = int(enc['taper'] * 60 / enc['dt'])
+            data[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
+        
+        data = np.concatenate([data, taper])
     
     else:
         data = data[..., :nt]
