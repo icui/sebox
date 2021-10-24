@@ -57,11 +57,11 @@ def _misfit(node: Ortho):
 
     # process traces
     node.mkdir('enc_syn')
-    node.add_mpi(ft, arg=(enc, 'forward', 'enc_syn', True), arg_mpi=stas)
+    node.add_mpi(ft, arg=(enc, 'forward/traces', 'enc_syn', True), arg_mpi=stas)
 
     if node.test_encoding:
         node.mkdir('enc_obs')
-        node.add_mpi(ft, arg=(enc, 'observed', 'enc_obs', True), arg_mpi=stas)
+        node.add_mpi(ft, arg=(enc, 'observed/traces', 'enc_obs', True), arg_mpi=stas)
     
     # compute misfit
     node.add_mpi(mf if node.misfit_only else mfadj, arg=enc, arg_mpi=stas, cwd='enc_mf')

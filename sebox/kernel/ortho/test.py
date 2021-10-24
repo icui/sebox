@@ -55,10 +55,10 @@ def _catalog(node: Ortho):
 def _ft(node: Ortho):
     stas = getstations()
     enc = node.load('kl_00/encoding.pickle')
-    node.add_mpi(ft, arg=(enc, 'forward_syn', 'enc_syn', True), arg_mpi=stas)
+    node.add_mpi(ft, arg=(enc, 'forward_syn/traces', 'enc_syn', True), arg_mpi=stas)
 
     for event in node.test_events:
-        node.add_mpi(ft, arg=(enc, f'forward_{event}', f'enc_{event}', False), arg_mpi=stas)
+        node.add_mpi(ft, arg=(enc, f'forward_{event}/traces', f'enc_{event}', False), arg_mpi=stas)
 
     node.add_mpi(_enc, arg=enc, arg_mpi=stas)
 

@@ -41,8 +41,8 @@ def ft(arg: tp.Tuple[Encoding, str, str, bool], _):
     from sebox import root
     
     enc, src, dst, syn = arg
-    stats = root.mpi.load(f'{src}/traces/stats.pickle')
-    data = root.mpi.mpiload(f'{src}/traces')
+    stats = root.mpi.load(f'{src}/stats.pickle')
+    data = root.mpi.mpiload(f'{src}')
     
     # resample if necessary
     dt = enc['dt']
