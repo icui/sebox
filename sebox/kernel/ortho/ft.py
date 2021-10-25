@@ -12,11 +12,6 @@ if tp.TYPE_CHECKING:
 def ft_syn(enc: Encoding, data: ndarray):
     """Get Fourier coefficients of synthetic data."""
     from scipy.fft import fft
-    from scipy.signal import resample
-
-    if data.shape[-1] != (nt := enc['nt_ts'] + enc['nt_se']):
-        resample(data, nt, axis=-1)
-
     return fft(data[..., enc['nt_ts']: enc['nt_ts'] + enc['nt_se']])[..., enc['imin']: enc['imax']] # type: ignore
 
 
@@ -57,10 +52,17 @@ def ft(arg: tp.Tuple[Encoding, str, str, bool], _):
     
     # resample if necessary
     dt = enc['dt']
-    if not np.isclose(stats['dt'], dt):
-        from scipy.signal import resample
-        print('resample:', stats['dt'], '->', dt)
-        resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
+
+    if syn:
+        if data.shape[-1] != stats['nt_adj']:
+            from scipy.signal import resample
+            resample(data, stats['nt_adj'], axis=-1)
+    
+    else:
+        if not np.isclose(stats['dt'], dt):
+            from scipy.signal import resample
+            print('resample:', stats['dt'], '->', dt)
+            resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
 
     # FFT
     data_nez = (ft_syn if syn else ft_obs)(enc, data)
