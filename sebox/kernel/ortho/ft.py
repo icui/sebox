@@ -12,6 +12,11 @@ if tp.TYPE_CHECKING:
 def ft_syn(enc: Encoding, data: ndarray):
     """Get Fourier coefficients of synthetic data."""
     from scipy.fft import fft
+    from scipy.signal import resample
+
+    if data.shape[-1] != (nt := enc['nt_ts'] + enc['nt_se']):
+        resample(data, nt, axis=-1)
+
     return fft(data[..., enc['nt_ts']: enc['nt_ts'] + enc['nt_se']])[..., enc['imin']: enc['imax']] # type: ignore
 
 
@@ -169,11 +174,11 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     nan = np.where(np.isnan(phase_diff))
     syn[nan] = 1.0
 
-    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2 / enc['sample_interval']
+    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
     phase_adj[nan] = 0.0
 
     if enc['amplitude_factor'] > 0:
-        amp_adj = amp_diff * syn / abs(syn) ** 2 / enc['sample_interval']
+        amp_adj = amp_diff * syn / abs(syn) ** 2
         amp_adj[nan] = 0.0
     
     else:
@@ -184,7 +189,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
 
     # fill full frequency band
     nt = stats['nt_adj']
-    nt_se = enc['nt_se'] * enc['sample_interval']
+    nt_se = enc['nt_se']
     ft_adstf = np.zeros([len(stas), 3, nt_se], dtype=complex)
     ft_adstf[..., enc['imin']: enc['imax']] = ft_adj
     ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj)
@@ -197,7 +202,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     adstf = adstf_tile[..., -nt:]
 
     if enc['taper']:
-        ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
+        ntaper = int(enc['taper'] * 60 / enc['dt'])
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
 
     root.mpi.mpidump(ft_adj, '../ft_adj')
