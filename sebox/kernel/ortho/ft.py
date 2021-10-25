@@ -190,9 +190,6 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
 
     # stationary adjoint source
     adstf_tau = -ifft(ft_adstf).real # type: ignore
-    root.mpi.mpidump(ft_adj, '../ft_adj')
-    root.mpi.mpidump(adstf_tau, '../ift_adj')
-    raise Exception('abc')
 
     # repeat to fill entrie adjoint duration
     adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
@@ -201,6 +198,10 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     if enc['taper']:
         ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
+
+    root.mpi.mpidump(adstf, '../ft_adj')
+    root.mpi.mpidump((nt, nt_se, int(np.ceil(nt / nt_se)), '../ift_adj'))
+    raise Exception('abc')
     
     return adstf, stats['cmps']
 
