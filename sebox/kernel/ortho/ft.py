@@ -7,6 +7,7 @@ from sebox.utils.catalog import getdir, getcomponents
 if tp.TYPE_CHECKING:
     from numpy import ndarray
     from .typing import Encoding
+    from sebox.typing.solver import Stats
 
 
 def ft_syn(enc: Encoding, data: ndarray):
@@ -103,7 +104,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     comm = root.mpi.comm
 
     # read data
-    stats = root.mpi.load('../forward/traces/stats.pickle')
+    stats: Stats = root.mpi.load('../forward/traces/stats.pickle')
     syn = root.mpi.mpiload(f'../enc_syn')
     obs = root.mpi.mpiload(f'../enc_obs')
     # ref = root.mpi.mpiload(f'../enc_diff')
@@ -168,21 +169,23 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     nan = np.where(np.isnan(phase_diff))
     syn[nan] = 1.0
 
-    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2
+    phase_adj = phase_diff * (1j * syn) / abs(syn) ** 2 / enc['sample_interval']
     phase_adj[nan] = 0.0
 
     if enc['amplitude_factor'] > 0:
-        amp_adj = amp_diff * syn / abs(syn) ** 2
+        amp_adj = amp_diff * syn / abs(syn) ** 2 / enc['sample_interval']
         amp_adj[nan] = 0.0
     
     else:
         amp_adj = np.zeros(syn.shape)
 
     # fourier transform of adjoint source time function
+    nt = stats['nt_adj']
+    nt_se = enc['nt_se'] * enc['sample_interval']
     ft_adj = rotate_frequencies(enc, phase_adj + amp_adj, stats['cmps'], False)
 
     # fill full frequency band
-    ft_adstf = np.zeros([len(stas), 3, enc['nt_se']], dtype=complex)
+    ft_adstf = np.zeros([len(stas), 3, nt_se], dtype=complex)
     ft_adstf[..., enc['imin']: enc['imax']] = ft_adj
     ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj)
 
@@ -190,12 +193,11 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     adstf_tau = -ifft(ft_adstf).real # type: ignore
 
     # repeat to fill entrie adjoint duration
-    nt = stats['nt']
-    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / enc['nt_se'])))
+    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
     adstf = adstf_tile[..., -nt:]
 
     if enc['taper']:
-        ntaper = int(enc['taper'] * 60 / enc['dt'])
+        ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
 
     return adstf, stats['cmps']

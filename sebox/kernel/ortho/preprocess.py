@@ -104,7 +104,8 @@ def _prepare_frequencies(node: Ortho):
         'unwrap_phase': node.unwrap_phase,
         'normalize_source': node.normalize_source,
         'normalize_frequency': node.normalize_frequency,
-        'test_encoding': node.test_encoding
+        'test_encoding': node.test_encoding,
+        'sample_interval': node.sample_interval
     }
 
     # assign frequency slots to events

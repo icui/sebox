@@ -77,6 +77,27 @@ class _Solver(tp.Protocol):
     # path to forward simulation directory
     path_forward: str
 
+    # downsample synthetic traces
+    sample_interval: int
+
+
+class Stats(tp.TypedDict, total=False):
+    """Meta data of output traces."""
+    # number of timesteps
+    nt: int
+
+    # length of a timestep
+    dt: float
+
+    # number of timesteps for adjoint simulation
+    nt_adj: int
+
+    # length of a timestep for adjoint simulation
+    dt_adj: float
+
+    # trace components
+    cmps: tp.Tuple[str, str, str]
+
 
 class Postprocess(Node['Postprocess'], _Postprocess):
     """A node to generate mesh."""

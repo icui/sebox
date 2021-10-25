@@ -1,22 +1,12 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import root
 from .mesh import setup as setup_mesh
 from .shared import setpars, xmeshfem, xspecfem, getsize
 
 if tp.TYPE_CHECKING:
     from .typing import Par_file, Specfem
-
-    class Stats(tp.TypedDict, total=False):
-        # total number of timesteps
-        nt: int
-
-        # length of a timestep
-        dt: float
-
-        # trace components
-        cmps: tp.Tuple[str, str, str]
+    from sebox.typing.solver import Stats
 
 
 def setup(node: Specfem):
@@ -56,6 +46,9 @@ def setup(node: Specfem):
         pars['OUTPUT_SEISMOS_ASDF'] = False
         pars['OUTPUT_SEISMOS_3D_ARRAY'] = True
     
+    if node.sample_interval:
+        pars['NTSTEP_BETWEEN_OUTPUT_SAMPLE'] = node.sample_interval
+    
     setpars(node, pars)
 
 
@@ -64,11 +57,27 @@ def align(node: Specfem):
     from sebox.utils.catalog import getstations
 
     lines = node.readlines('OUTPUT_FILES/seismogram_stats.txt')
-    stats: Stats = {
-        'dt': float(lines[0].split('=')[-1]),
-        'nt': int(lines[1].split('=')[-1]),
-        'cmps': ('N', 'E', 'Z')
-    }
+    dt_adj = float(lines[0].split('=')[-1])
+    nt_adj = int(lines[1].split('=')[-1])
+
+    if node.use_asdf:
+        stats: Stats = node.load('traces/stats.pickle')
+        stats['dt_adj'] = dt_adj
+        stats['nt_adj'] = nt_adj
+
+    else:
+        stats: Stats = {
+            'dt_adj': dt_adj,
+            'nt_adj': nt_adj,
+            'dt': float(lines[2].split('=')[-1]),
+            'nt': int(lines[3].split('=')[-1]),
+            'cmps': ('N', 'E', 'Z')}
+
+    node.dump(stats, 'traces/stats.pickle')
+
+    if node.use_asdf:
+        return
+
     nodes = {}
 
     for p in range(getsize(node)):
@@ -81,7 +90,6 @@ def align(node: Specfem):
                     sta = line.split('#')[1].rstrip().split(' ')[-1]
                     nodes[p].append(sta)
 
-    node.dump(stats, 'traces/stats.pickle')
     node.mkdir('stations')
     node.add_mpi(_align, arg=(stats, nodes), arg_mpi=getstations())
 
@@ -119,5 +127,4 @@ def forward(node: Specfem):
             stats={'cmps': ['N', 'E', 'Z']}, save_stations=node.path('stations'),
             path_input=node.path('OUTPUT_FILES/synthetic.h5'), path_output=node.path('traces'))
     
-    else:
-        node.add('solver.align')
+    node.add('solver.align')

@@ -56,6 +56,9 @@ class Par_file(tp.TypedDict, total=False):
     # output seismograms in ASDF
     OUTPUT_SEISMOS_ASDF: bool
 
+    # downsample output seismograms
+    NTSTEP_BETWEEN_OUTPUT_SAMPLE: int
+
 
 class Specfem(Solver):
     # specfem directory

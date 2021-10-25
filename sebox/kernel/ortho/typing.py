@@ -66,6 +66,9 @@ class Encoding(tp.TypedDict):
     # encode all frequencies
     test_encoding: bool
 
+    # downsample synthetic traces
+    sample_interval: int
+
 
 class Ortho(Kernel):
     """Source encoded kernel computation."""
