@@ -190,11 +190,11 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj)
 
     # stationary adjoint source
-    adstf_tau = -ifft(ft_adstf).real # type: ignore
+    adstf_tau = np.flip(-ifft(ft_adstf).real, axis=-1) # type: ignore
 
     # repeat to fill entrie adjoint duration
     adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
-    adstf = adstf_tile[..., :nt]
+    adstf = adstf_tile[..., -nt:]
 
     if enc['taper']:
         ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
