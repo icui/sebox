@@ -260,8 +260,16 @@ class Node(Directory, tp.Generic[N]):
                 path = f'sebox.{section}.' + getattr(self, f'module_{section}')
                 task = getattr(import_module(path), func)
 
+            # print to stdout
+            indent = 0
+            node = self
+            while node.parent is not None:
+                indent += 2
+                node = node.parent
+
+            print(' ' * indent + self.name)
+
             # call task function
-            print(self.name)
             args = self.args if self.args is not None else [self]
             if task and (result := task(*args)) and asyncio.iscoroutine(result):
                 await result
