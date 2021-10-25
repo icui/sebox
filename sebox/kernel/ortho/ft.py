@@ -179,6 +179,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
 
     # fourier transform of adjoint source time function
     ft_adj = rotate_frequencies(enc, phase_adj + amp_adj, stats['cmps'], False)
+    root.mpi.mpidump(ft_adj, '../ft_adj')
 
     # fill full frequency band
     nt = stats['nt_adj']
