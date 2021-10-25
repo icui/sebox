@@ -76,6 +76,7 @@ def mfadj(enc: Encoding, stas: tp.List[str]):
     
     except Exception as e:
         err = e
+        cmps = []
     
     # write to adjoint.h5 in sequence
     for k in range(root.mpi.size):
@@ -100,7 +101,6 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     from scipy.fft import ifft
 
     comm = root.mpi.comm
-    enc['sample_interval'] = 1
 
     # read data
     stats = root.mpi.load('../forward/traces/stats.pickle')
