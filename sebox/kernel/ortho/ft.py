@@ -101,7 +101,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     from scipy.fft import ifft
 
     comm = root.mpi.comm
-    enc['sample_interval'] = 1
+    # enc['sample_interval'] = 1
 
     # read data
     stats = root.mpi.load('../forward/traces/stats.pickle')
