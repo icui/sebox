@@ -193,6 +193,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     adstf_tau = -ifft(ft_adstf).real # type: ignore
     root.mpi.mpidump(ft_adj, '../ft_adj')
     root.mpi.mpidump(adstf_tau, '../ift_adj')
+    exit()
 
     # repeat to fill entrie adjoint duration
     adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
