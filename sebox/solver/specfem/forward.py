@@ -62,9 +62,6 @@ def setup(node: Specfem):
         pars['OUTPUT_SEISMOS_ASDF'] = False
         pars['OUTPUT_SEISMOS_3D_ARRAY'] = True
     
-    if node.sample_interval:
-        pars['NTSTEP_BETWEEN_OUTPUT_SAMPLE'] = node.sample_interval
-    
     setpars(node, pars)
 
 

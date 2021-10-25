@@ -40,7 +40,6 @@ transient_duration = 240.0
 lddrk = false
 catalog_boundary = [85.0, -115.0, 70.0, 90.0]
 # catalog_boundary = [67.0, 91.0, 50.0, 90.0]
-sample_interval = 5
 
 # kernel
 dt = 0.16

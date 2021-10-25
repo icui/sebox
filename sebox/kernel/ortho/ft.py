@@ -52,17 +52,10 @@ def ft(arg: tp.Tuple[Encoding, str, str, bool], _):
     
     # resample if necessary
     dt = enc['dt']
-
-    if syn:
-        if data.shape[-1] != stats['nt_adj']:
-            from scipy.signal import resample
-            resample(data, stats['nt_adj'], axis=-1)
-    
-    else:
-        if not np.isclose(stats['dt'], dt):
-            from scipy.signal import resample
-            print('resample:', stats['dt'], '->', dt)
-            resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
+    if not np.isclose(stats['dt'], dt):
+        from scipy.signal import resample
+        print('resample:', stats['dt'], '->', dt)
+        resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
 
     # FFT
     data_nez = (ft_syn if syn else ft_obs)(enc, data)
@@ -108,7 +101,6 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     from scipy.fft import ifft
 
     comm = root.mpi.comm
-    # enc['sample_interval'] = 1
 
     # read data
     stats = root.mpi.load('../forward/traces/stats.pickle')
@@ -207,10 +199,6 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
         ntaper = int(enc['taper'] * 60 / enc['dt'])
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
 
-    root.mpi.mpidump(ft_adj, '../ft_adj')
-    root.mpi.mpidump(adstf_tau, '../ift_adj')
-    raise Exception('abc')
-    
     return adstf, stats['cmps']
 
 
