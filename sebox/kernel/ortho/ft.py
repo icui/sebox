@@ -182,7 +182,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     ft_adj = rotate_frequencies(enc, phase_adj + amp_adj, stats['cmps'], False)
 
     # fill full frequency band
-    nt = stats['nt_adj']
+    nt = stats['nt']
     nt_se = enc['nt_se']
     ft_adstf = np.zeros([len(stas), 3, nt_se], dtype=complex)
     ft_adstf[..., enc['imin']: enc['imax']] = ft_adj

@@ -15,12 +15,6 @@ if tp.TYPE_CHECKING:
         # length of a timestep
         dt: float
 
-        # total number of timesteps for adjoint simulation
-        nt_adj: int
-
-        # length of a timestep for adjoint simulation
-        dt_adj: float
-
         # trace components
         cmps: tp.Tuple[str, str, str]
 
@@ -71,10 +65,8 @@ def align(node: Specfem):
 
     lines = node.readlines('OUTPUT_FILES/seismogram_stats.txt')
     stats: Stats = {
-        'dt_adj': float(lines[0].split('=')[-1]),
-        'nt_adj': int(lines[1].split('=')[-1]),
-        'dt': float(lines[2].split('=')[-1]),
-        'nt': int(lines[3].split('=')[-1]),
+        'dt': float(lines[0].split('=')[-1]),
+        'nt': int(lines[1].split('=')[-1]),
         'cmps': ('N', 'E', 'Z')
     }
     nodes = {}
