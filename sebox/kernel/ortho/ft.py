@@ -200,8 +200,8 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
         ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
 
-    root.mpi.mpidump(adstf, '../ft_adj')
-    root.mpi.mpidump((nt, nt_se, int(np.ceil(nt / nt_se))))
+    root.mpi.mpidump(ft_adj, '../ft_adj')
+    root.mpi.mpidump(adstf_tau, '../ift_adj')
     raise Exception('abc')
     
     return adstf, stats['cmps']
