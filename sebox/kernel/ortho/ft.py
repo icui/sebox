@@ -194,7 +194,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
 
     # repeat to fill entrie adjoint duration
     adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
-    adstf = adstf_tile[..., -nt:]
+    adstf = adstf_tile[..., :nt]
 
     if enc['taper']:
         ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
