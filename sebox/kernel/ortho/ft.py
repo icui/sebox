@@ -182,9 +182,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     ft_adj = rotate_frequencies(enc, phase_adj + amp_adj, stats['cmps'], False)
 
     # fill full frequency band
-    nt = stats['nt']
-    nt_se = enc['nt_se']
-    ft_adstf = np.zeros([len(stas), 3, nt_se], dtype=complex)
+    ft_adstf = np.zeros([len(stas), 3, enc['nt_se']], dtype=complex)
     ft_adstf[..., enc['imin']: enc['imax']] = ft_adj
     ft_adstf[..., -enc['imin']: -enc['imax']: -1] = np.conj(ft_adj)
 
@@ -192,7 +190,8 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     adstf_tau = -ifft(ft_adstf).real # type: ignore
 
     # repeat to fill entrie adjoint duration
-    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
+    nt = stats['nt']
+    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / enc['nt_se'])))
     adstf = adstf_tile[..., -nt:]
 
     if enc['taper']:

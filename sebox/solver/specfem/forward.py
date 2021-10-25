@@ -113,4 +113,11 @@ def forward(node: Specfem):
     node.add(setup)
     xmeshfem(node)
     xspecfem(node)
-    node.add('solver.align')
+
+    if node.use_asdf:
+        node.add(('sebox.utils.asdf', 'scatter'),
+            stats={'cmps': ['N', 'E', 'Z']}, save_stations=node.path('stations'),
+            path_input=node.path('OUTPUT_FILES/synthetic.h5'), path_output=node.path('traces'))
+    
+    else:
+        node.add('solver.align')
