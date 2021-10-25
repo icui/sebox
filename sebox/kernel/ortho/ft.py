@@ -101,6 +101,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     from scipy.fft import ifft
 
     comm = root.mpi.comm
+    enc['sample_interval'] = 1
 
     # read data
     stats = root.mpi.load('../forward/traces/stats.pickle')
@@ -200,7 +201,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
         adstf[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
 
     root.mpi.mpidump(adstf, '../ft_adj')
-    root.mpi.mpidump((nt, nt_se, int(np.ceil(nt / nt_se)), '../ift_adj'))
+    root.mpi.mpidump((nt, nt_se, int(np.ceil(nt / nt_se))))
     raise Exception('abc')
     
     return adstf, stats['cmps']
