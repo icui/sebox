@@ -51,7 +51,7 @@ nkernels = 1
 normalize_source = true
 normalize_frequency = false
 taper = 5.0
-seed = 0
+seed = 1
 test_events = ['C201205242247A', 'C201904232015A']
 test_bury = 0.0
 
