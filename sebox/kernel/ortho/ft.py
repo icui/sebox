@@ -175,13 +175,14 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     if enc['amplitude_factor'] > 0:
         amp_adj = amp_diff * syn / abs(syn) ** 2 / enc['sample_interval']
         amp_adj[nan] = 0.0
-    
+
     else:
         amp_adj = np.zeros(syn.shape)
 
     # fourier transform of adjoint source time function
     nt = stats['nt_adj']
     nt_se = enc['nt_se'] * enc['sample_interval']
+    nt_ts = nt - nt_se
     ft_adj = rotate_frequencies(enc, phase_adj + amp_adj, stats['cmps'], False)
 
     # fill full frequency band
@@ -193,8 +194,8 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     adstf_tau = -ifft(ft_adstf).real # type: ignore
 
     # repeat to fill entrie adjoint duration
-    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se)))
-    adstf = adstf_tile[..., -nt:]
+    adstf_tile = np.tile(adstf_tau, int(np.ceil(nt / nt_se) + 1))
+    adstf = adstf_tile[..., -nt - nt_se: -nt_se]
 
     if enc['taper']:
         ntaper = int(enc['taper'] * 60 / enc['dt'] * enc['sample_interval'])
