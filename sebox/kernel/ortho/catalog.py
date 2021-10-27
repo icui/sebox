@@ -72,6 +72,9 @@ def _forward(tag: tp.Literal['obs', 'syn'], node: Ortho):
     cdir = getdir()
 
     for event in cdir.ls('events'):
+        if event not in node.test_events:
+            continue
+
         node.add('solver', cwd=f'forward_{event}',
             path_model = node.path_model if tag == 'syn' else node.path_model2,
             duration=node.duration - node.transient_duration + 10,
@@ -85,6 +88,9 @@ def _move_forward(tag: tp.Literal['obs', 'syn'], node: Ortho):
     cdir = getdir()
 
     for event in cdir.ls('events'):
+        if event not in node.test_events:
+            continue
+        
         dst = f'raw_{tag}_p{root.task_nprocs}/{event}'
         cdir.rm(dst)
         node.mv(f'forward_{event}/traces', node.rel(cdir, dst))
@@ -100,6 +106,9 @@ def _ft(tag: tp.Literal['obs', 'syn'], node: Ortho):
     node.dump(enc, 'encoding.pickle')
 
     for event in cdir.ls('events'):
+        if event not in node.test_events:
+            continue
+        
         node.add_mpi(ft, arg=({
             **enc, 'fslots': {event: list(range(enc['nfreq']))}
         }, node.rel(cdir, f'raw_{tag}_p{root.task_nprocs}/{event}'),
