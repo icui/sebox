@@ -111,7 +111,7 @@ def _ft(tag: tp.Literal['obs', 'syn'], node: Ortho):
         
         dst = f'ft_{tag}_p{root.task_nprocs}/{event}'
         cdir.mkdir(dst)
-        node.add_mpi(ft, arg=({
+        node.add_mpi(ft, name=event, arg=({
             **enc, 'fslots': {event: list(range(enc['nfreq']))}
         }, node.rel(cdir, f'raw_{tag}_p{root.task_nprocs}/{event}'),
         node.rel(cdir, dst), False), arg_mpi=stas)
