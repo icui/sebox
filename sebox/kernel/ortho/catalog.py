@@ -109,10 +109,12 @@ def _ft(tag: tp.Literal['obs', 'syn'], node: Ortho):
         if event not in node.test_events:
             continue
         
+        dst = f'ft_{tag}_p{root.task_nprocs}/{event}'
+        cdir.mkdir(dst)
         node.add_mpi(ft, arg=({
             **enc, 'fslots': {event: list(range(enc['nfreq']))}
         }, node.rel(cdir, f'raw_{tag}_p{root.task_nprocs}/{event}'),
-        node.rel(cdir, f'ft_{tag}_p{root.task_nprocs}/{event}'), False), arg_mpi=stas)
+        node.rel(cdir, dst), False), arg_mpi=stas)
 
 
 def _scatter(tag: tp.Literal['obs', 'diff'], node: Ortho):
