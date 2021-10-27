@@ -37,4 +37,7 @@ def ft_obs(node: Node):
         dst = cdir.path(f'ft_obs_p{root.task_nprocs}/{event}')
         node.rm(dst)
         node.mkdir(dst)
-        node.add_mpi(ft, name=event, arg=(enc, src, dst, False), arg_mpi=stas)
+        node.add_mpi(ft, name=event, arg=({
+            **enc,
+            'fslots': list(range(enc['nfreq']))
+        }, src, dst, False), arg_mpi=stas)
