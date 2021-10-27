@@ -25,6 +25,7 @@ def ft_obs(node: Ortho):
     cdir = getdir()
     stas = getstations()
     enc = getenc(node)
+    node.dump(enc, 'encoding.pickle')
 
     for event in cdir.ls(f'raw_obs_p{root.task_nprocs}'):
         src = cdir.path(f'raw_obs_p{root.task_nprocs}/{event}')
