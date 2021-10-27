@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from sebox import root, Node
 from sebox.kernel.ortho.ft import ft
+from sebox.kernel.ortho.preprocess import getenc, Ortho
 from .catalog import getdir, getstations
 
 
-def scatter_obs(node: Node):
+def scatter_obs(node: Ortho):
     """Generate observed frequencies."""
     node.concurrent = True
     cdir = getdir()
@@ -17,20 +20,11 @@ def scatter_obs(node: Node):
                 path_input=cdir.path(f'raw_obs/{src}'), path_output=cdir.path(dst))
 
 
-def ft_obs(node: Node):
+def ft_obs(node: Ortho):
     node.concurrent = True
     cdir = getdir()
     stas = getstations()
-
-    enc = {
-        'kf': 1,
-        'nt_se': 90000,
-        'taper': 5.0,
-        'dt': 0.16,
-        'nfreq': 750,
-        'imax': 846,
-        'imin': 96
-    }
+    enc = getenc(node)
 
     for event in cdir.ls(f'raw_obs_p{root.task_nprocs}'):
         src = cdir.path(f'raw_obs_p{root.task_nprocs}/{event}')
