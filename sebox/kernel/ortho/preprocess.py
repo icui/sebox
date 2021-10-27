@@ -28,22 +28,8 @@ def preprocess(node: Ortho):
     enc.add('solver.mesh', 'mesh')
 
 
-def _freq(enc: Encoding) -> ndarray:
-    from scipy.fft import fftfreq
-    return fftfreq(enc['nt_se'], enc['dt'])[enc['imin']: enc['imax']]
-
-
-def _link_encoded(node: Ortho):
-    cwd = node.inherit_kernel.path(f'kl_{node.iker:02d}')
-    node.cp(node.rel(cwd, 'SUPERSOURCE'))
-    node.cp(node.rel(cwd, 'SUPERSTATION'))
-    node.ln(node.rel(cwd, 'enc_obs'))
-    node.ln(node.rel(cwd, 'enc_diff'))
-    node.ln(node.rel(cwd, 'enc_weight'))
-    node.ln(node.rel(cwd, 'encoding.pickle'))
-
-
-def _prepare_frequencies(node: Ortho):
+def getenc(node: Ortho, noref: bool = False):
+    """Get encoding parameters."""
     import numpy as np
     from scipy.fft import fftfreq
 
@@ -71,7 +57,7 @@ def _prepare_frequencies(node: Ortho):
     imax = imin + nbands * fincr
     
     # get frequencies actually used (based on referency_velocity and smooth_kernels)
-    if node.reference_velocity is not None and (rad := node.smooth_kernels):
+    if not noref and node.reference_velocity is not None and (rad := node.smooth_kernels):
         if isinstance(rad, list):
             rad = max(rad[1], rad[0] * rad[2] ** (node.iteration or 0))
 
@@ -83,7 +69,7 @@ def _prepare_frequencies(node: Ortho):
         nbands_used = nbands
         nfreq = nbands * fincr
 
-    # save encoding parameters
+    # encoding parameters
     enc: Encoding = {
         'dt': node.dt,
         'df': df,
@@ -108,19 +94,43 @@ def _prepare_frequencies(node: Ortho):
         'sample_interval': node.sample_interval
     }
 
+    return enc
+
+
+def _freq(enc: Encoding) -> ndarray:
+    from scipy.fft import fftfreq
+    return fftfreq(enc['nt_se'], enc['dt'])[enc['imin']: enc['imax']]
+
+
+def _link_encoded(node: Ortho):
+    cwd = node.inherit_kernel.path(f'kl_{node.iker:02d}')
+    node.cp(node.rel(cwd, 'SUPERSOURCE'))
+    node.cp(node.rel(cwd, 'SUPERSTATION'))
+    node.ln(node.rel(cwd, 'enc_obs'))
+    node.ln(node.rel(cwd, 'enc_diff'))
+    node.ln(node.rel(cwd, 'enc_weight'))
+    node.ln(node.rel(cwd, 'encoding.pickle'))
+
+
+def _prepare_frequencies(node: Ortho):
+    import numpy as np
+
     # assign frequency slots to events
+    enc = getenc(node)
+    fincr = enc['frequency_increment']
+    nbands_used = enc['nbands_used']
     random.seed(enc['seed_used'])
     freq = _freq(enc)
     events = getevents()
     event_bands = {}
     nkl = node.nkernels or 1
-    band_interval = max(1, int(np.ceil(nbands_used / (nfreq * nkl / len(events)))))
+    band_interval = max(1, int(np.ceil(nbands_used / (enc['nfreq'] * nkl / len(events)))))
     fslots = []
     slots = []
     
     for iker in range(nkl):
         fslots.append({})
-        slots.append(set(range(nfreq)))
+        slots.append(set(range(enc['nfreq'])))
 
     # get available frequency bands for each event (sumed over stations and components)
     for event in events:

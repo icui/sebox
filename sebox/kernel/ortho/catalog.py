@@ -1,5 +1,6 @@
 from __future__ import annotations
 import typing as tp
+from functools import partial
 
 from sebox import root
 from sebox.utils.catalog import getdir, getevents, getstations, index_events, index_stations, locate_event, locate_station
@@ -24,28 +25,27 @@ def catalog(node: Ortho):
         node.add(index_stations, args=()) # type: ignore
     
     #FIXME create_catalog (measurements.npy, weightings.npy, noise.npy, ft_obs, ft_diff)
-
-    # convert observed traces into MPI format
-    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        node.add(_scatter_obs, concurrent=True)
-
-    # convert differences between observed and synthetic data into MPI format
-    if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
-        node.add(_scatter_diff, concurrent=True)
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
         node.add_mpi(_scatter_baz, arg_mpi=getstations())
 
+    # convert observed traces into MPI format
+    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+        node.add(partial(_forward, 'obs'), concurrent=True)
+        node.add(partial(_move_forward, 'obs'))
+    
+    # convert observed traces into MPI format
+    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+        node.add(partial(_ft, 'obs'), concurrent=True)
 
-def _scatter_obs(node: Ortho):
-    """Convert ASDF observed data to MPI format."""
-    _scatter(node, 'obs')
+    # convert observed traces into MPI format
+    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+        node.add(partial(_scatter, 'obs'), concurrent=True)
 
-
-def _scatter_diff(node: Ortho):
-    """Convert ASDF diff data to MPI format."""
-    _scatter(node, 'diff')
+    # convert differences between observed and synthetic data into MPI format
+    if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
+        node.add(partial(_scatter, 'diff'), concurrent=True)
 
 
 def _scatter_baz(stas: tp.List[str]):
@@ -66,7 +66,45 @@ def _scatter_baz(stas: tp.List[str]):
     getdir().dump(baz, f'baz_p{root.task_nprocs}/{root.mpi.pid}.pickle')
 
 
-def _scatter(node: Ortho, tag: tp.Literal['obs', 'diff']):
+def _forward(tag: tp.Literal['obs', 'syn'], node: Ortho):
+    cdir = getdir()
+
+    for event in cdir.ls('events'):
+        node.add('solver', cwd=f'forward_{event}',
+            path_model = node.path_model if tag == 'syn' else node.path_model2,
+            duration=node.duration - node.transient_duration + 10,
+            path_event=cdir.path('events', event),
+            path_stations=cdir.path('stations', f'STATION.{event}'),
+            monochromatic_source=False,
+            save_forward=False)
+
+
+def _move_forward(tag: tp.Literal['obs', 'syn'], node: Ortho):
+    cdir = getdir()
+
+    for event in cdir.ls('events'):
+        dst = f'raw_{tag}_p{root.task_nprocs}/{event}'
+        cdir.rm(dst)
+        node.mv(f'forward_{event}/traces', node.rel(cdir, dst))
+
+
+def _ft(tag: tp.Literal['obs', 'syn'], node: Ortho):
+    from .ft import ft
+    from .preprocess import getenc
+
+    cdir = getdir()
+    stas = getstations()
+    enc = getenc(node, True)
+    node.dump(enc, 'encoding.pickle')
+
+    for event in cdir.ls('events'):
+        node.add_mpi(ft, arg=({
+            **enc, 'fslots': {event: list(range(enc['nfreq']))}
+        }, node.rel(cdir, f'raw_{tag}_p{root.task_nprocs}/{event}'),
+        node.rel(cdir, f'ft_{tag}_p{root.task_nprocs}/{event}'), False), arg_mpi=stas)
+
+
+def _scatter(tag: tp.Literal['obs', 'diff'], node: Ortho):
     cdir = getdir()
 
     for src in cdir.ls(f'ft_{tag}'):
