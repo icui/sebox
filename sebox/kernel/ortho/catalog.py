@@ -41,9 +41,9 @@ def catalog(node: Ortho):
 
         solver.add(partial(_ft, 'obs'), concurrent=True)
 
-    # convert observed traces into MPI format
-    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        node.add(partial(_scatter, 'obs'), concurrent=True)
+    # # convert observed traces into MPI format
+    # if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+    #     node.add(partial(_scatter, 'obs'), concurrent=True)
 
     # convert differences between observed and synthetic data into MPI format
     if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
