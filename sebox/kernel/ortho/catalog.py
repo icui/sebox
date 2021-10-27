@@ -31,7 +31,7 @@ def catalog(node: Ortho):
         node.add_mpi(_scatter_baz, arg_mpi=getstations())
 
     # convert observed traces into MPI format
-    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+    if not cdir.has(f'raw_obs_p{root.task_nprocs}'):
         node.add(partial(_forward, 'obs'), concurrent=True)
         node.add(partial(_move_forward, 'obs'))
     
