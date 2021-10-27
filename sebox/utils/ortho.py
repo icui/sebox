@@ -1,9 +1,13 @@
 from __future__ import annotations
+import typing as tp
 
-from sebox import root, Node
+from sebox import root
 from sebox.kernel.ortho.ft import ft
-from sebox.kernel.ortho.preprocess import getenc, Ortho
+from sebox.kernel.ortho.preprocess import getenc
 from .catalog import getdir, getstations
+
+if tp.TYPE_CHECKING:
+    from sebox.kernel.ortho.typing import Ortho
 
 
 def scatter_obs(node: Ortho):
