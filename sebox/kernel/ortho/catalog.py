@@ -29,15 +29,17 @@ def catalog(node: Ortho):
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
         node.add_mpi(_scatter_baz, arg_mpi=getstations())
-
-    # convert observed traces into MPI format
-    if not cdir.has(f'raw_obs_p{root.task_nprocs}'):
-        node.add(partial(_forward, 'obs'), concurrent=True)
-        node.add(partial(_move_forward, 'obs'))
+    
     
     # convert observed traces into MPI format
     if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        node.add(partial(_ft, 'obs'), concurrent=True)
+        solver = node.add()
+
+        if not cdir.has(f'raw_obs_p{root.task_nprocs}'):
+            solver.add(partial(_forward, 'obs'), concurrent=True)
+            solver.add(partial(_move_forward, 'obs'))
+
+        solver.add(partial(_ft, 'obs'), concurrent=True)
 
     # convert observed traces into MPI format
     if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
