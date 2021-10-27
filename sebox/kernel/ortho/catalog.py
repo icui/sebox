@@ -76,7 +76,7 @@ def _forward(tag: tp.Literal['obs', 'syn'], node: Ortho):
             path_model = node.path_model if tag == 'syn' else node.path_model2,
             duration=node.duration - node.transient_duration + 10,
             path_event=cdir.path('events', event),
-            path_stations=cdir.path('stations', f'STATION.{event}'),
+            path_stations=cdir.path('stations', f'STATIONS.{event}'),
             monochromatic_source=False,
             save_forward=False)
 
