@@ -52,11 +52,11 @@ def ft(arg: tp.Tuple[Encoding, str, str, bool], _):
     data = root.mpi.mpiload(f'{src}')
     
     # resample if necessary
-    dt = enc['dt']
-    if not np.isclose(stats['dt'], dt):
-        from scipy.signal import resample
-        print('resample:', stats['dt'], '->', dt)
-        resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
+    # dt = enc['dt']
+    # if not np.isclose(stats['dt'], dt):
+    #     from scipy.signal import resample
+    #     print('resample:', stats['dt'], '->', dt)
+    #     resample(data, int(round(stats['nt'] * stats['dt'] / dt)), axis=-1)
 
     # FFT
     data_nez = (ft_syn if syn else ft_obs)(enc, data)
