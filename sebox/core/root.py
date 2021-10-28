@@ -118,7 +118,8 @@ class Root(Node):
             # root can only be saved from main process
             raise RuntimeError('cannot save root from MPI process')
         
-        self.dump(self.__getstate__(), 'root.pickle')
+        self.dump(self.__getstate__(), '_root.pickle')
+        self.mv('_root.pickle', 'root.pickle')
     
     def restore(self, node: tp.Optional[Node] = None):
         """Restore state."""
