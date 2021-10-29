@@ -119,7 +119,9 @@ class Root(Node):
             raise RuntimeError('cannot save root from MPI process')
         
         self.dump(self.__getstate__(), '_root.pickle')
+        self.mv('root.pickle', 'root_.pickle')
         self.mv('_root.pickle', 'root.pickle')
+        self.rm('root_.pickle')
     
     def restore(self, node: tp.Optional[Node] = None):
         """Restore state."""
