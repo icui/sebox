@@ -4,7 +4,7 @@ from obspy.geodetics import locations2degrees
 
 from sebox import root
 from sebox.utils.catalog import merge_stations, getevents, getstations, getdir, locate_station
-from .preprocess import _prepare_frequencies, _freq
+from .preprocess import _prepare_frequencies, _freq, _enc_obs
 from .ft import ft, ft_obs
 
 if tp.TYPE_CHECKING:
@@ -60,6 +60,7 @@ def _ft(node: Ortho):
     for event in node.test_events:
         node.add_mpi(ft, arg=(enc, f'forward_{event}/traces', f'enc_{event}', False), arg_mpi=stas)
 
+    node.add_mpi(_enc_obs, arg=enc, arg_mpi=stas, cwd='enc_obs2')
     node.add_mpi(_enc, arg=enc, arg_mpi=stas)
 
 

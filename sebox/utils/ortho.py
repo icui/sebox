@@ -37,6 +37,5 @@ def ft_obs(node: Ortho):
         node.rm(dst)
         node.mkdir(dst)
         node.add_mpi(ft, name=event, arg=({
-            **enc,
-            'fslots': {event: list(range(enc['nfreq']))}
+            **enc, 'fslots': {event: list(range(enc['nfreq']))}
         }, src, dst, False), arg_mpi=stas)
