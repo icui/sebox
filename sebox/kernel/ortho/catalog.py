@@ -32,7 +32,7 @@ def catalog(node: Ortho):
     
     
     # convert observed traces into MPI format
-    if not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+    if not node.test_encoding and not cdir.has(f'ft_obs_p{root.task_nprocs}'):
         solver = node.add()
 
         if not cdir.has(f'raw_obs_p{root.task_nprocs}'):
