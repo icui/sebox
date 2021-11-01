@@ -37,7 +37,7 @@ def check(node: Search):
     import numpy as np
 
     search = node.parent.parent
-    x, f, steps = hist(node)
+    x, f, steps = hist(search)
 
     # new step length
     alpha = None
