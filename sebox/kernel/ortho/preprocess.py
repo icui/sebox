@@ -210,7 +210,7 @@ def _prepare_frequencies(node: Ortho):
                 ld = lines[6].split(' ')
                 depth = float(ld[-1])
 
-                if depth < 100.0:
+                if depth < 100:
                     depth += 100
                 
                 ld[-1] = f'{depth:.4f}'
