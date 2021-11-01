@@ -69,7 +69,9 @@ def check(node: Search):
     
     if alpha:
         # add a new search step
-        search.add(step, f'step_{len(steps)-1:02d}', step=alpha)
+        cwd = f'step_{len(steps)-1:02d}'
+        node.dump(alpha, f'{cwd}/step.pickle')
+        search.add(step, cwd)
     
     else:
         # use initial model as new model
