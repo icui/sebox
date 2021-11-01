@@ -7,7 +7,7 @@ if __name__ == '__main__':
         if not optim.has('misfit.npy'):
             continue
         
-        print(f'Iteration {optim.iter}')
+        print(f'Iteration {optim.iteration}')
 
         steps = [0.0]
         vals = [optim.load('misfit.npy').sum()]
