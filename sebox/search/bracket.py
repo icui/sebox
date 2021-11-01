@@ -70,7 +70,7 @@ def check(node: Search):
     if alpha:
         # add a new search step
         cwd = f'step_{len(steps)-1:02d}'
-        node.dump(alpha, f'{cwd}/step.pickle')
+        search.dump(alpha, f'{cwd}/step.pickle')
         search.add(step, cwd)
     
     else:
