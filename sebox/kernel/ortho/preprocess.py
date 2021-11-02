@@ -206,15 +206,15 @@ def _prepare_frequencies(node: Ortho):
                 lines[2] = 'time shift:           0.0000'
                 lines[3] = f'half duration:{" " * (9 - len(str(int(1 / f0))))}{1/f0:.4f}'
 
-                ###FIXME
-                ld = lines[6].split(' ')
-                depth = float(ld[-1])
+                # ###FIXME
+                # ld = lines[6].split(' ')
+                # depth = float(ld[-1])
 
-                if depth < 100:
-                    depth += 100
+                # if depth < 100:
+                #     depth += 100
                 
-                ld[-1] = f'{depth:.4f}'
-                lines[6] = ' '.join(ld)
+                # ld[-1] = f'{depth:.4f}'
+                # lines[6] = ' '.join(ld)
 
                 # normalize sources to the same order of magnitude
                 if enc['normalize_source']:
