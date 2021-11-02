@@ -89,7 +89,7 @@ def hist(node: Search):
     steps = [0.0]
     vals = [node.inherit_kernel.load('misfit.npy').sum()]
 
-    for i in range(node.nsteps):
+    for i in range(node.nsteps + 1):
         cwd = f'step_{i:02d}'
         
         if node.has(f'{cwd}/step.pickle') and node.has(f'{cwd}/misfit.npy'):
