@@ -110,15 +110,15 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     # ref = root.mpi.mpiload(f'../enc_diff')
     weight = root.mpi.mpiload(f'../enc_weight')
 
-    #FIXME
-    weight[np.where(np.invert(np.isnan(weight)))] = 1.0
-
     # unwrap phases
     # weight[np.where(abs(ref) > np.pi)] = 0.0
 
     # compute diff
     phase_diff = np.angle(syn / obs) * weight
     amp_diff = np.log(np.abs(syn) / np.abs(obs)) * weight
+
+    #FIXME
+    weight[np.where(np.invert(np.isnan(phase_diff)))] = 1.0
 
     if enc['double_difference']:
         # unwrap or clip phases
