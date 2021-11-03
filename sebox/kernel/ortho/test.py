@@ -114,16 +114,14 @@ def _read(node: Ortho):
     for p in range(root.task_nprocs):
         syn = node.load(f'enc_syn/p{p:02d}.npy')
         obs = node.load(f'enc_obs/p{p:02d}.npy')
-        obs2 = node.load(f'enc_obs2/p{p:02d}.npy')
         stas = node.load(f'enc_stas/p{p:02d}.pickle')
         d = abs(np.angle(syn / obs))
-        d2 = abs(np.angle(syn / obs2))
         idx = np.unravel_index(d.argmax(), d.shape)
         str_idx = f'{idx}'
         str_idx += ' ' * (15 - len(str_idx))
         sta = stas[idx[0]]
         str_sta = sta +  ' ' * (8 - len(sta))
-        lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}  {d2.std():.2f}')
+        lines.append(f'p{p:02d}: {str_sta} {str_idx}{d[idx]:.2f}  {d[idx[:2]].std():.2f}  {d.std():.2f}')
 
         # if d[idx] > 1.0:
         #     from psh import plt
