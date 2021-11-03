@@ -115,7 +115,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     
     else:
         #FIXME
-        weight[...] = 1.0
+        weight[np.where(np.invert(np.isnan(weight)))] = 1.0
 
     # unwrap phases
     # weight[np.where(abs(ref) > np.pi)] = 0.0
