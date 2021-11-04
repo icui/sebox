@@ -12,12 +12,12 @@ if __name__ == '__main__':
         steps = [0.0]
         vals = [optim.load('misfit.npy').sum()]
 
-        for step in optim[-2]:
-            if not step.has('misfit.npy'):
+        for step in range(optim.nsteps):
+            if not optim.has(f'step_{step:02d}/misfit.npy'):
                 continue
 
-            steps.append(step.load('step.pickle'))
-            vals.append(step.load('misfit.npy').sum())
+            steps.append(optim.load(f'step_{step:02d}/step.pickle'))
+            vals.append(optim.load(f'step_{step:02d}/misfit.npy').sum())
             
         for step, val in zip(steps, vals):
             if val is None:
