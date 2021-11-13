@@ -9,8 +9,11 @@ class _Optimizer(_Search):
     # total number of iterations
     niters: int
 
+    # current iteration
+    iteration: int
+
     # initial iteration
-    iteration: tp.Optional[int]
+    iteration_start: tp.Optional[int]
 
 
 class Optimizer(Node['Optimizer'], _Optimizer):

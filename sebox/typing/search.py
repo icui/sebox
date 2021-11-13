@@ -14,6 +14,9 @@ class _Search(_Kernel):
     # current step length
     step: float
 
+    # search failed
+    failed: bool
+
 
 class Search(Node['Search'], _Search):
     """Gradient optimization."""

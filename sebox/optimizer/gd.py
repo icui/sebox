@@ -15,6 +15,7 @@ def main(node: Optimizer):
             node[-1].add('optimizer.check')
 
         else:
+            node.iteration_start = 0
             node.add('optimizer.iterate', 'iter_00', iteration=0)
 
 
@@ -46,7 +47,10 @@ def check(node: Optimizer):
     i = len(optim)
 
     if i < optim.niters and node.parent is optim[-1]:
-        optim.add(iterate, f'iter_{i:02d}',
+        if len(node.parent) >= 4 and node.parent[-2].failed:
+            optim.iteration_start = i
+
+        optim.add('optimizer.iterate', f'iter_{i:02d}',
             iteration=i,
             path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
             path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))

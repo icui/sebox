@@ -6,7 +6,7 @@ from .gd import *
 
 def direction(node: Optimizer):
     """Momentum direction."""
-    if node.iteration == 0:
+    if node.iteration == node.iteration_start:
         xgd(node)
 
     else:

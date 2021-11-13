@@ -79,6 +79,7 @@ def check(node: Search):
         search.rm('mesh_new')
         search.ln('mesh', 'mesh_new')
         search.ln('model_init.bp', 'model_new.bp')
+        search.failed = True
 
 
 def hist(node: Search):
