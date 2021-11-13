@@ -46,16 +46,19 @@ def xcg(node: Node):
         f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
-def xmm(node: Node):
-    """Compute momentum direction."""
-    dir0 = f'iter_{tp.cast(int, node.iteration)-1:02d}'
-    _adios(node, f'xmm_direction {node.momentum} kernels.bp precond.bp ' +
-        f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
-
-
 def xlbfgs(node: Node):
     """Compute L-BFGS direction."""
+    iter_min = max(node.iteration_start, node.iteration-node.mem) # type: ignore
+    lines = [str(node.iteration - iter_min + 1)]
+
+    for i in range(iter_min, node.iteration): # type: ignore
+        lines.append('../iter_{i:02d}/kernels.bp')
+        lines.append('../iter_{i:02d}/direction.bp')
     
+    lines.append('kernels.bp')
+    node.write('\n'.join(lines), 'lbfgs.txt')
+
+    _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
 def xupdate(node: Node, step: float, path_model: str, path_mesh: str):
