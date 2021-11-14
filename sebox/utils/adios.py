@@ -46,6 +46,13 @@ def xcg(node: Node):
         f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
+def xmm(node: Node):
+    """Compute conjugate gradient direction."""
+    dir0 = f'iter_{tp.cast(int, node.iteration)-1:02d}'
+    _adios(node, f'xmm_direction {node.momentum} kernels.bp precond.bp ' +
+        f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
+
+
 def xlbfgs(node: Node):
     """Compute L-BFGS direction."""
     iter_min = max(node.iteration_start, node.iteration-node.mem) # type: ignore
