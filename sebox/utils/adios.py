@@ -52,8 +52,8 @@ def xlbfgs(node: Node):
     lines = [str(node.iteration - iter_min + 1)]
 
     for i in range(iter_min, node.iteration): # type: ignore
-        lines.append('../iter_{i:02d}/kernels.bp')
-        lines.append('../iter_{i:02d}/direction.bp')
+        lines.append(f'../iter_{i:02d}/kernels.bp')
+        lines.append(f'../iter_{i:02d}/direction.bp')
     
     lines.append('kernels.bp')
     node.write('\n'.join(lines), 'lbfgs.txt')
