@@ -68,6 +68,23 @@ def xlbfgs(node: Node):
     _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
+def xlbfgs2(node: Node):
+    """Compute L-BFGS direction."""
+    iter_min = max(node.iteration_start, node.iteration-node.mem) # type: ignore
+    lines = [str(node.iteration - iter_min)]
+
+    for i in range(iter_min, node.iteration): # type: ignore
+        lines.append(f'../iter_{i:02d}/kernels.bp')
+        lines.append(f'../iter_{i:02d}/direction.bp')
+        lines.append(str(node.load(f'../iter_{i:02d}/step_final.pickle')))
+    
+    lines.append('kernels.bp')
+    lines.append('precond.bp')
+    node.write('\n'.join(lines), 'lbfgs.txt')
+
+    _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction.bp')
+
+
 def xupdate(node: Node, step: float, path_model: str, path_mesh: str):
     """Update model."""
     _adios(node, f'xupdate_model {step} {path_model} {path_mesh}/DATABASES_MPI/solver_data.bp ../direction.bp .')
