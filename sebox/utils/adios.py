@@ -76,7 +76,8 @@ def xlbfgs2(node: Node):
     for i in range(iter_min, node.iteration): # type: ignore
         lines.append(f'../iter_{i:02d}/kernels.bp')
         lines.append(f'../iter_{i:02d}/direction.bp')
-        lines.append(str(node.load(f'../iter_{i:02d}/step_final.pickle')))
+        step = node.load(f'../iter_{i:02d}/step_final.pickle')
+        lines.append(str(node.load(f'../iter_{i:02d}/step_{step:02d}/step.pickle')))
     
     lines.append('kernels.bp')
     lines.append('precond.bp')
