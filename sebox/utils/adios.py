@@ -26,7 +26,7 @@ def xmerge(node: Node, precond: float):
     """Merge smoothed kernels and create preconditioner."""
     _adios(node, 'xmerge_kernels smooth kernels.bp')
     _adios(node, 'xcompute_vp_vs_hess kernels.bp DATABASES_MPI/solver_data.bp hess.bp')
-    _adios(node, f'xprepare_vp_vs_precond hess.bp precond.bp {1/precond}')
+    _adios(node, f'xprepare_vp_vs_precond hess.bp precond.bp {precond}')
 
 
 def xprecond(node: Node):

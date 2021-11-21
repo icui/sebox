@@ -2,7 +2,7 @@
 module_system = "summit"
 module_solver = "specfem"
 module_kernel = "ortho"
-module_optimizer = "gd"
+module_optimizer = "lbfgs"
 module_search = "bracket"
 
 # job configuration
@@ -63,7 +63,7 @@ smooth_hessian = 100.0
 smooth_vertical = 1.0
 smooth_with_prem = 0
 fixed_preconditioner = false
-precondition = 50.0
+precondition = 2.0
 source_mask = true
 test_encoding = false
 save_vtu = ['bulk_betav_kl']
