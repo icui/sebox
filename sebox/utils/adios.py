@@ -53,22 +53,22 @@ def xmm(node: Node):
         f'../{dir0}/direction.bp mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
-def xlbfgs(node: Node):
-    """Compute L-BFGS direction."""
-    iter_min = max(node.iteration_start, node.iteration-node.mem) # type: ignore
-    lines = [str(node.iteration - iter_min)]
+# def xlbfgs(node: Node):
+#     """Compute L-BFGS direction."""
+#     iter_min = max(node.iteration_start, node.iteration-node.mem) # type: ignore
+#     lines = [str(node.iteration - iter_min)]
 
-    for i in range(iter_min, node.iteration): # type: ignore
-        lines.append(f'../iter_{i:02d}/kernels.bp')
-        lines.append(f'../iter_{i:02d}/direction.bp')
+#     for i in range(iter_min, node.iteration): # type: ignore
+#         lines.append(f'../iter_{i:02d}/kernels.bp')
+#         lines.append(f'../iter_{i:02d}/direction.bp')
     
-    lines.append('kernels.bp')
-    node.write('\n'.join(lines), 'lbfgs.txt')
+#     lines.append('kernels.bp')
+#     node.write('\n'.join(lines), 'lbfgs.txt')
 
-    _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction.bp')
+#     _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction.bp')
 
 
-def xlbfgs2(node: Node):
+def xlbfgs(node: Node):
     """Compute L-BFGS direction."""
     iter_min = max(node.iteration_start, node.iteration-node.mem) # type: ignore
     lines = [str(node.iteration - iter_min)]
