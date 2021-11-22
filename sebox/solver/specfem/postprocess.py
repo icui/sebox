@@ -30,7 +30,7 @@ def postprocess(node: Postprocess):
     node.add(setup)
     xsum(node, node.source_mask)
     node.add(_smooth, concurrent=True)
-    xmerge(node, node.precondition_damping)
+    xmerge(node, node.damp_preconditioner)
     xprecond(node)
 
     if node.save_vtu:
