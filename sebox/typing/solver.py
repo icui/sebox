@@ -35,8 +35,8 @@ class _Postprocess(tp.Protocol):
     # apply source mask
     source_mask: bool
 
-    # damp preconditioner
-    precondition_damping: float
+    # add damping preconditioner
+    damp_preconditioner: float
 
     # save VTU of preconditioned kernel
     save_vtu: tp.Optional[tp.List[str]]
