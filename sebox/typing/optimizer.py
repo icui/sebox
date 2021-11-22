@@ -15,6 +15,9 @@ class _Optimizer(_Search):
     # initial iteration
     iteration_start: tp.Optional[int]
 
+    # history of iteration_start
+    iteration_breakpoints: tp.Set[int]
+
 
 class Optimizer(Node['Optimizer'], _Optimizer):
     """Gradient optimization."""

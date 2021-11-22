@@ -8,13 +8,18 @@ if tp.TYPE_CHECKING:
 
 def main(node: Optimizer):
     if len(node) == 0:
+        if node.iteration_breakpoints is None:
+            node.iteration_breakpoints = set()
+
         if node.iteration_start:
+            node.iteration_breakpoints.add(node.iteration_start)
             for i in range(node.iteration_start):
                 node.add(None, f'iter_{i:02d}', iteration=i)
             
             node[-1].add('optimizer.check')
 
         else:
+            node.iteration_breakpoints.add(0)
             node.iteration_start = 0
             node.add('optimizer.iterate', 'iter_00', iteration=0)
 
@@ -49,6 +54,7 @@ def check(node: Optimizer):
     if i < optim.niters and node.parent is optim[-1]:
         if len(node.parent) >= 4 and node.parent[-2].failed:
             optim.iteration_start = i
+            optim.iteration_breakpoints.add(i)
 
         optim.add('optimizer.iterate', f'iter_{i:02d}',
             iteration=i,
