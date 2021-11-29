@@ -68,6 +68,12 @@ def getenc(node: Ortho, noref: bool = False):
     else:
         nbands_used = nbands
         nfreq = nbands * fincr
+    
+    if node.fixed_frequency:
+        seed_used = (node.iteration_start or 0) + (node.seed or 0)
+    
+    else:
+        seed_used = (node.iteration or 0) + (node.seed or 0)
 
     # encoding parameters
     enc: Encoding = {
@@ -80,7 +86,7 @@ def getenc(node: Ortho, noref: bool = False):
         'imax': imax,
         'nfreq': nfreq,
         'nbands_used': nbands_used,
-        'seed_used': (node.iteration or 0) + (node.seed or 0),
+        'seed_used': seed_used,
         'fslots': {},
         'frequency_increment': node.frequency_increment,
         'double_difference': node.double_difference,

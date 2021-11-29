@@ -92,6 +92,9 @@ class Ortho(Kernel):
 
     # number of frequencies in a frequency band
     frequency_increment: int
+
+    # do not change frequency between iterations
+    fixed_frequency: bool
     
     # use double difference measurement
     double_difference: bool
