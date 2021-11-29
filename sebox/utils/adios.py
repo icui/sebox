@@ -77,7 +77,7 @@ def xlbfgs(node: Node):
         lines.append(f'../iter_{i:02d}/postprocess/kernels.bp')
         lines.append(f'../iter_{i:02d}/direction.bp')
         step = node.load(f'../iter_{i:02d}/step_final.pickle')
-        lines.append(str(node.load(f'../iter_{i:02d}/step_{step:02d}/step.pickle')))
+        lines.append(str(node.load(f'../iter_{i:02d}/step_{step:02d}/dkernels.bp')))
     
     lines.append('kernels.bp')
     lines.append('precond.bp')
