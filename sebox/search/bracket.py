@@ -54,7 +54,7 @@ def check(node: Search):
                     search.rm('mesh_new')
                     search.ln(f'step_{j-1:02d}/mesh', 'mesh_new')
                     search.ln(f'step_{j-1:02d}/model_gll.bp', 'model_new.bp')
-                    search.dump(j - 1, 'step_final.pickle')
+                    search.dump(j - 1, 'step_idx.pickle')
                     return
             
         alpha = _polyfit(x,f)

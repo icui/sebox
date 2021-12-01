@@ -75,7 +75,7 @@ def xlbfgs(node: Node):
 
     for i in range(iter_min, node.iteration): # type: ignore
         lines.append(f'../iter_{i:02d}/kernels.bp')
-        step = node.load(f'../iter_{i:02d}/step_final.pickle')
+        step = node.load(f'../iter_{i:02d}/step_idx.pickle')
         lines.append(f'../iter_{i:02d}/step_{step:02d}/dkernels.bp')
     
     lines.append('kernels.bp')
