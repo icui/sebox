@@ -74,11 +74,18 @@ def xlbfgs(node: Node):
     lines = [str(node.iteration - iter_min)]
 
     for i in range(iter_min, node.iteration): # type: ignore
-        lines.append(f'../iter_{i:02d}/kernels.bp')
+        if node.test_precond:
+            lines.append(f'../iter_{i:02d}/kernels_precond.bp')
+        else:
+            lines.append(f'../iter_{i:02d}/kernels.bp')
         step = node.load(f'../iter_{i:02d}/step_idx.pickle')
         lines.append(f'../iter_{i:02d}/step_{step:02d}/dkernels.bp')
     
-    lines.append('kernels.bp')
+    # lines.append('kernels.bp')
+    if node.test_precond:
+        lines.append('kernels_precond.bp')
+    else:
+        lines.append('kernels.bp')
     lines.append('precond.bp')
     node.write('\n'.join(lines), 'lbfgs.txt')
 
