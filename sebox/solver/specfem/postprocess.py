@@ -58,7 +58,7 @@ def _smooth(node: Postprocess):
 
 def _xsmooth(node: Postprocess, kl: str, length: float):
     node.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join([
-        f'{length} {length*(node.smooth_vertical or 1)}', kl,
+        f'{length} {length}', kl,
         'kernels_masked.bp' if node.source_mask else 'kernels_raw.bp',
         'DATABASES_MPI/',
         f'smooth/kernels_smooth_{kl}_crust_mantle.bp',

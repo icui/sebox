@@ -20,9 +20,6 @@ class _Postprocess(tp.Protocol):
     # radius for smoothing hessian
     smooth_hessian: tp.Optional[tp.Union[float, tp.List[float]]]
 
-    # ratio between vertival and horizontal smoothing length
-    smooth_vertical: tp.Optional[float]
-
     # increase smoothing length with PREM velocity (length *= (vp / vp0) ** smooth_depth)
     smooth_with_prem: tp.Optional[float]
 
