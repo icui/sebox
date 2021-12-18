@@ -11,14 +11,17 @@ def main(node: Optimizer):
         if node.iteration_breakpoints is None:
             node.iteration_breakpoints = set()
 
-        if node.iteration_start:
+        if node.iteration_start is not None:
+            # inherit iterations from an existing workspace
             node.iteration_breakpoints.add(node.iteration_start)
+
             for i in range(node.iteration_start):
                 node.add(None, f'iter_{i:02d}', iteration=i)
             
             node[-1].add('optimizer.check')
 
         else:
+            # initialize iterations
             node.iteration_breakpoints.add(0)
             node.iteration_start = 0
             node.add('optimizer.iterate', 'iter_00', iteration=0)
@@ -49,14 +52,22 @@ def direction(node: Optimizer):
 def check(node: Optimizer):
     """Add a new iteration if necessary."""
     optim = node.parent.parent
-    i = len(optim)
+    i = node.iteration + 1
 
     if i < optim.niters and node.parent is optim[-1]:
+        restart = False
+
         if len(node.parent) >= 4 and node.parent[-2].failed:
+            restart = True
+        
+        elif i - node.iteration_start == node.iteration_restart:
+            restart = True
+        
+        if restart:
             optim.iteration_start = i
             optim.iteration_breakpoints.add(i)
 
         optim.add('optimizer.iterate', f'iter_{i:02d}',
             iteration=i,
-            path_model=optim.path(f'iter_{len(optim)-1:02d}/model_new.bp'),
-            path_mesh=optim.path(f'iter_{len(optim)-1:02d}/mesh_new'))
+            path_model=optim.path(f'iter_{node.iteration:02d}/model_new.bp'),
+            path_mesh=optim.path(f'iter_{node.iteration:02d}/mesh_new'))

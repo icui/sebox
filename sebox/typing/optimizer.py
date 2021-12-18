@@ -13,10 +13,13 @@ class _Optimizer(_Search):
     iteration: int
 
     # initial iteration
-    iteration_start: tp.Optional[int]
+    iteration_start: int
 
     # history of iteration_start
     iteration_breakpoints: tp.Set[int]
+
+    # restart iteration after n iterations
+    iteration_restart: tp.Optional[int]
 
 
 class Optimizer(Node['Optimizer'], _Optimizer):

@@ -76,6 +76,7 @@ double_difference = true
 # optimization
 niters = 50
 nsteps = 5
+iteration_restart = 10
 step_init = 0.01
 mem = 5
 momentum = 0.1
