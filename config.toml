@@ -1,4 +1,5 @@
 # module configuration
+test_precond = true
 module_system = "summit"
 module_solver = "specfem"
 module_kernel = "ortho"
