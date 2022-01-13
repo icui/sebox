@@ -24,7 +24,7 @@ def main(node: Optimizer):
             # initialize iterations
             node.iteration_breakpoints.add(0)
             node.iteration_start = 0
-            node.add('optimizer.iterate', 'iter_00', iteration=0)
+            node.add('optimizer.iterate', 'iter_00', iteration=0, iteration_start=0)
 
 
 def iterate(node: Optimizer):
@@ -68,6 +68,6 @@ def check(node: Optimizer):
             optim.iteration_breakpoints.add(i)
 
         optim.add('optimizer.iterate', f'iter_{i:02d}',
-            iteration=i,
+            iteration=i, iteration_start=node.iteration_start,
             path_model=optim.path(f'iter_{node.iteration:02d}/model_new.bp'),
             path_mesh=optim.path(f'iter_{node.iteration:02d}/mesh_new'))
