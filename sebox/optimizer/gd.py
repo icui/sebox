@@ -68,6 +68,6 @@ def check(node: Optimizer):
             optim.iteration_breakpoints.add(i)
 
         optim.add('optimizer.iterate', f'iter_{i:02d}',
-            iteration=i, iteration_start=node.iteration_start,
+            iteration=i, iteration_start=optim.iteration_start,
             path_model=optim.path(f'iter_{node.iteration:02d}/model_new.bp'),
             path_mesh=optim.path(f'iter_{node.iteration:02d}/mesh_new'))
