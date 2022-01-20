@@ -65,6 +65,7 @@ smooth_with_prem = 0
 fixed_frequency = true
 damp_preconditioner = 0.001
 source_mask = true
+depth_mask = 0
 test_encoding = false
 save_vtu = ['bulk_betav_kl']
 use_asdf = false
