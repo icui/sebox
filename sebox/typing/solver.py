@@ -32,9 +32,6 @@ class _Postprocess(tp.Protocol):
     # apply source mask
     source_mask: bool
 
-    # remove crust (1) or 80km (2)
-    layer_mask: tp.Optional[int]
-
     # add damping preconditioner
     damp_preconditioner: float
 

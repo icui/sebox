@@ -19,7 +19,7 @@ def xsum(node: Node, mask: bool):
     _adios(node, f'xsum_kernels path.txt kernels_raw.bp')
 
     if mask:
-        _adios(node, f'xsrc_mask kernels_raw.bp DATABASES_MPI/solver_data.bp {getdir().path("source_mask")} kernels_masked.bp {node.layer_mask or 0}')
+        _adios(node, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
 
 
 def xmerge(node: Node, precond: float):
