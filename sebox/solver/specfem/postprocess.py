@@ -26,15 +26,18 @@ def setup(node: Postprocess):
 
 
 def postprocess(node: Postprocess):
-    """Sum and smooth kernels."""
+    """Sum and precondition kernels."""
     node.add(setup)
     xsum(node, node.source_mask)
-    node.add(_smooth, concurrent=True)
-    xmerge(node, node.damp_preconditioner)
-    xprecond(node)
 
-    if node.save_vtu:
-        node.add(_vtu, concurrent=True)
+    if node.iteration == node.iteration_start:
+        xprecond(node, node.damp_preconditioner)
+
+
+def smooth(node: Postprocess):
+    """Smooth kernels."""
+    node.add(_smooth, concurrent=True)
+    xmerge(node)
 
 
 def _smooth(node: Postprocess):
@@ -59,24 +62,12 @@ def _smooth(node: Postprocess):
 def _xsmooth(node: Postprocess, kl: str, length: float):
     node.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join([
         f'{length} {length}', kl,
-        'kernels_masked.bp' if node.source_mask else 'kernels_raw.bp',
+        '../direction_raw.bp',
         'DATABASES_MPI/',
         f'smooth/kernels_smooth_{kl}_crust_mantle.bp',
         f'{node.smooth_with_prem or 0}',
         f'> OUTPUT_FILES/smooth_{kl}.txt'
     ]), getsize, name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
-
-
-def _vtu(node: Postprocess):
-    node.writelines(list(str(i) for i in range(getsize(node))), 'addressing.txt')
-    for kl in tp.cast(list, node.save_vtu):    
-        node.add_mpi('bin/xcombine_vol_data_vtu_adios ' + ' '.join([
-            'addressing.txt',
-            kl,
-            'kernels_precond.bp',
-            'DATABASES_MPI/solver_data.bp',
-            '. 0 1'
-        ]), 1, name=f'save_vtu_{kl}')
 
 
 def probe_smoother(kl: str, node: Postprocess):

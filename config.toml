@@ -63,10 +63,9 @@ smooth_kernels = 100.0
 smooth_hessian = 100.0
 smooth_with_prem = 0
 fixed_frequency = true
-damp_preconditioner = 0.0001
+damp_preconditioner = 0.000001
 source_mask = true
 test_encoding = false
-save_vtu = ['bulk_betav_kl']
 use_asdf = false
 
 # misfit

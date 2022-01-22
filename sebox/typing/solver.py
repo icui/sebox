@@ -8,6 +8,9 @@ class _Postprocess(tp.Protocol):
     # current iteration
     iteration: tp.Optional[int]
     
+    # initial iteration
+    iteration_start: tp.Optional[int]
+    
     # path to mesher directory
     path_mesh: str
 
@@ -34,9 +37,6 @@ class _Postprocess(tp.Protocol):
 
     # add damping preconditioner
     damp_preconditioner: float
-
-    # save VTU of preconditioned kernel
-    save_vtu: tp.Optional[tp.List[str]]
 
 
 class _Solver(tp.Protocol):
