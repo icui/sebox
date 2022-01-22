@@ -16,13 +16,13 @@ def _adios(node: Node, cmd: str):
 
 def xsum(node: Node, mask: bool):
     """Sum and mask kernels."""
-    _adios(node, f'xsum_kernels path.txt kernels_sum.bp')
+    _adios(node, f'xsum_kernels path.txt kernels_raw.bp')
 
     if mask:
-        _adios(node, f'xsrc_mask kernels_sum.bp {getdir().path("source_mask")} kernels.bp')
+        _adios(node, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels.bp')
     
     else:
-        node.ln('kernels_sum.bp kernels.bp')
+        node.ln('kernels_raw.bp kernels.bp')
 
 
 def xmerge(node: Node):
@@ -44,7 +44,8 @@ def xgd(node: Node):
 def xcg(node: Node):
     """Compute conjugate gradient direction."""
     dir0 = f'iter_{tp.cast(int, node.iteration)-1:02d}'
-    _adios(node, f'xcg_direction ../{dir0}/kernels.bp ../{dir0}/precond.bp kernels.bp precond.bp ' +
+    _adios(node, f'xcg_direction ../{dir0}/kernels.bp ../iter_{node.iteration_start:02d}/precond.bp ' +
+        f'kernels.bp ../iter_{node.iteration_start:02d}/precond.bp ' +
         f'../{dir0}/direction_raw.bp mesh/DATABASES_MPI/solver_data.bp direction_raw.bp')
 
 
