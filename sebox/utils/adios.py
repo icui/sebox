@@ -60,7 +60,7 @@ def xlbfgs(node: Node):
         lines.append(f'../iter_{i:02d}/step_{step:02d}/dkernels.bp')
 
     lines.append('kernels.bp')
-    lines.append(f'../iter_{iter_min:02d}/kernels.bp')
+    lines.append(f'../iter_{iter_min:02d}/precond.bp')
     node.write('\n'.join(lines), 'lbfgs.txt')
 
     _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction_raw.bp')
