@@ -27,13 +27,19 @@ def setup(node: Postprocess):
 
 def postprocess(node: Postprocess):
     """Sum and precondition kernels."""
+    # create working directory
     node.add(setup)
+
+    # sum kernels
     xsum(node, node.source_mask)
-    node.add('solver.smooth', smooth_all=False,
+
+    # pre-smooth kernels (smooth with a very small length)
+    node.add('solver.smooth', smooth_all=True,
         smooth_input='kernels_masked.bp',
         smooth_dir='smooth_kernels',
         smooth_output='kernels.bp')
 
+    # compute preconditioner
     xprecond(node, node.damp_preconditioner)
 
 
