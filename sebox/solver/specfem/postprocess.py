@@ -35,7 +35,7 @@ def postprocess(node: Postprocess):
     xsum(node, node.source_mask)
 
     # pre-smooth kernels (smooth with a very small length)
-    node.add('solver.smooth', smooth_all=True,
+    node.add('solver.smooth', with_hess=True,
         smooth_input='kernels_masked.bp',
         smooth_dir='smooth_kernels',
         smooth_output='kernels.bp')
@@ -51,7 +51,7 @@ def smooth(node: Postprocess):
 
 
 def _smooth(node: Postprocess):
-    if node.smooth_all:
+    if node.with_hess:
         # pre-smooth kernels
         if node.presmooth:
             for kl in node.kernel_names:

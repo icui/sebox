@@ -27,7 +27,7 @@ def xsum(node: Node, mask: bool):
 
 def xmerge(node: Node):
     """Merge smoothed kernels and create preconditioner."""
-    _adios(node, f'xmerge_kernels {node.smooth_dir} {node.smooth_output}')
+    _adios(node, f'xmerge_kernels {node.smooth_dir} {node.smooth_output} {"1" if node.with_hess else ""}')
 
 
 def xprecond(node: Node, precond: float):
@@ -72,7 +72,7 @@ def xlbfgs(node: Node):
 def _smooth(node: Node):
     """Smooth directions."""
     node.add('solver.smooth', '../postprocess',
-        smooth_all=False,
+        with_hess=False,
         smooth_input='../direction_raw.bp',
         smooth_dir='smooth_direction',
         smooth_output='../direction.bp')

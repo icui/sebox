@@ -102,7 +102,7 @@ class Stats(tp.TypedDict, total=False):
 class Postprocess(Node['Postprocess'], _Postprocess):
     """A node to generate mesh."""
     # smooth both kernel and hessian
-    smooth_all: bool
+    with_hess: bool
 
     # input file to be smoothed
     smooth_input: str
