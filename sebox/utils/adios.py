@@ -19,34 +19,36 @@ def xsum(node: Node, mask: bool):
     _adios(node, f'xsum_kernels path.txt kernels_raw.bp')
 
     if mask:
-        _adios(node, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels.bp')
+        _adios(node, f'xsrc_mask kernels_raw.bp {getdir().path("source_mask")} kernels_masked.bp')
     
     else:
-        node.ln('kernels_raw.bp kernels.bp')
+        node.ln('kernels_raw.bp kernels_masked.bp')
 
 
 def xmerge(node: Node):
     """Merge smoothed kernels and create preconditioner."""
-    _adios(node, f'xmerge_kernels smooth ../direction.bp')
+    _adios(node, f'xmerge_kernels {node.smooth_dir} {node.smooth_output}')
 
 
 def xprecond(node: Node, precond: float):
     """Merge smoothed kernels and create preconditioner."""
     _adios(node, 'xcompute_vp_vs_hess kernels.bp DATABASES_MPI/solver_data.bp hess.bp')
     _adios(node, f'xprepare_vp_vs_precond hess.bp precond.bp {precond}')
+    _adios(node, f'xprecond_kernels kernels.bp precond.bp kernels_precond.bp')
 
 
 def xgd(node: Node):
     """Compute gradient descent direction."""
     _adios(node, 'xsteepDescent kernels.bp precond.bp direction_raw.bp')
+    _smooth(node)
 
 
 def xcg(node: Node):
     """Compute conjugate gradient direction."""
     dir0 = f'iter_{tp.cast(int, node.iteration)-1:02d}'
-    _adios(node, f'xcg_direction ../{dir0}/kernels.bp ../iter_{node.iteration_start:02d}/precond.bp ' +
-        f'kernels.bp ../iter_{node.iteration_start:02d}/precond.bp ' +
+    _adios(node, f'xcg_direction ../{dir0}/kernels.bp ../{dir0}/precond.bp kernels.bp precond.bp ' +
         f'../{dir0}/direction_raw.bp mesh/DATABASES_MPI/solver_data.bp direction_raw.bp')
+    _smooth(node)
 
 
 def xlbfgs(node: Node):
@@ -55,20 +57,26 @@ def xlbfgs(node: Node):
     lines = [str(node.iteration - iter_min)]
 
     for i in range(iter_min, node.iteration): # type: ignore
-        lines.append(f'../iter_{i:02d}/kernels.bp')
+        lines.append(f'../iter_{i:02d}/kernels_precond.bp')
         step = node.load(f'../iter_{i:02d}/step_idx.pickle')
         lines.append(f'../iter_{i:02d}/step_{step:02d}/dkernels.bp')
 
-    lines.append('kernels.bp')
+    lines.append('kernels_precond.bp')
     lines.append(f'../iter_{iter_min:02d}/precond.bp')
     node.write('\n'.join(lines), 'lbfgs.txt')
 
     _adios(node, f'xlbfgs lbfgs.txt mesh/DATABASES_MPI/solver_data.bp direction_raw.bp')
+    _smooth(node)
 
+
+def _smooth(node: Node):
+    """Smooth directions."""
+    node.add('solver.smooth', '../postprocess',
+        smooth_all=True,
+        smooth_input='../direction_raw.bp',
+        smooth_dir='smooth_direction',
+        smooth_output='../direction.bp')
 
 def xupdate(node: Node, step: float, path_model: str, path_mesh: str):
     """Update model."""
-    if not node.has('../direction.bp'):
-        node.add('solver.smooth', '../postprocess')
-
     _adios(node, f'xupdate_model {step} {path_model} {path_mesh}/DATABASES_MPI/solver_data.bp ../direction_raw.bp ../direction.bp .')

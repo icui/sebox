@@ -29,6 +29,10 @@ def postprocess(node: Postprocess):
     """Sum and precondition kernels."""
     node.add(setup)
     xsum(node, node.source_mask)
+    node.add('solver.smooth', smooth_all=False,
+        smooth_input='kernels_masked.bp',
+        smooth_dir='smooth_kernels',
+        smooth_output='kernels.bp')
 
     if node.iteration == node.iteration_start:
         xprecond(node, node.damp_preconditioner)
@@ -41,32 +45,43 @@ def smooth(node: Postprocess):
 
 
 def _smooth(node: Postprocess):
-    klen = node.smooth_kernels
-    hlen = node.smooth_hessian
+    if node.smooth_all:
+        # pre-smooth kernels
+        if node.presmooth:
+            for kl in node.kernel_names:
+                _xsmooth(node, kl, node.presmooth)
 
-    if isinstance(klen, list):
-        klen = max(klen[1], klen[0] * klen[2] ** (node.iteration or 0))
+            for kl in node.hessian_names:
+                _xsmooth(node, kl, node.presmooth)
 
-    if isinstance(hlen, list):
-        hlen = max(hlen[1], hlen[0] * hlen[2] ** (node.iteration or 0))
+    else:
+        # smooth direction
+        klen = node.smooth_kernels
+        # hlen = node.smooth_hessian
 
-    if klen:
-        for kl in node.kernel_names:
-            _xsmooth(node, kl, klen)
-    
-    if hlen:
-        for kl in node.hessian_names:
-            _xsmooth(node, kl, hlen)
+        if isinstance(klen, list):
+            klen = max(klen[1], klen[0] * klen[2] ** (node.iteration or 0))
+
+        # if isinstance(hlen, list):
+        #     hlen = max(hlen[1], hlen[0] * hlen[2] ** (node.iteration or 0))
+
+        if klen:
+            for kl in node.kernel_names:
+                _xsmooth(node, kl, klen)
+        
+        # if hlen:
+        #     for kl in node.hessian_names:
+        #         _xsmooth(node, kl, hlen)
 
 
 def _xsmooth(node: Postprocess, kl: str, length: float):
     node.add_mpi('bin/xsmooth_laplacian_sem_adios ' + ' '.join([
         f'{length} {length}', kl,
-        '../direction_raw.bp',
+        node.smooth_input,
         'DATABASES_MPI/',
-        f'smooth/kernels_smooth_{kl}_crust_mantle.bp',
+        f'{node.smooth_dir}/kernels_smooth_{kl}_crust_mantle.bp',
         f'{node.smooth_with_prem or 0}',
-        f'> OUTPUT_FILES/smooth_{kl}.txt'
+        f'> {node.smooth_dir}/smooth_{kl}.txt'
     ]), getsize, name=f'smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
 
 

@@ -23,6 +23,9 @@ class _Postprocess(tp.Protocol):
     # radius for smoothing hessian
     smooth_hessian: tp.Optional[tp.Union[float, tp.List[float]]]
 
+    # radius for pre-smoothing
+    presmooth: tp.Optional[float]
+
     # increase smoothing length with PREM velocity (length *= (vp / vp0) ** smooth_depth)
     smooth_with_prem: tp.Optional[float]
 
@@ -98,6 +101,17 @@ class Stats(tp.TypedDict, total=False):
 
 class Postprocess(Node['Postprocess'], _Postprocess):
     """A node to generate mesh."""
+    # smooth both kernel and hessian
+    smooth_all: bool
+
+    # input file to be smoothed
+    smooth_input: str
+
+    # working directory of smoothing
+    smooth_dir: str
+
+    # output smooth file
+    smooth_output: str
 
 
 class Solver(Node['Solver'], _Solver):

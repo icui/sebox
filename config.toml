@@ -58,9 +58,10 @@ test_bury = 0.0
 
 # kernel processing
 kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
-hessian_names = []
+hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
 smooth_kernels = 100.0
 smooth_hessian = 100.0
+presmooth = 1.0
 smooth_with_prem = 0
 fixed_frequency = true
 damp_preconditioner = 0.000001
@@ -74,7 +75,7 @@ amplitude_factor = 0.0
 double_difference = true
 
 # optimization
-niters = 50
+niters = 5
 nsteps = 5
 iteration_restart = 5
 step_init = 0.01
