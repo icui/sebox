@@ -34,8 +34,7 @@ def postprocess(node: Postprocess):
         smooth_dir='smooth_kernels',
         smooth_output='kernels.bp')
 
-    if node.iteration == node.iteration_start:
-        xprecond(node, node.damp_preconditioner)
+    xprecond(node, node.damp_preconditioner)
 
 
 def smooth(node: Postprocess):
