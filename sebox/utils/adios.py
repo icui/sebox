@@ -71,7 +71,7 @@ def xlbfgs(node: Node):
 
 def _smooth(node: Node):
     """Smooth directions."""
-    node.add('solver.smooth', '../postprocess',
+    node.add('solver.smooth', 'postprocess',
         with_hess=False,
         smooth_input='../direction_raw.bp',
         smooth_dir='smooth_direction',
