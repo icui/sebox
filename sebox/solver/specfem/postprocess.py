@@ -12,7 +12,8 @@ if tp.TYPE_CHECKING:
 def setup(node: Postprocess):
     """Create mesher node."""
     # link directories
-    node.mkdir('smooth')
+    node.mkdir('smooth_kernels')
+    node.mkdir('smooth_direction')
     node.ln(node.rel(node.path_mesh, 'bin'))
     node.ln(node.rel(node.path_mesh, 'DATA'))
     node.ln(node.rel(node.path_mesh, 'OUTPUT_FILES'))
