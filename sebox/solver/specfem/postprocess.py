@@ -36,6 +36,7 @@ def postprocess(node: Postprocess):
 
     # pre-smooth kernels (smooth with a very small length)
     node.add('solver.smooth', with_hess=True,
+        smooth_with_prem=1,
         smooth_input='kernels_masked.bp',
         smooth_dir='smooth_kernels',
         smooth_output='kernels.bp')
