@@ -35,11 +35,15 @@ def postprocess(node: Postprocess):
     xsum(node, node.source_mask)
 
     # pre-smooth kernels (smooth with a very small length)
-    node.add('solver.smooth', with_hess=True,
-        smooth_with_prem=1,
-        smooth_input='kernels_masked.bp',
-        smooth_dir='smooth_kernels',
-        smooth_output='kernels.bp')
+    if node.presmooth:
+        node.add('solver.smooth', with_hess=True,
+            smooth_with_prem=1,
+            smooth_input='kernels_masked.bp',
+            smooth_dir='smooth_kernels',
+            smooth_output='kernels.bp')
+    
+    else:
+        node.ln('kernels_masked.bp', 'kernels.bp')
 
     # compute preconditioner
     xprecond(node, node.damp_preconditioner)
