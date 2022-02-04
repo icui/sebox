@@ -89,7 +89,7 @@ def _xsmooth(node: Postprocess, kl: str, length: float):
         f'{node.smooth_dir}/kernels_smooth_{kl}_crust_mantle.bp',
         f'{node.smooth_with_prem or 0}',
         f'> {node.smooth_dir}/smooth_{kl}.txt'
-    ]), getsize, name=f'smooth_{kl}{"2" if node.with_hess else ""}', data={'prober': partial(probe_smoother, kl)})
+    ]), getsize, name=f'{"pre" if node.with_hess else ""}smooth_{kl}', data={'prober': partial(probe_smoother, kl)})
 
 
 def probe_smoother(kl: str, node: Postprocess):
