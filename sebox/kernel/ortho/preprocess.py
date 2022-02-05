@@ -371,7 +371,12 @@ def _enc_diff(enc: Encoding, stas: tp.List[str]):
 
     for event in enc['fslots']:
         # read event data
-        data = cdir.load(f'ft_diff_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy')
+        if cdir.has(encsrc := f'ft_diff_p{root.task_nprocs}/{event}/{root.mpi.pid}.npy'):
+            data = cdir.load(encsrc)
+        
+        else:
+            data = None
+
         slots = enc['fslots'][event]
 
         # record frequency components
@@ -381,8 +386,10 @@ def _enc_diff(enc: Encoding, stas: tp.List[str]):
             for j, cmp in enumerate(cmps):
                 w = getmeasurements(event, None, cmp, group, True, True, True, True)[sidx]
                 i = np.squeeze(np.where(w > 0))
-                encoded[i, j, idx] = data[i, j, idx]
                 weight[i, j, idx] = w[i]
+
+                if data is not None:
+                    encoded[i, j, idx] = data[i, j, idx]
     
     root.mpi.mpidump(encoded)
     root.mpi.mpidump(weight, '../enc_weight')
