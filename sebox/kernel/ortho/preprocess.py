@@ -139,11 +139,13 @@ def _prepare_frequencies(node: Ortho):
         slots.append(set(range(enc['nfreq'])))
 
     # get available frequency bands for each event (sumed over stations and components)
+    noise = True if node.noise_threshold else False
+
     for event in events:
         for s in fslots:
             s[event] = []
 
-        event_bands[event] = getmeasurements(event, balance=True, noise=True).sum(axis=0).sum(axis=0)
+        event_bands[event] = getmeasurements(event, balance=True, noise=noise).sum(axis=0).sum(axis=0)
     
     def find_slot(e: str, b: tp.Optional[int]):
         if b is None:
