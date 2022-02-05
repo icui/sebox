@@ -108,8 +108,9 @@ def getmeasurements(event: tp.Union[str, int, None] = None, station: tp.Union[st
     if categorical and 'measurements' not in cache:
         cache['measurements'] = getdir().load('measurements.npy')
 
-    if geographical and 'weightings' not in cache:
-        cache['weightings'] = getdir().load('weightings.npy')
+    #FIXME
+    # if geographical and 'weightings' not in cache:
+    #     cache['weightings'] = getdir().load('weightings.npy')
 
     if noise and 'noise' not in cache:
         cache['noise'] = getdir().load('noise.npy')
