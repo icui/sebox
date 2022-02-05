@@ -108,7 +108,8 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     syn = root.mpi.mpiload(f'../enc_syn')
     obs = root.mpi.mpiload(f'../enc_obs')
     # ref = root.mpi.mpiload(f'../enc_diff')
-    weight = root.mpi.mpiload(f'../enc_weight')
+    # weight = root.mpi.mpiload(f'../enc_weight')
+    weight = np.zeros(syn.shape)
 
     # unwrap phases
     # weight[np.where(abs(ref) > np.pi)] = 0.0
