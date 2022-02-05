@@ -24,13 +24,13 @@ def catalog(node: Ortho):
 def _encode_catalog(node: Ortho):
     cdir = getdir()
 
-    # get available stations of an event
-    if not cdir.has('event_stations.pickle'):
-        node.add(index_events, args=()) # type: ignore
+    # # get available stations of an event
+    # if not cdir.has('event_stations.pickle'):
+    #     node.add(index_events, args=()) # type: ignore
 
-    # merge stations into a single file
-    if not cdir.has('station_lines.pickle'):
-        node.add(index_stations, args=()) # type: ignore
+    # # merge stations into a single file
+    # if not cdir.has('station_lines.pickle'):
+    #     node.add(index_stations, args=()) # type: ignore
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
