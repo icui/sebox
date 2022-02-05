@@ -2,7 +2,7 @@ from __future__ import annotations
 import typing as tp
 from os import path
 
-from sebox import root, Directory
+from sebox import root, Directory, Node
 
 if tp.TYPE_CHECKING:
     from numpy import ndarray
@@ -219,6 +219,46 @@ def _format_station(lines: dict, ll: tp.List[str]):
         line += num
     
     lines[ll[1] + '.' + ll[0]] = line
+
+
+def create_catalog(node: Node):
+    """Create catalog datatase."""
+    import numpy as np
+
+    #FIXME create_catalog (measurements.npy, weightings.npy, noise.npy, ft_obs, ft_diff)
+    cdir = getdir()
+    event_data = {}
+    station_locations = {}
+
+    for event in cdir.ls('events'):
+        lines = cdir.readlines(f'events/{event}')
+        elat = float(lines[4].split()[-1])
+        elon = float(lines[5].split()[-1])
+        depth = float(lines[6].split()[-1])
+        hdur = float(lines[3].split()[-1])
+        event_data[event] = elat, elon, depth, hdur
+
+        for line in getdir().readlines(f'stations/STATIONS.{event}'):
+            if len(ll := line.split()) == 6:
+                station = ll[1] + '.' + ll[0]
+                slat = float(ll[2])
+                slon = float(ll[3])
+                station_locations[station] = slat, slon
+    
+    events = sorted(event_data.keys())
+    stations = sorted(station_locations.keys())
+    cmps = sorted(['R', 'T', 'Z'])
+    
+    # save results
+    cdir.dump(events, 'events.pickle')
+    cdir.dump(stations, 'stations.pickle')
+    cdir.dump(cmps, 'components.pickle')
+    cdir.dump(event_data, 'event_data.pickle')
+    cdir.dump(station_locations, 'station_locations.pickle')
+
+    #FIXME
+    c = np.ones([len(events), len(stations), len(cmps), 15], dtype=int)
+    cdir.dump(c, 'measurements.npy')
 
 
 def index_stations():
