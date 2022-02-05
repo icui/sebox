@@ -18,24 +18,28 @@ def catalog(node: Ortho):
         node.add(create_catalog, args=())
     
     # concurrent tasks
-    sub = node.add(concurrent=True)
+    node.add(_encode_catalog, concurrent=True)
+
+
+def _encode_catalog(node: Ortho):
+    cdir = getdir()
 
     # get available stations of an event
     if not cdir.has('event_stations.pickle'):
-        sub.add(index_events, args=()) # type: ignore
+        node.add(index_events, args=()) # type: ignore
 
     # merge stations into a single file
     if not cdir.has('station_lines.pickle'):
-        sub.add(index_stations, args=()) # type: ignore
+        node.add(index_stations, args=()) # type: ignore
     
     # compute back-azimuth
     if not cdir.has(f'baz_p{root.task_nprocs}'):
-        sub.add_mpi(_scatter_baz, arg_mpi=getstations())
+        node.add_mpi(_scatter_baz, arg_mpi=getstations())
     
     
     # convert observed traces into MPI format
-    if not sub.test_encoding and not cdir.has(f'ft_obs_p{root.task_nprocs}'):
-        solver = sub.add()
+    if not node.test_encoding and not cdir.has(f'ft_obs_p{root.task_nprocs}'):
+        solver = node.add()
 
         if not cdir.has(f'raw_obs_p{root.task_nprocs}'):
             solver.add(partial(_forward, 'obs'), concurrent=True)
@@ -49,7 +53,7 @@ def catalog(node: Ortho):
 
     # convert differences between observed and synthetic data into MPI format
     if not cdir.has(f'ft_diff_p{root.task_nprocs}'):
-        sub.add(partial(_scatter, 'diff'), concurrent=True)
+        node.add(partial(_scatter, 'diff'), concurrent=True)
 
 
 def _scatter_baz(stas: tp.List[str]):
