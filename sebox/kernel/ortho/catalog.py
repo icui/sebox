@@ -15,7 +15,7 @@ def catalog(node: Ortho):
     cdir = getdir()
 
     if not cdir.has('measurements.npy'):
-        node.add(create_catalog, args=())
+        node.add(create_catalog)
     
     # concurrent tasks
     node.add(_encode_catalog, concurrent=True)
