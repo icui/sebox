@@ -229,8 +229,10 @@ def create_catalog(node: Node):
     cdir = getdir()
     event_data = {}
     station_locations = {}
+    event_stations = {}
 
     for event in cdir.ls('events'):
+        event_stations[event] = []
         lines = cdir.readlines(f'events/{event}')
         elat = float(lines[4].split()[-1])
         elon = float(lines[5].split()[-1])
@@ -244,6 +246,7 @@ def create_catalog(node: Node):
                 slat = float(ll[2])
                 slon = float(ll[3])
                 station_locations[station] = slat, slon
+                event_stations[event].append(station)
     
     events = sorted(event_data.keys())
     stations = sorted(station_locations.keys())
@@ -257,8 +260,15 @@ def create_catalog(node: Node):
     cdir.dump(station_locations, 'station_locations.pickle')
 
     #FIXME
-    c = np.ones([len(events), len(stations), len(cmps), 15], dtype=int)
+    c = np.zeros([len(events), len(stations), len(cmps), 15], dtype=int)
+
+    for i, event in enumerate(events):
+        for j, station in enumerate(stations):
+            if station in event_stations[event]:
+                c[i, j, :, :] = 1
+
     cdir.dump(c, 'measurements.npy')
+    cdir.dump(event_stations, 'event_stations.pickle')
 
 
 def index_stations():
