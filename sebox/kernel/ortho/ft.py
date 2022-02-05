@@ -118,7 +118,7 @@ def mf(enc: Encoding, stas: tp.List[str], misfit_only: bool = True):
     amp_diff = np.log(np.abs(syn) / np.abs(obs)) * weight
 
     #FIXME
-    # weight[np.where(np.invert(np.isnan(phase_diff)))] = 1.0
+    weight[np.where(np.invert(np.isnan(phase_diff)))] = 1.0
 
     if enc['double_difference']:
         # unwrap or clip phases
