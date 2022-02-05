@@ -297,8 +297,7 @@ def _encode(node: Ortho):
 
     if not node.test_encoding:
         node.add_mpi(_enc_obs, arg=enc, arg_mpi=stas, cwd='enc_obs')
-
-    node.add_mpi(_enc_diff, arg=enc, arg_mpi=stas, cwd='enc_diff')
+        node.add_mpi(_enc_diff, arg=enc, arg_mpi=stas, cwd='enc_diff')
 
 
 def _enc_obs(enc: Encoding, stas: tp.List[str]):
