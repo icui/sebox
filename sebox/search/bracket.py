@@ -29,7 +29,7 @@ def update(node: Search):
     """Update model and mesh."""
     kl = node.inherit_kernel
     step = node.load('step.pickle')
-    xupdate(node, step, node.rel(kl.path_model), node.rel(kl.path_mesh))
+    xupdate(node, step, node.rel(kl.path_model), node.rel(kl.path_mesh or kl.path('mesh')))
 
 
 def check(node: Search):
