@@ -26,6 +26,7 @@ def forward(node: Ortho):
                 path_event=node.path(f'{cwd}/SUPERSOURCE'),
                 path_stations=node.path(f'{cwd}/SUPERSTATION'),
                 path_mesh=node.path_mesh2,
+                path_model=node.path_model2,
                 monochromatic_source=True,
                 save_forward=not node.misfit_only)
 
