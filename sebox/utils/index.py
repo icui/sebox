@@ -92,7 +92,7 @@ def index_stations(events):
     if root.mpi.rank == 0:
         event_dict = dict(ChainMap(*event_dict))
         station_dict = dict(ChainMap(*station_dict))
-        supersta = sum(supersta, '')
+        supersta = ''.join(supersta)
 
         events = sorted(list(event_dict.keys()))
         stations = sorted(list(station_dict.keys()))
