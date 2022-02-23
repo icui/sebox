@@ -1,5 +1,6 @@
 import numpy as np
 from nnodes import root, Node
+from collections import ChainMap
 
 
 def create_index(node: Node):
@@ -21,10 +22,11 @@ def create_index(node: Node):
 
 
 def index_events(events):
-    from collections import ChainMap
     from .catalog import catalog
 
     catalog.init()
+    
+    # dict of event data
     event_dict = {}
 
     for event in events:
@@ -35,78 +37,100 @@ def index_events(events):
         hdur = float(lines[3].split()[-1])
         event_dict[event] = lat, lon, depth, hdur
 
-    # gather and save results
+    # gather results
     event_dict = root.mpi.comm.gather(event_dict, root=0)
     
     if root.mpi.rank == 0:
         event_dict = dict(ChainMap(*event_dict))
         events = sorted(list(event_dict.keys()))
+
+        # merge event data into one array
         event_npy = np.zeros([len(events), 4])
 
         for i, event in enumerate(events):
             event_npy[i, :] = event_dict[event]  
 
+        # save data
         catalog.dump(events, 'events.pickle')
         catalog.dump(event_npy, 'event_data.npy')
 
 
-# def index_stations(events):
-#     from .catalog import catalog
+def index_stations(events):
+    from .catalog import catalog
     
-#     catalog.init()
+    catalog.init()
 
-#     station_dict = {}
-#     lines = {}
-#     event_stations = {}
+    # dict of station names of events
+    event_dict = {}
 
-#     for event in events:
-#         event_stations[event] = []
+    # dict of station data
+    station_dict = {}
 
-#         for line in catalog.readlines(f'stations/STATIONS.{event}'):
-#             if len(ll := line.split()) == 6:
-#                 station = ll[1] + '.' + ll[0]
-#                 lat = float(ll[2])
-#                 lon = float(ll[3])
-#                 elevation = float(ll[4])
-#                 burial = float(ll[5])
+    # content of SUPERSTATION file
+    supersta = ''
 
-#                 station_dict[station] = lat, lon, elevation, burial
-#                 event_stations[event].append(station)
-#                 _format_station(lines, ll)
+    for event in events:
+        event_dict[event] = []
+
+        for line in catalog.readlines(f'stations/STATIONS.{event}'):
+            if len(ll := line.split()) == 6:
+                station = ll[1] + '.' + ll[0]
+                lat = float(ll[2])
+                lon = float(ll[3])
+                elevation = float(ll[4])
+                burial = float(ll[5])
+
+                event_dict[event].append(station)
+                station_dict[station] = lat, lon, elevation, burial
+                supersta += _format_station(ll) + '\n'
     
-#     # create indices
-#     stations = sorted(data.keys())
-#     event_data = np.zeros([len(events), 4])
+    # gather and save results
+    event_dict = root.mpi.comm.gather(event_dict, root=0)
+    station_dict = root.mpi.comm.gather(station_dict, root=0)
+    supersta = root.mpi.comm.gather(supersta, root=0)
 
-#     for i, event in enumerate(events):
-#         event_data[i, :] = data[event]
-    
-#     catalog.dump(stations, 'stations.pickle')
-#     catalog.dump(event_data, 'event_data.pickle')
-#     catalog.dump(station_data, 'station_data.pickle')
+    if root.mpi.rank == 0:
+        event_dict = dict(ChainMap(*event_dict))
+        station_dict = dict(ChainMap(*station_dict))
+        supersta = sum(supersta, '')
 
+        events = sorted(list(event_dict.keys()))
+        stations = sorted(list(station_dict.keys()))
 
-# def _format_station(lines: dict, ll: tp.List[str]):
-#     """Format a line in STATIONS file."""
-#     # location of dots for floating point numbers
-#     dots = 28, 41, 55, 62
+        # merge station data into one array
+        station_npy = np.zeros([len(stations), 4])
 
-#     # line with station name
-#     line = ll[0].ljust(13) + ll[1].ljust(5)
-
-#     # add numbers with correct indentation
-#     for i in range(4):
-#         num = ll[i + 2]
-
-#         if '.' in num:
-#             nint, _ = num.split('.')
+        for i, event in enumerate(events):
+            station_npy[i, :] = station_dict[event]
         
-#         else:
-#             nint = num
+        # save result
+        catalog.dump(stations, 'stations.pickle')
+        catalog.dump(station_npy, 'station_data.npy')
+        catalog.dump(event_dict, 'event_stations.pickle')
+        catalog.dump(supersta, 'SUPERSTATION')
 
-#         while len(line) + len(nint) < dots[i]:
-#             line += ' '
+
+def _format_station(ll: list):
+    """Format a line in STATIONS file."""
+    # location of dots for floating point numbers
+    dots = 28, 41, 55, 62
+
+    # line with station name
+    line = ll[0].ljust(13) + ll[1].ljust(5)
+
+    # add numbers with correct indentation
+    for i in range(4):
+        num = ll[i + 2]
+
+        if '.' in num:
+            nint, _ = num.split('.')
         
-#         line += num
+        else:
+            nint = num
+
+        while len(line) + len(nint) < dots[i]:
+            line += ' '
+        
+        line += num
     
-#     lines[ll[1] + '.' + ll[0]] = line
+    return line
