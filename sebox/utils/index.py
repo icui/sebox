@@ -60,18 +60,13 @@ def index_stations(events):
     
     catalog.init()
 
-    # dict of station names of events
-    event_dict = {}
-
     # dict of station data
     station_dict = {}
 
     # content of SUPERSTATION file
-    supersta = ''
+    station_lines = {}
 
     for event in events:
-        event_dict[event] = []
-
         for line in catalog.readlines(f'stations/STATIONS.{event}'):
             if len(ll := line.split()) == 6:
                 station = ll[1] + '.' + ll[0]
@@ -80,22 +75,18 @@ def index_stations(events):
                 elevation = float(ll[4])
                 burial = float(ll[5])
 
-                event_dict[event].append(station)
                 station_dict[station] = lat, lon, elevation, burial
-                supersta += _format_station(ll) + '\n'
+                station_lines[station] = _format_station(ll)
     
     # gather and save results
-    event_dict = root.mpi.comm.gather(event_dict, root=0)
     station_dict = root.mpi.comm.gather(station_dict, root=0)
-    supersta = root.mpi.comm.gather(supersta, root=0)
+    station_lines = root.mpi.comm.gather(station_lines, root=0)
 
     if root.mpi.rank == 0:
-        event_dict = dict(ChainMap(*event_dict))
         station_dict = dict(ChainMap(*station_dict))
-        supersta = ''.join(supersta)
-
-        events = sorted(list(event_dict.keys()))
+        station_lines = dict(ChainMap(*station_lines))
         stations = sorted(list(station_dict.keys()))
+
 
         # merge station data into one array
         station_npy = np.zeros([len(stations), 4])
@@ -106,8 +97,7 @@ def index_stations(events):
         # save result
         catalog.dump(stations, 'stations.pickle')
         catalog.dump(station_npy, 'station_data.npy')
-        catalog.dump(event_dict, 'event_stations.pickle')
-        catalog.write(supersta, 'SUPERSTATION')
+        catalog.write(''.join(station_lines.values()), 'station_lines.pickle')
 
 
 def _format_station(ll: list):
