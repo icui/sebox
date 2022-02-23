@@ -2,11 +2,11 @@ import typing as tp
 import numpy as np
 from nnodes import root, Node
 
-from sebox import catalog
-
 
 def create_index(node: Node):
     """Index events and stations."""
+    from .catalog import catalog
+
     node.concurrent = True
 
     if not catalog.has('components.pickle'):
@@ -22,6 +22,8 @@ def create_index(node: Node):
 
 
 def index_events(events: tp.List[str]):
+    from .catalog import catalog
+
     data = {}
 
     for event in events:
