@@ -107,7 +107,7 @@ def index_stations(events):
         catalog.dump(stations, 'stations.pickle')
         catalog.dump(station_npy, 'station_data.npy')
         catalog.dump(event_dict, 'event_stations.pickle')
-        catalog.dump(supersta, 'SUPERSTATION')
+        catalog.write(supersta, 'SUPERSTATION')
 
 
 def _format_station(ll: list):
