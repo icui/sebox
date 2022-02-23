@@ -36,7 +36,7 @@ def index_events(events):
         event_dict[event] = lat, lon, depth, hdur
     
     # create indices
-    events = event_dict.keys()
+    events = list(event_dict.keys())
     
     # save results
     events = root.mpi.comm.gather(events, root=0)
