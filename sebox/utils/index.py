@@ -46,6 +46,7 @@ def index_events(events):
     events = root.mpi.comm.gather(events, root=0)
     
     if root.mpi.rank == 0:
+        print(events)
         events = sum(events)
         print(root.mpi.rank)
     # catalog.dump(events, 'events.pickle')
