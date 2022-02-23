@@ -24,7 +24,7 @@ def create_index(node: Node):
 def index_events(events):
     from .catalog import catalog
 
-    data = {}
+    event_dict = {}
 
     for event in events:
         lines = catalog.readlines(f'events/{event}')
@@ -33,24 +33,25 @@ def index_events(events):
         depth = float(lines[6].split()[-1])
         hdur = float(lines[3].split()[-1])
 
-        data[event] = lat, lon, depth, hdur
+        event_dict[event] = lat, lon, depth, hdur
     
     # create indices
-    events = sorted(data.keys())
-    event_data = np.zeros([len(events), 4])
-
-    for i, event in enumerate(events):
-        event_data[i, :] = data[event]
+    events = event_dict.keys()
     
     # save results
     events = root.mpi.comm.gather(events, root=0)
+    event_dict = root.mpi.comm.gather(event_dict, root=0)
     
     if root.mpi.rank == 0:
-        print(events)
-        events = sum(events)
-        print(root.mpi.rank)
-    # catalog.dump(events, 'events.pickle')
-    # catalog.dump(event_data, 'event_data.npy')
+        events = sorted(sum(events, []))
+        event_dict = sum(event_dict, {})
+        event_data = np.zeros([len(events), 4])
+
+        for i, event in enumerate(events):
+            event_data[i, :] = event_dict[event]  
+
+        catalog.dump(events, 'events.pickle')
+        catalog.dump(event_data, 'event_data.npy')
 
 
 # def index_stations(_):
