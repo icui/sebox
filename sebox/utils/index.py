@@ -15,7 +15,7 @@ def create_index(node: Node):
     events = catalog.ls('events')
 
     if not catalog.has('events.pickle') or not catalog.has('event_data.npy'):
-        node.add(index_events, arg_mpi=events)
+        node.add_mpi(index_events, arg_mpi=events)
     
     # if not catalog.has('stations.pickle') or not catalog.has('station_data.npy'):
     #     node.add(index_stations, arg_mpi=events)
