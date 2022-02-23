@@ -34,17 +34,13 @@ def index_events(events):
         depth = float(lines[6].split()[-1])
         hdur = float(lines[3].split()[-1])
         event_dict[event] = lat, lon, depth, hdur
-    
-    # create indices
-    events = list(event_dict.keys())
-    
-    # save results
-    events = root.mpi.comm.gather(events, root=0)
+
+    # gather and save results
     event_dict = root.mpi.comm.gather(event_dict, root=0)
     
     if root.mpi.rank == 0:
-        events = sorted(sum(events, []))
         event_dict = dict(ChainMap(*event_dict))
+        events = sorted(list(event_dict.keys()))
         event_npy = np.zeros([len(events), 4])
 
         for i, event in enumerate(events):
@@ -54,12 +50,16 @@ def index_events(events):
         catalog.dump(event_npy, 'event_data.npy')
 
 
-# def index_stations(_):
-#     data = {}
+# def index_stations(events):
+#     from .catalog import catalog
+    
+#     catalog.init()
+
+#     station_dict = {}
 #     lines = {}
 #     event_stations = {}
 
-#     for event in catalog.ls('events'):
+#     for event in events:
 #         event_stations[event] = []
 
 #         for line in catalog.readlines(f'stations/STATIONS.{event}'):
@@ -70,12 +70,12 @@ def index_events(events):
 #                 elevation = float(ll[4])
 #                 burial = float(ll[5])
 
-#                 data[station] = lat, lon, elevation, burial
+#                 station_dict[station] = lat, lon, elevation, burial
 #                 event_stations[event].append(station)
 #                 _format_station(lines, ll)
     
 #     # create indices
-#     events = sorted(data.keys())
+#     stations = sorted(data.keys())
 #     event_data = np.zeros([len(events), 4])
 
 #     for i, event in enumerate(events):
@@ -110,7 +110,3 @@ def index_events(events):
 #         line += num
     
 #     lines[ll[1] + '.' + ll[0]] = line
-
-
-# def index_components(_):
-#     catalog.dump(['R', 'T', 'Z'], 'components.pickle')
