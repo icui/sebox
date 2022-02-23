@@ -24,6 +24,7 @@ def index_events(events):
     from collections import ChainMap
     from .catalog import catalog
 
+    catalog.init()
     event_dict = {}
 
     for event in events:
@@ -32,7 +33,6 @@ def index_events(events):
         lon = float(lines[5].split()[-1])
         depth = float(lines[6].split()[-1])
         hdur = float(lines[3].split()[-1])
-        
         event_dict[event] = lat, lon, depth, hdur
     
     # create indices
