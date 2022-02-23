@@ -21,7 +21,7 @@ def create_index(node: Node):
     #     node.add(index_stations, arg_mpi=events)
 
 
-def index_events(events: tp.List[str]):
+def index_events(events):
     from .catalog import catalog
 
     data = {}
@@ -43,7 +43,11 @@ def index_events(events: tp.List[str]):
         event_data[i, :] = data[event]
     
     # save results
-    print(root.mpi.rank)
+    events = root.mpi.comm.gather(events, root=0)
+    
+    if root.mpi.rank == 0:
+        events = sum(events)
+        print(root.mpi.rank)
     # catalog.dump(events, 'events.pickle')
     # catalog.dump(event_data, 'event_data.npy')
 
