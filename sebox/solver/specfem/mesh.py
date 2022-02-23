@@ -1,16 +1,13 @@
 from __future__ import annotations
 import typing as tp
 
-from sebox import Directory
-from .shared import setpars, xmeshfem
-
-if tp.TYPE_CHECKING:
-    from .typing import Par_file, Specfem
+from nnodes import Node, Directory
+from .shared import setpars, xmeshfem, Par_file
 
 
-def setup(node: Specfem):
+def setup(node: Node):
     """Create mesher node."""
-    src = node.path_specfem
+    src = tp.cast(str, node.path_specfem)
     d = Directory(src)
 
     # specfem directories
@@ -52,7 +49,7 @@ def setup(node: Specfem):
     setpars(node, pars)
 
 
-async def mesh(node: Specfem):
+async def mesh(node: Node):
     """Generate mesh."""
     node.add(setup)
     xmeshfem(node)

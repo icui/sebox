@@ -1,15 +1,13 @@
 from __future__ import annotations
 import typing as tp
 
+from nnodes import Node
+from sebox import catalog
 from .mesh import setup as setup_mesh
-from .shared import setpars, xmeshfem, xspecfem, getsize
-
-if tp.TYPE_CHECKING:
-    from .typing import Par_file, Specfem
-    from sebox.typing.solver import Stats
+from .shared import setpars, xmeshfem, xspecfem, getsize, Par_file
 
 
-def setup(node: Specfem):
+def setup(node: Node):
     """Create forward node."""
     if not node.path_mesh and not node.path_model:
         raise AttributeError('path_mesh or path_model is required')
@@ -17,7 +15,7 @@ def setup(node: Specfem):
     setup_mesh(node)
 
     # update Par_file
-    pars: Par_file = { 'SIMULATION_TYPE': 1 }
+    pars: Par_file = { 'SIMULATION_TYPE': 1, 'OUTPUT_SEISMOS_3D_ARRAY': True }
 
     if node.save_forward is not None:
         pars['SAVE_FORWARD'] = node.save_forward
@@ -38,40 +36,24 @@ def setup(node: Specfem):
     else:
         pars['STEADY_STATE_KERNEL'] = False
     
-    if node.use_asdf:
-        pars['OUTPUT_SEISMOS_ASDF'] = True
-        pars['OUTPUT_SEISMOS_3D_ARRAY'] = False
-    
-    else:
-        pars['OUTPUT_SEISMOS_ASDF'] = False
-        pars['OUTPUT_SEISMOS_3D_ARRAY'] = True
-    
     if node.sample_interval:
         pars['NTSTEP_BETWEEN_OUTPUT_SAMPLE'] = node.sample_interval
     
     setpars(node, pars)
 
 
-def align(node: Specfem):
+def align(node: Node):
     """Convert output seismograms with processing format."""
-    from sebox.utils.catalog import getstations
-
     lines = node.readlines('OUTPUT_FILES/seismogram_stats.txt')
     dt_adj = float(lines[0].split('=')[-1])
     nt_adj = int(lines[1].split('=')[-1])
 
-    if node.use_asdf:
-        stats: Stats = node.load('traces/stats.pickle')
-        stats['dt_adj'] = dt_adj
-        stats['nt_adj'] = nt_adj
-
-    else:
-        stats: Stats = {
-            'dt_adj': dt_adj,
-            'nt_adj': nt_adj,
-            'dt': float(lines[2].split('=')[-1]),
-            'nt': int(lines[3].split('=')[-1]),
-            'cmps': ('N', 'E', 'Z')}
+    stats = {
+        'dt_adj': dt_adj,
+        'nt_adj': nt_adj,
+        'dt': float(lines[2].split('=')[-1]),
+        'nt': int(lines[3].split('=')[-1]),
+        'cmps': ('N', 'E', 'Z')}
 
     node.dump(stats, 'traces/stats.pickle')
 
@@ -91,13 +73,13 @@ def align(node: Specfem):
                     nodes[p].append(sta)
 
     node.mkdir('stations')
-    node.add_mpi(_align, arg=(stats, nodes), arg_mpi=getstations())
+    node.add_mpi(_align, arg=(stats, nodes), arg_mpi=catalog.stations)
 
 
-def _align(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str]):
+def _align(arg: tp.Tuple[dict, tp.Dict[int, tp.List[str]]], stas: tp.List[str]):
     import numpy as np
     from scipy.io import FortranFile
-    from sebox import root
+    from nnodes import root
     
     stats, nodes = arg
     data = np.full([len(stas), len(stats['cmps']), stats['nt']], np.nan)
@@ -116,7 +98,7 @@ def _align(arg: tp.Tuple[Stats, tp.Dict[int, tp.List[str]]], stas: tp.List[str])
     root.mpi.mpidump(stas, 'stations')
 
 
-def forward(node: Specfem):
+def forward(node: Node):
     """Forward simulation."""
     node.add(setup)
     xmeshfem(node)

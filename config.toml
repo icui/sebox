@@ -1,83 +1,21 @@
-# module configuration
-test_precond = true
-module_system = "summit"
-module_solver = "specfem"
-module_kernel = "ortho"
-module_optimizer = "lbfgs"
-module_search = "bracket"
+[job]
+name = "sebox"                              # job name
+nnodes = 64                                 # total number of nodes
+account = "GEO111"                          # job account
+walltime = 120.0                            # walltime to request
+gap = 2.0                                   # terminate job before <gap> minutes before walltime runs out
+debug = false                               # submit to debug queue
+system = ['nnodes.job', 'Summit']           # job scheduler
 
-# job configuration
-job_name = "north"
-job_nnodes = 64
-job_account = "GEO111"
-job_walltime = 120.0
-job_gap = 2.0
-job_debug = false
+[root]
+task = ['sebox.solver', 'forward']          # main task
+task_nnodes = 1                             # default number of MPI processes to run MPI tasks
 
-# main task
-task = "optimizer"
-task_nnodes = 1
+solver = 'specfem'                          # module for forward and adjoint simulation
+misfit = 'phase'                            # compute misfit and adjoint source
+kernel = 'ortho'                            # kernel computation
+optimizer = 'gd'                            # determines model update direction
+search = 'bracket'                          # determines step length give search direction
 
-# path to external directories
-path_mesh = "../mesh_m00"
-path_mesh2 = "../mesh_m25"
-path_specfem = "/gpfs/alpine/scratch/ccui/geo111/sf"
-path_catalog = "/gpfs/alpine/scratch/ccui/geo111/north_syn"
-path_adios = "/gpfs/alpine/scratch/ccui/geo111/wjbp"
-path_model = "/gpfs/alpine/scratch/ccui/geo111/models/m00.bp"
-
-# catalog
-frequency_increment = 60
-deglitch = [1, 200, 95]
-measurement_threshold = 0
-noise_threshold = 1e-8
-event_weighting = [0.33, 1.0, 4.0, 5.0]
-station_weighting = [0.125, 0.5, 2.0, 5.0]
-remove_response = [0.00533, 0.00666, 0.0589, 0.0735]
-
-# solver
-duration = 488.0
-transient_duration = 200.0
-lddrk = false
-catalog_boundary = [85.0, -115.0, 70.0, 90.0]
-# catalog_boundary = [67.0, 91.0, 50.0, 90.0]
-
-# kernel
-dt = 1.6
-sample_interval = 10
-unwrap_phase = false
-period_range = [17.0, 150.0]
-nkernels = 1
-# reference_velocity = 3.0
-normalize_source = true
-normalize_frequency = false
-taper = 5.0
-seed = 1
-test_events = ['C201205242247A', 'C201904232015A']
-test_bury = 0.0
-
-# kernel processing
-kernel_names = ['bulk_c_kl', 'bulk_betav_kl', 'bulk_betah_kl', 'eta_kl']
-hessian_names = ['hess_kappa_kl', 'hess_mu_kl']
-smooth_kernels = 100.0
-smooth_hessian = 100.0
-presmooth = 1.0
-smooth_with_prem = 0
-fixed_frequency = true
-damp_preconditioner = 0.000001
-source_mask = true
-test_encoding = false
-use_asdf = false
-
-# misfit
-phase_factor = 1.0
-amplitude_factor = 0.0
-double_difference = true
-
-# optimization
-niters = 5
-nsteps = 5
-iteration_restart = 5
-step_init = 0.01
-mem = 5
-momentum = 0.1
+path_catalog = ''
+path_specfem = ''
