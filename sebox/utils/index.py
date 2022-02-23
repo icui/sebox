@@ -1,4 +1,3 @@
-import typing as tp
 import numpy as np
 from nnodes import root, Node
 
@@ -22,6 +21,7 @@ def create_index(node: Node):
 
 
 def index_events(events):
+    from collections import ChainMap
     from .catalog import catalog
 
     event_dict = {}
@@ -32,7 +32,7 @@ def index_events(events):
         lon = float(lines[5].split()[-1])
         depth = float(lines[6].split()[-1])
         hdur = float(lines[3].split()[-1])
-
+        
         event_dict[event] = lat, lon, depth, hdur
     
     # create indices
@@ -44,14 +44,14 @@ def index_events(events):
     
     if root.mpi.rank == 0:
         events = sorted(sum(events, []))
-        event_dict = sum(event_dict, {})
-        event_data = np.zeros([len(events), 4])
+        event_dict = dict(ChainMap(*event_dict))
+        event_npy = np.zeros([len(events), 4])
 
         for i, event in enumerate(events):
-            event_data[i, :] = event_dict[event]  
+            event_npy[i, :] = event_dict[event]  
 
         catalog.dump(events, 'events.pickle')
-        catalog.dump(event_data, 'event_data.npy')
+        catalog.dump(event_npy, 'event_data.npy')
 
 
 # def index_stations(_):
