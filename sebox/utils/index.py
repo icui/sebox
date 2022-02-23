@@ -100,8 +100,8 @@ def index_stations(events):
         # merge station data into one array
         station_npy = np.zeros([len(stations), 4])
 
-        for i, event in enumerate(events):
-            station_npy[i, :] = station_dict[event]
+        for i, station in enumerate(stations):
+            station_npy[i, :] = station_dict[station]
         
         # save result
         catalog.dump(stations, 'stations.pickle')
