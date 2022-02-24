@@ -80,4 +80,4 @@ class Catalog(Directory):
         self._inited = True
 
 
-catalog = Catalog('.')
+catalog = Catalog(root.load('config.toml')['root'].get('path_catalog') or '.')

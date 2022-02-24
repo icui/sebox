@@ -18,7 +18,7 @@ def create_index(node: Node):
     
     if not catalog.has('bands.pickle') or not catalog.has('stations.pickle') :
         # save trace bands and station list
-        node.add_mpi(index_bands, arg_mpi=events)
+        node.add(index_bands, events=events)
     
     if not catalog.has('station_data.npy') or not catalog.has('SUPERSTATION'):
         # save station data
@@ -27,8 +27,6 @@ def create_index(node: Node):
 
 def index_events(events):
     from .catalog import catalog
-
-    catalog.init()
     
     # dict of event data
     event_dict = {}
@@ -59,18 +57,13 @@ def index_events(events):
         catalog.dump(event_npy, 'event_data.npy')
 
 
-def index_bands(events):
-    from nnodes import root
-
-    if root.mpi.rank == 0:
-        m = root.load('/gpfs/alpine/scratch/ccui/geo111/north_syn/measurements.npy')
-        print(m.shape)
+def index_bands(node: Node):
+    m = root.load('/gpfs/alpine/scratch/ccui/geo111/north_syn/measurements.npy')
+    print(m.shape)
 
 
 def index_stations(events):
     from .catalog import catalog
-    
-    catalog.init()
 
     # dict of station data
     station_dict = {}
