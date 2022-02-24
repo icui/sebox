@@ -65,7 +65,11 @@ def index_bands(node: Node):
     print(m.shape, catalog.nbands)
     stations = root.load(f'{syn}/stations.pickle')
     events = root.load('events.pickle')
-    # bands = np.zeros([len(events), len(stations), catalog.nbands])
+    bands = np.zeros([len(events), len(stations), catalog.nbands], dtype=int)
+
+    for i in range(catalog.nbands):
+        bands[..., i] = m[..., i * 3: i * 3 + 2].sum(axis=-1)
+
 
 
 def index_stations(events):
