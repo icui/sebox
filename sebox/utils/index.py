@@ -25,25 +25,27 @@ def create_index(node: Node):
         node.add_mpi(index_stations, arg_mpi=events)
 
 
-def index_events(events):
+def index_events(evts):
     from .catalog import catalog
     
     # dict of event data
-    event_dict = {}
+    evt_dict = {}
 
-    for event in events:
+    for event in evts:
         lines = catalog.readlines(f'events/{event}')
         lat = float(lines[4].split()[-1])
         lon = float(lines[5].split()[-1])
         depth = float(lines[6].split()[-1])
         hdur = float(lines[3].split()[-1])
-        event_dict[event] = lat, lon, depth, hdur
+
+        # event latitude, longitude, depth and half duration
+        evt_dict[event] = lat, lon, depth, hdur
 
     # gather results
-    event_dict = root.mpi.comm.gather(event_dict, root=0)
+    evt_dict = root.mpi.comm.gather(evt_dict, root=0)
     
     if root.mpi.rank == 0:
-        event_dict = dict(ChainMap(*event_dict))
+        event_dict = dict(ChainMap(*evt_dict))
         events = sorted(list(event_dict.keys()))
 
         # merge event data into one array
@@ -73,36 +75,45 @@ def index_bands(node: Node):
     node.dump(bands, 'bands.npy')
     node.dump(stations, 'stations.pickle')
 
-def index_stations(events):
+def index_stations(evts):
     from .catalog import catalog
 
+    bands = root.load('bands.pickle').sum(axis=-1).sum(axis=-1)
+    events = root.load('events.pickle')
+    stations = root.load('stations.pickle')
+
     # dict of station data
-    station_dict = {}
+    sta_dict = {}
 
     # content of SUPERSTATION file
-    station_lines = {}
+    sta_lines = {}
 
-    for event in events:
+    for event in evts:
+        eid = events.index(event)
+
         for line in catalog.readlines(f'stations/STATIONS.{event}'):
             if len(ll := line.split()) == 6:
                 station = ll[1] + '.' + ll[0]
-                lat = float(ll[2])
-                lon = float(ll[3])
-                elevation = float(ll[4])
-                burial = float(ll[5])
 
-                station_dict[station] = lat, lon, elevation, burial
-                station_lines[station] = _format_station(ll)
+                if station in stations and bands[eid][stations.index(station)] > 0:
+                    lat = float(ll[2])
+                    lon = float(ll[3])
+                    elevation = float(ll[4])
+                    burial = float(ll[5])
+
+                    # station latitude, longitude, elevation and burial depth
+                    sta_dict[station] = lat, lon, elevation, burial
+
+                    # format line in SUPERSTATION
+                    sta_lines[station] = _format_station(ll)
     
     # gather and save results
-    station_dict = root.mpi.comm.gather(station_dict, root=0)
-    station_lines = root.mpi.comm.gather(station_lines, root=0)
+    sta_dict = root.mpi.comm.gather(sta_dict, root=0)
+    sta_lines = root.mpi.comm.gather(sta_lines, root=0)
 
     if root.mpi.rank == 0:
-        station_dict = dict(ChainMap(*station_dict))
-        station_lines = dict(ChainMap(*station_lines))
-        stations = sorted(list(station_dict.keys()))
-
+        station_dict = dict(ChainMap(*sta_dict))
+        station_lines = dict(ChainMap(*sta_lines))
 
         # merge station data into one array
         station_npy = np.zeros([len(stations), 4])
@@ -111,7 +122,6 @@ def index_stations(events):
             station_npy[i, :] = station_dict[station]
         
         # save result
-        catalog.dump(stations, 'stations.pickle')
         catalog.dump(station_npy, 'station_data.npy')
         catalog.write(''.join(station_lines.values()), 'SUPERSTATION')
 
@@ -139,4 +149,4 @@ def _format_station(ll: list):
         
         line += num
     
-    return line
+    return line + '\n'
