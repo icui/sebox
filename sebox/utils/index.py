@@ -65,7 +65,7 @@ def index_bands(node: Node):
     print(m.shape, catalog.nbands)
     stations = root.load(f'{syn}/stations.pickle')
     events = root.load('events.pickle')
-    events = root.load('components.pickle')
+    components = root.load('components.pickle')
     bands = np.zeros([len(events), len(stations), len(components), catalog.nbands], dtype=int)
 
     for i in range(catalog.nbands):
