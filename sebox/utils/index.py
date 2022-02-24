@@ -7,8 +7,6 @@ def create_index(node: Node):
     """Index events and stations."""
     from .catalog import catalog
 
-    node.concurrent = True
-
     if not catalog.has('components.pickle'):
         catalog.dump(['R', 'T', 'Z'], 'components.pickle')
     
@@ -17,7 +15,10 @@ def create_index(node: Node):
     if not catalog.has('events.pickle') or not catalog.has('event_data.npy'):
         node.add_mpi(index_events, arg_mpi=events)
     
-    if not catalog.has('stations.pickle') or not catalog.has('station_data.npy'):
+    if not catalog.has('bands.pickle'):
+        node.add_mpi(index_bands, arg_mpi=events)
+    
+    if not catalog.has('stations.pickle') or not catalog.has('station_data.npy') or not catalog.has('SUPERSTATION'):
         node.add_mpi(index_stations, arg_mpi=events)
 
 
@@ -53,6 +54,13 @@ def index_events(events):
         # save data
         catalog.dump(events, 'events.pickle')
         catalog.dump(event_npy, 'event_data.npy')
+
+
+def index_bands(events):
+    from nnodes import root
+
+    m = root.load('/gpfs/alpine/scratch/ccui/geo111/north_syn/measurements.npy')
+    print(m.shape)
 
 
 def index_stations(events):
@@ -97,7 +105,7 @@ def index_stations(events):
         # save result
         catalog.dump(stations, 'stations.pickle')
         catalog.dump(station_npy, 'station_data.npy')
-        catalog.write(''.join(station_lines.values()), 'station_lines.pickle')
+        catalog.write(''.join(station_lines.values()), 'SUPERSTATION')
 
 
 def _format_station(ll: list):
