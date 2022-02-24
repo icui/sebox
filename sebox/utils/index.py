@@ -58,8 +58,14 @@ def index_events(events):
 
 
 def index_bands(node: Node):
-    m = root.load('/gpfs/alpine/scratch/ccui/geo111/north_syn/measurements.npy')
-    print(m.shape)
+    from .catalog import catalog
+
+    syn = '/gpfs/alpine/scratch/ccui/geo111/north_syn'
+    m = root.load(f'{syn}/measurements.npy')
+    print(m.shape, catalog.nbands)
+    stations = root.load(f'{syn}/stations.pickle')
+    events = root.load('events.pickle')
+    # bands = np.zeros([len(events), len(stations), catalog.nbands])
 
 
 def index_stations(events):

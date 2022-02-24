@@ -9,18 +9,14 @@ from .weight import create_weighting
 
 def create_catalog(node: Node):
     """Create a catalog database."""
-    catalog.init()
     node.add(create_index)
     node.add(create_weighting)
 
 
 class Catalog(Directory):
     """Getter of items in catalog directory."""
-    # self.init() has been called
-    _inited = False
-
     # catalog configuration from catalog.toml
-    _config: dict
+    _config: dict = {}
 
     # list of event names
     _events = None
@@ -35,9 +31,11 @@ class Catalog(Directory):
     _station_data = None
 
     @property
-    def events(self) -> tp.List[str]:
-        self.init()
+    def nbands(self) -> int:
+        return self._config.get('nbands') or 1
 
+    @property
+    def events(self) -> tp.List[str]:
         if self._events is None:
             self._events = self.load('events.pickle')
         
@@ -45,8 +43,6 @@ class Catalog(Directory):
 
     @property
     def stations(self) -> tp.List[str]:
-        self.init()
-
         if self._stations is None:
             self._stations = self.load('stations.pickle')
         
@@ -54,8 +50,6 @@ class Catalog(Directory):
     
     @property
     def event_data(self) -> np.ndarray:
-        self.init()
-
         if self._event_data is None:
             self._event_data = self.load('event_data.pickle')
         
@@ -63,21 +57,13 @@ class Catalog(Directory):
     
     @property
     def station_data(self) -> np.ndarray:
-        self.init()
-
         if self._station_data is None:
             self._station_data = self.load('station_data.pickle')
         
         return self._station_data
 
-    def init(self):
-        """Initialize catalog directory."""
-        if self._inited:
-            return
-        
-        self._cwd = tp.cast(str, root.path_catalog)
-        self._config = self.load('catalog.toml') if self.has('catalog.toml') else {}
-        self._inited = True
-
 
 catalog = Catalog(root.load('config.toml')['root'].get('path_catalog') or '.')
+
+if catalog.has('catalog.toml'):
+    catalog._config = catalog.load('catalog.toml')
