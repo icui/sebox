@@ -78,7 +78,7 @@ def index_bands(node: Node):
 def index_stations(evts):
     from .catalog import catalog
 
-    bands = root.load('bands.pickle').sum(axis=-1).sum(axis=-1)
+    bands = root.load('bands.npy').sum(axis=-1).sum(axis=-1)
     events = root.load('events.pickle')
     stations = root.load('stations.pickle')
 
