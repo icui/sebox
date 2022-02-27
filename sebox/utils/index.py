@@ -83,7 +83,7 @@ def index_bands(node: Node):
     fincr = (imax - imin) // catalog.nbands
     imax = imin + catalog.nbands * fincr
 
-    print(imin, imax, fincr, kf)
+    catalog.dump((imin, imax, fincr, kf), 'bands.pickle')
 
 def index_stations(evts):
     from .catalog import catalog
