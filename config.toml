@@ -17,5 +17,5 @@ kernel = 'ortho'                            # kernel computation
 optimizer = 'gd'                            # determines model update direction
 search = 'bracket'                          # determines step length give search direction
 
-path_catalog = ''
-path_specfem = ''
+path_catalog = '.'
+path_specfem = '.'

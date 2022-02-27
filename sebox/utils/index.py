@@ -16,7 +16,7 @@ def create_index(node: Node):
         # save event data
         node.add_mpi(index_events, arg_mpi=events)
     
-    if not catalog.has('bands.npy') or not catalog.has('stations.pickle') :
+    if not catalog.has('bands.pickle') or not catalog.has('band_data.npy') or not catalog.has('stations.pickle') :
         # save trace bands and station list
         node.add(index_bands, events=events)
     
@@ -67,18 +67,28 @@ def index_bands(node: Node):
     stations = root.load(f'{syn}/stations.pickle')
     events = root.load('events.pickle')
     components = root.load('components.pickle')
-    bands = np.zeros([len(events), len(stations), len(components), catalog.nbands], dtype=int)
+    band_data = np.zeros([len(events), len(stations), len(components), catalog.nbands], dtype=int)
 
     for i in range(catalog.nbands):
-        bands[..., i] = m[..., i * 3: i * 3 + 2].sum(axis=-1)
+        band_data[..., i] = m[..., i * 3: i * 3 + 2].sum(axis=-1)
 
-    node.dump(bands, 'bands.npy')
+    node.dump(band_data, 'band_data.npy')
     node.dump(stations, 'stations.pickle')
+    
+    df = 1 / catalog.duration[1] / 60
+    kf = int(np.ceil(catalog.duration[0] / catalog.duration[1]))
+
+    imin = int(np.ceil(1 / catalog.period[1] / df))
+    imax = int(np.floor(1 / catalog.period[0] / df)) + 1
+    fincr = (imax - imin) // catalog.nbands
+    imax = imin + catalog.nbands * fincr
+
+    print(imin, imax, fincr, kf)
 
 def index_stations(evts):
     from .catalog import catalog
 
-    bands = root.load('bands.npy').sum(axis=-1).sum(axis=-1)
+    band_data = root.load('band_data.npy').sum(axis=-1).sum(axis=-1)
     events = root.load('events.pickle')
     stations = root.load('stations.pickle')
 
@@ -95,7 +105,7 @@ def index_stations(evts):
             if len(ll := line.split()) == 6:
                 station = ll[1] + '.' + ll[0]
 
-                if station in stations and bands[eid][stations.index(station)] > 0:
+                if station in stations and band_data[eid][stations.index(station)] > 0:
                     lat = float(ll[2])
                     lon = float(ll[3])
                     elevation = float(ll[4])
