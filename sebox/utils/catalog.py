@@ -18,6 +18,14 @@ class Catalog(Directory):
     # catalog configuration from catalog.toml
     _config = {}
 
+    def __init__(self):
+        cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
+        
+        super().__init__(cwd)
+
+        if self.has('catalog.toml'):
+            self._config = self.load('catalog.toml')
+
     @property
     def events(self) -> tp.List[str]:
         """List of event names."""
@@ -28,7 +36,7 @@ class Catalog(Directory):
     
     @property
     def event_data(self) -> np.ndarray:
-        """2D array of event data (event_latitude, event_longitude, event_depth, event_hdur)."""
+        """2D array of event data (latitude, longitude, depth, hdur)."""
         if self._event_data is None:
             self._event_data = self.load('event_data.npy')
         
@@ -44,7 +52,7 @@ class Catalog(Directory):
     
     @property
     def station_data(self) -> np.ndarray:
-        """2D array of station data (station_latitude, station_longitude, station_elevation, station_burial)."""
+        """2D array of station data (latitude, longitude, elevation, burial)."""
         if self._station_data is None:
             self._station_data = self.load('station_data.npy')
         
@@ -82,7 +90,4 @@ class Catalog(Directory):
         return self._config['duration']
 
 
-catalog = Catalog(root.load('config.toml')['root'].get('path_catalog') or '.')
-
-if catalog.has('catalog.toml'):
-    catalog._config = catalog.load('catalog.toml')
+catalog = Catalog()
