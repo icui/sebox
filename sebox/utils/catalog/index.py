@@ -85,6 +85,7 @@ def index_bands(node: Node):
 
     catalog.dump((imin, imax, fincr, kf), 'bands.pickle')
 
+
 def index_stations(evts):
     from .catalog import catalog
 
