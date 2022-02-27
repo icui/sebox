@@ -1,3 +1,3 @@
-from .utils.catalog.catalog import catalog
+from .utils.catalog import catalog
 
 __all__ = ['catalog']
