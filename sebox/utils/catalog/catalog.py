@@ -60,11 +60,31 @@ class Catalog(Directory):
     
     @property
     def bands(self) -> tp.List[int]:
-        """Frequecy band info (min_index, max_index, index_increment, ceil(transient_dur / station_dur))."""
+        """Frequecy band info (min_index, max_index, index_increment, transient_ratio."""
         if self._bands is None:
             self._bands = self.load('bands.pickle')
         
         return self._bands
+    
+    @property
+    def imin(self) -> int:
+        """Minimum frequency index."""
+        return self.bands[0]
+    
+    @property
+    def imax(self) -> int:
+        """Maximum frequency index."""
+        return self.bands[1]
+    
+    @property
+    def fincr(self) -> int:
+        """Number of frequencies per band."""
+        return self.bands[2]
+    
+    @property
+    def kf(self) -> int:
+        """Ratio between transient duration and stationary duration."""
+        return self.bands[3]
     
     @property
     def band_data(self) -> np.ndarray:

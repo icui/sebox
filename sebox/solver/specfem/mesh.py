@@ -53,3 +53,4 @@ async def mesh(node: Node):
     """Generate mesh."""
     node.add(setup)
     xmeshfem(node)
+    node.add(node.ln, args=('DATABASES_MPI/solver_data.bp', 'mesh.bp'))
