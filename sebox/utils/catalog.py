@@ -52,7 +52,7 @@ class Catalog(Directory):
     
     @property
     def bands(self) -> tp.List[int]:
-        """Boundaries of freqeuency band indices."""
+        """Frequecy band info (min_index, max_index, index_increment, ceil(transient_dur / station_dur))."""
         if self._bands is None:
             self._bands = self.load('bands.pickle')
         
