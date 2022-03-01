@@ -15,8 +15,23 @@ def create_catalog(node: Node):
 
 class Catalog(Directory):
     """Getter of items in catalog directory."""
-    # catalog configuration from catalog.toml
-    _config = {}
+    # event names
+    _events = None
+
+    # event latitude, longitude, depth and hdur
+    _event_data = None
+
+    # station names
+    _stations = None
+
+    # station latitude, longitude, elevation and burial
+    _station_data = None
+
+    # band index data
+    _bands = None
+
+    # band measurements
+    _band_data = None
 
     def __init__(self):
         cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
@@ -25,6 +40,9 @@ class Catalog(Directory):
 
         if self.has('catalog.toml'):
             self._config = self.load('catalog.toml')
+        
+        else:
+            self._config = {}
 
     @property
     def events(self) -> tp.List[str]:
