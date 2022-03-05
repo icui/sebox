@@ -17,11 +17,11 @@ def _weight(indices: tp.List[int]):
     for idx in indices:
         if idx < 0:
             # event weighting
-            locs = catalog.event_data[: 2]
+            locs = catalog.event_data[: 2, :]
         
         else:
             # station weighting
-            locs = catalog.station_data[idx][: 2]
+            locs = catalog.station_data[idx][: 2, :]
         
         print(locs.shape, np.count_nonzero(locs))
 
