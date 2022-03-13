@@ -4,7 +4,7 @@ import numpy as np
 from nnodes import Node
 
 
-def create_weighting(node: Node):
+def prepare_weighting(node: Node):
     """Computes weightings."""
     from sebox import catalog
 

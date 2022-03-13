@@ -3,7 +3,7 @@ from nnodes import root, Node
 from collections import ChainMap
 
 
-def create_index(node: Node):
+def prepare_index(node: Node):
     """Index events and stations."""
     from .catalog import catalog
 

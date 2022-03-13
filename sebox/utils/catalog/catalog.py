@@ -3,14 +3,16 @@ import numpy as np
 
 from nnodes import root, Node, Directory
 
-from .index import create_index
-from .weight import create_weighting
+from .traces import prepare_traces
+from .index import prepare_index
+from .weight import prepare_weighting
 
 
 def create_catalog(node: Node):
     """Create a catalog database."""
-    node.add(create_index)
-    node.add(create_weighting)
+    node.add(prepare_traces)
+    # node.add(create_index)
+    # node.add(create_weighting)
 
 
 class Catalog(Directory):
