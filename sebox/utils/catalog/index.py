@@ -116,7 +116,7 @@ def index_stations(evts):
                     sta_dict[station] = lat, lon, elevation, burial
 
                     # format line in SUPERSTATION
-                    sta_lines[station] = _format_station(ll)
+                    sta_lines[station] = format_station(ll)
     
     # gather and save results
     sta_dict = root.mpi.comm.gather(sta_dict, root=0)
@@ -137,7 +137,7 @@ def index_stations(evts):
         catalog.write(''.join(station_lines.values()), 'SUPERSTATION')
 
 
-def _format_station(ll: list):
+def format_station(ll: list):
     """Format a line in STATIONS file."""
     # location of dots for floating point numbers
     dots = 28, 41, 55, 62
