@@ -21,6 +21,7 @@ def download_trace(node):
 
 
 def _download_fdsn(node):
+    from sebox import catalog
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
@@ -29,10 +30,10 @@ def _download_fdsn(node):
     node.mkdir(xdir := f'downloads/{node.event}/mseed')
 
     eventtime = event.preferred_origin().time
-    starttime = eventtime - node.download_gap * 60
-    endtime = eventtime + (node.duration[0] + node.download_gap) * 60
+    starttime = eventtime - catalog.download_gap * 60
+    endtime = eventtime + (catalog.duration[0] + catalog.download_gap) * 60
 
-    rst = Restrictions(starttime=starttime, endtime=endtime, **node.download)
+    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download)
     mdl = MassDownloader()
     mdl.download(GlobalDomain(), rst, mseed_storage=mdir, stationxml_storage=xdir)
 
