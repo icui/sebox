@@ -40,17 +40,17 @@ def _download_fdsn(node):
 
 
 def _convert_h5(node):
+    from traceback import format_exc
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
-
     from .index import format_station
 
-    with ASDFDataSet(f'{node.event}.h5', mode='w', mpi=False, compression=None) as ds:
+    with ASDFDataSet(node.abs(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events(f'events/{node.event}'))
+            ds.add_quakeml(read_events(node.abs(f'../../events/{node.event}')))
         
-        except Exception as e:
-            node.write(str(e) + '\n', 'error.log', 'a')
+        except Exception:
+            node.write(format_exc(), 'error.log', 'a')
 
         stations = set()
         station_lines = ''
@@ -62,8 +62,8 @@ def _convert_h5(node):
             try:
                 ds.add_waveforms(read(node.abs(f'mseed/{src}')), 'raw_obs')
 
-            except Exception as e:
-                node.write(str(e) + '\n', 'error.log', 'a')
+            except Exception:
+                node.write(format_exc(), 'error.log', 'a')
         
         for station in stations:
             try:
@@ -74,8 +74,8 @@ def _convert_h5(node):
                 ll += [f'{sta.latitude:.4f}', f'{sta.longitude:.4f}', f'{sta.elevation:.4f}', f'{sta.depth:.4f}']
                 station_lines += format_station(ll)
             
-            except Exception as e:
-                node.write(str(e) + '\n', 'error.log', 'a')
+            except Exception:
+                node.write(format_exc(), 'error.log', 'a')
         
         node.write(station_lines, f'STATIONS.{node.event}')
 
