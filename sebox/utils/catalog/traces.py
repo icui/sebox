@@ -71,7 +71,7 @@ def _convert_h5(node):
                 sta = ds.waveforms[station].StationXML.networks[0].stations[0]
                 ll = station.split('.')
                 ll.reverse()
-                ll += [f'{sta.latitude:.4f}', f'{sta.longitude:.4f}', f'{sta.elevation:.4f}', f'{sta.depth:.4f}']
+                ll += [f'{sta.latitude:.4f}', f'{sta.longitude:.4f}', f'{sta.elevation:.4f}', f'{sta.channels[0].depth:.4f}']
                 station_lines += format_station(ll)
             
             except Exception:
