@@ -11,15 +11,15 @@ def download_events(node):
 def download_traces(node):
     """Download observed data."""
     for event in node.ls('events'):
-        node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
+        node.add(download_trace, event=event, name=event)
 
 
 def download_trace(node):
     """Download observed data of an event."""
-    node.mkdir('mseed')
-    node.mkdir('xml')
-    node.add(f'python -c "from sebox.utils.catalog.traces import request_data; request_data(\'{node.event}\')"')
-    node.add(f'python -c "from sebox.utils.catalog.traces import convert_h5; convert_h5(\'{node.event}\')"')
+    node.mkdir(f'downloads/{node.event}/mseed')
+    node.mkdir(f'downloads/{node.event}/xml')
+    node.add(f'python -c "from sebox.utils.catalog.traces import request_data; request_data(\'{node.event}\')"', name='download')
+    node.add(f'python -c "from sebox.utils.catalog.traces import convert_h5; convert_h5(\'{node.event}\')"', name='convert', cwd=node.path())
 
 
 def request_data(event: str):
@@ -27,7 +27,7 @@ def request_data(event: str):
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-    evt = read_events(f'../../events/{event}')[0]
+    evt = read_events(f'events/{event}')[0]
     gap = catalog.download['gap']
     eventtime = evt.preferred_origin().time
     starttime = eventtime - gap * 60
@@ -35,7 +35,7 @@ def request_data(event: str):
 
     rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
     mdl = MassDownloader()
-    mdl.download(GlobalDomain(), rst, mseed_storage='mseed', stationxml_storage='xml')
+    mdl.download(GlobalDomain(), rst, mseed_storage=f'downloads/{event}/mseed', stationxml_storage=f'downloads/{event}/xml')
 
 
 def convert_h5(event: str):
