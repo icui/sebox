@@ -36,7 +36,7 @@ def _download_fdsn(node):
 
     rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.config['download'])
     mdl = MassDownloader()
-    mdl.download(GlobalDomain(), rst, mseed_storage=node.abs('mseed'), stationxml_storage=node.abs('xml'))
+    mdl.download(GlobalDomain(), rst, mseed_storage=node.path('mseed'), stationxml_storage=node.path('xml'))
 
 
 def _convert_h5(node):
@@ -45,9 +45,9 @@ def _convert_h5(node):
     from obspy import read, read_events
     from .index import format_station
 
-    with ASDFDataSet(node.abs(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
+    with ASDFDataSet(node.path(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events(node.abs(f'../../events/{node.event}')))
+            ds.add_quakeml(read_events(node.path(f'../../events/{node.event}')))
         
         except Exception:
             node.write(format_exc(), 'error.log', 'a')
@@ -60,14 +60,14 @@ def _convert_h5(node):
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(node.abs(f'mseed/{src}')), 'raw_obs')
+                ds.add_waveforms(read(node.path(f'mseed/{src}')), 'raw_obs')
 
             except Exception:
                 node.write(format_exc(), 'error.log', 'a')
         
         for station in stations:
             try:
-                ds.add_stationxml(node.abs(f'xml/{station}.xml'))
+                ds.add_stationxml(node.path(f'xml/{station}.xml'))
                 sta = ds.waveforms[station].StationXML.networks[0].stations[0]
                 ll = station.split('.')
                 ll.reverse()
