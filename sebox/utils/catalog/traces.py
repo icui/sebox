@@ -16,15 +16,15 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
-    node.add(_download_mseed)
+    node.add(_download_fdsn)
     node.add(_convert_h5)
 
 
-def _download_mseed(node):
+def _download_fdsn(node):
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-    event = read_events(f'events/{node.event}')
+    event = read_events(f'events/{node.event}')[0]
     node.mkdir(mdir := f'downloads/{node.event}/xml')
     node.mkdir(xdir := f'downloads/{node.event}/mseed')
 
