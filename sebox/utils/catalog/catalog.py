@@ -36,7 +36,11 @@ class Catalog(Directory):
     _measurements = None
 
     def __init__(self):
-        cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
+        if root.has('config.toml'):
+            cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
+        
+        else:
+            cwd = '.'
         
         super().__init__(cwd)
 
