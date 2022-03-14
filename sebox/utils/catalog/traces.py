@@ -11,7 +11,7 @@ def download_events(node):
 def download_traces(node):
     """Download observed data."""
     for event in node.ls('events'):
-        node.add(download_trace, event=event, cwd=f'downloads/{event}')
+        node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
 
 
 def download_trace(node):
