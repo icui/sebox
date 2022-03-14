@@ -60,14 +60,14 @@ def _convert_h5(node):
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(f'mseed/{src}'), 'raw_obs')
+                ds.add_waveforms(read(node.abs(f'mseed/{src}')), 'raw_obs')
 
             except Exception as e:
                 node.write(str(e), 'error.log', 'a')
         
         for station in stations:
             try:
-                ds.add_stationxml(f'downloads/xml/{station}.xml')
+                ds.add_stationxml(node.abs(f'xml/{station}.xml'))
                 sta = ds.waveforms[station].StationXML.networks[0].stations[0]
                 ll = station.split('.')
                 ll.reverse()
@@ -77,7 +77,7 @@ def _convert_h5(node):
             except Exception as e:
                 node.write(str(e), 'error.log', 'a')
         
-        node.write(station_lines, f'STATIONS.{event}')
+        node.write(station_lines, f'STATIONS.{node.event}')
 
 
 def compute_synthetic(node):
