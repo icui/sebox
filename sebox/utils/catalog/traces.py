@@ -16,16 +16,10 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
-    from functools import partial
-
     node.mkdir('mseed')
     node.mkdir('xml')
-
-    dl = f'python -c "from sebox.utils.catalog.traces import request_data; request_data(\'{node.event}\')"'
-    cv = f'python -c "from sebox.utils.catalog.traces import convert_h5; convert_h5(\'{node.event}\')"'
-
-    node.add(partial(node.call_async, dl, cwd=node.path()))
-    node.add(partial(node.call_async, cv, cwd=node.path()))
+    node.add(f'python -c "from sebox.utils.catalog.traces import request_data; request_data(\'{node.event}\')"')
+    node.add(f'python -c "from sebox.utils.catalog.traces import convert_h5; convert_h5(\'{node.event}\')"')
 
 
 def request_data(event: str):
