@@ -1,5 +1,5 @@
 period = [17.0, 150.0]                       # minimum and maximum period in seconds
-duration = [200.0, 288.0]                    # transient and stationary duration in minutes
+duration = [120.0, 288.0]                    # transient and stationary duration in minutes
 nbands = 5                                   # number of bands to split frequency band
 download_gap = 10.0                          # additional time before and after measured period in minutes
 

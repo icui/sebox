@@ -16,7 +16,7 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
-    # node.add(_download_fdsn)
+    node.add(_download_fdsn)
     node.add(_convert_h5)
 
 
@@ -25,7 +25,7 @@ def _download_fdsn(node):
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-    event = read_events(f'../../events/{node.event}')[0]
+    event = read_events(f'events/{node.event}')[0]
     node.mkdir('mseed')
     node.mkdir('xml')
 
@@ -47,7 +47,7 @@ def _convert_h5(node):
 
     with ASDFDataSet(node.path(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events(node.path(f'../../events/{node.event}')))
+            ds.add_quakeml(read_events((f'events/{node.event}')))
         
         except Exception:
             node.write(format_exc(), 'error.log', 'a')
