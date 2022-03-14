@@ -50,7 +50,7 @@ def _convert_h5(node):
             ds.add_quakeml(read_events(f'events/{node.event}'))
         
         except Exception as e:
-            node.write(str(e), 'error.log', 'a')
+            node.write(str(e) + '\n', 'error.log', 'a')
 
         stations = set()
         station_lines = ''
@@ -63,7 +63,7 @@ def _convert_h5(node):
                 ds.add_waveforms(read(node.abs(f'mseed/{src}')), 'raw_obs')
 
             except Exception as e:
-                node.write(str(e), 'error.log', 'a')
+                node.write(str(e) + '\n', 'error.log', 'a')
         
         for station in stations:
             try:
@@ -75,7 +75,7 @@ def _convert_h5(node):
                 station_lines += format_station(ll)
             
             except Exception as e:
-                node.write(str(e), 'error.log', 'a')
+                node.write(str(e) + '\n', 'error.log', 'a')
         
         node.write(station_lines, f'STATIONS.{node.event}')
 
