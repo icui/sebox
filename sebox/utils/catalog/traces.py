@@ -18,8 +18,8 @@ def download_trace(node):
     """Download observed data of an event."""
     node.mkdir('mseed')
     node.mkdir('xml')
-    dl = f'python -c "from sebox.utils.catalog.traces import request_data; request_data({node.event})"'
-    cv = f'python -c "from sebox.utils.catalog.traces import convert_h5; convert_h5({node.event})"'
+    dl = f'python -c "from sebox.utils.catalog.traces import request_data; request_data(\'{node.event}\')"'
+    cv = f'python -c "from sebox.utils.catalog.traces import convert_h5; convert_h5(\'{node.event}\')"'
     node.add(dl, cwd=node.path())
     node.add(cv, cwd=node.path())
 
