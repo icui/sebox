@@ -36,7 +36,10 @@ def request_data(node):
 
     rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
     mdl = MassDownloader()
-    mdl.download(GlobalDomain(), rst, mseed_storage=node.path('mseed'), stationxml_storage=node.path('xml'))
+    mdl.download(GlobalDomain(), rst,
+        threads_per_client=catalog.download.get('threads') or 3,
+        mseed_storage=node.path('mseed'),
+        stationxml_storage=node.path('xml'))
 
 
 def convert_h5(node):
