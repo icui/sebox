@@ -25,8 +25,8 @@ def _download_mseed(node):
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
     event = read_events(f'events/{node.event}')
-    node.mkdir(mdir := f'downloads/{event}/xml')
-    node.mkdir(xdir := f'downloads/{event}/mseed')
+    node.mkdir(mdir := f'downloads/{node.event}/xml')
+    node.mkdir(xdir := f'downloads/{node.event}/mseed')
 
     eventtime = event.preferred_origin().time
     starttime = eventtime - node.download_gap * 60
