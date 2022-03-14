@@ -16,10 +16,29 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
+    node.add(_download_mseed)
+    node.add(_convert_h5)
+
+
+def _download_mseed(node):
     from obspy import read_events
+    from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
     event = read_events(f'events/{node.event}')
-    print(event)
+    node.mkdir(mdir := f'downloads/{event}/xml')
+    node.mkdir(xdir := f'downloads/{event}/mseed')
+
+    eventtime = event.preferred_origin().time
+    starttime = eventtime - node.download_gap * 60
+    endtime = eventtime + (node.duration[0] + node.download_gap) * 60
+
+    rst = Restrictions(starttime=starttime, endtime=endtime, **node.download)
+    mdl = MassDownloader()
+    mdl.download(GlobalDomain(), rst, mseed_storage=mdir, stationxml_storage=xdir)
+
+
+def _convert_h5(node):
+    pass
 
 
 def compute_synthetic(node):
