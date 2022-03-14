@@ -30,10 +30,10 @@ class Catalog(Directory):
     _station_data = None
 
     # band index data
-    _bands = None
+    _bands_pkl = None
 
     # band measurements
-    _band_data = None
+    _measurements = None
 
     def __init__(self):
         cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
@@ -47,9 +47,19 @@ class Catalog(Directory):
             self._config = {}
     
     @property
-    def config(self):
-        """Raw content of catalog.toml."""
-        return self._config
+    def weighting(self):
+        """Weighting configurations."""
+        return self._config['weighting']
+    
+    @property
+    def download(self):
+        """Download configurations."""
+        return self._config['download']
+    
+    @property
+    def trace(self):
+        """Trace configurations."""
+        return self._config['trace']
 
     @property
     def events(self) -> tp.List[str]:
@@ -84,55 +94,65 @@ class Catalog(Directory):
         return self._station_data
     
     @property
-    def bands(self) -> tp.List[int]:
+    def _bands(self) -> tp.List[int]:
         """Frequecy band info (min_index, max_index, index_increment, transient_ratio."""
-        if self._bands is None:
-            self._bands = self.load('bands.pickle')
+        if self._bands_pkl is None:
+            self._bands_pkl = self.load('bands.pickle')
         
-        return self._bands
+        return self._bands_pkl
     
     @property
     def imin(self) -> int:
         """Minimum frequency index."""
-        return self.bands[0]
+        return self._bands[0]
     
     @property
     def imax(self) -> int:
         """Maximum frequency index."""
-        return self.bands[1]
+        return self._bands[1]
     
     @property
     def fincr(self) -> int:
         """Number of frequencies per band."""
-        return self.bands[2]
+        return self._bands[2]
     
     @property
     def kf(self) -> int:
         """Ratio between transient duration and stationary duration."""
-        return self.bands[3]
+        return self._bands[3]
     
     @property
-    def band_data(self) -> np.ndarray:
+    def measurements(self) -> np.ndarray:
         """4D array of measurements of bands (event, station, component, band)."""
-        if self._band_data is None:
-            self._band_data = self.load('band_data.npy')
+        if self._measurements is None:
+            self._measurements = self.load('band_data.npy')
         
-        return self._band_data
+        return self._measurements
 
     @property
     def nbands(self) -> int:
         """Total number of bands."""
-        return self._config.get('nbands') or 1
+        return self.trace['nbands']
 
     @property
-    def period(self) -> tp.Tuple[float, float]:
-        """Min and max period in seconds."""
-        return self._config['period']
+    def period_min(self) -> float:
+        """Min period in minutes."""
+        return self.trace['period_min']
 
     @property
-    def duration(self) -> tp.Tuple[float, float]:
+    def period_max(self) -> float:
+        """Max period in minutes."""
+        return self.trace['period_max']
+
+    @property
+    def duration(self) -> float:
+        """Transient duration and stationary duration in minutes."""
+        return self.trace['duration']
+
+    @property
+    def duration_ft(self) -> tp.Tuple[float, float]:
         """Transient duration and station duration in minutes."""
-        return self._config['duration']
+        return self.trace['duration_ft']
 
 
 catalog = Catalog()

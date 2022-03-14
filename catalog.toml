@@ -1,18 +1,25 @@
-period = [17.0, 150.0]                       # minimum and maximum period in seconds
-duration = [200.0, 288.0]                    # transient and stationary duration in minutes
+[trace]
+period_min = 17.0                            # minimum period in seconds
+period_max = 100.0                            # maximum period in seconds
+duration = 200.0                             # trace record length in minutes
+duration_ft = 288.0                          # duration to determine frequency step in minutes
 nbands = 5                                   # number of bands to split frequency band
-download_gap = 10.0                          # additional time before and after measured period in minutes
 
-# event and station geographical weighting parameters
-# [0]: condition number to determine reference distance
-# [1]: minimum reference distance
-# [2]: maximum reference distance
-# [3]: maximum weighting ration (controlled by a damping term)
-event_weighting = [0.33, 1.0, 4.0, 5.0]
-station_weighting = [0.125, 0.5, 2.0, 5.0]
+[weighting]
+event_cond = 0.33                            # ratio of maximum condition number to determine reference distance
+event_ref_dist_min = 1.0                     # minimum reference distance in degrees
+event_ref_dist_max = 4.0                     # maximum reference distance in degrees
+event_ratio_max = 5.0                        # maximum ratio between largest and smallest weight
 
-# parameters for obspy.clients.fdsn.mass_downloader.Restrictions
+station_cond = 0.125
+station_ref_dist = [0.5, 2.0]
+station_max_ratio = 5.0
+
 [download]
+gap = 10.0                                   # extra download duration before and after measured period in minutes
+threads = 3                                  # number of simutaneous download threads
+
+[download.restrictions]                      # parameters for obspy.clients.fdsn.mass_downloader.Restrictions
 minimum_length = 0.3
 location_priorities = ["", "00", "10"]
 channel_priorities = ["BH[ZNE]", "HH[ZNE]"]

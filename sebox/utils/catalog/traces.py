@@ -16,68 +16,70 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
-    # node.add(_download_fdsn)
-    node.add(_convert_h5)
+    node.mkdir('mseed')
+    node.mkdir('xml')
+    dl = f'python -c "from sebox.utils.catalog import request_data; request_data({node.event})"'
+    cv = f'python -c "from sebox.utils.catalog import convert_h5; convert_h5({node.event})"'
+    node.add(dl, cwd=node.path())
+    node.add(cv, cwd=node.path())
 
 
-def _download_fdsn(node):
+def request_data(event: str):
     from sebox import catalog
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-    event = read_events(f'events/{node.event}')[0]
-    node.mkdir('mseed')
-    node.mkdir('xml')
-
-    gap = catalog.config['download_gap']
-    eventtime = event.preferred_origin().time
+    evt = read_events(f'../../events/{event}')[0]
+    gap = catalog.download['gap']
+    eventtime = evt.preferred_origin().time
     starttime = eventtime - gap * 60
-    endtime = eventtime + (catalog.duration[0] + gap) * 60
+    endtime = eventtime + (catalog.duration + gap) * 60
 
-    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.config['download'])
+    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
     mdl = MassDownloader()
-    mdl.download(GlobalDomain(), rst, mseed_storage=node.path('mseed'), stationxml_storage=node.path('xml'))
+    mdl.download(GlobalDomain(), rst, mseed_storage='mseed', stationxml_storage='xml')
 
 
-def _convert_h5(node):
+def convert_h5(event: str):
     from traceback import format_exc
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
+    from nnodes import root
     from .index import format_station
 
-    with ASDFDataSet(node.path(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
+    with ASDFDataSet(f'{event}.h5', mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events((f'events/{node.event}')))
+            ds.add_quakeml(read_events((f'../../events/{event}')))
         
         except Exception:
-            node.write(format_exc(), 'error.log', 'a')
+            root.write(format_exc(), 'error.log', 'a')
 
         stations = set()
         station_lines = ''
 
-        for src in node.ls(f'mseed'):
+        for src in root.ls(f'mseed'):
             station = '.'.join(src.split('.')[:2])
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(node.path(f'mseed/{src}')), 'raw_obs')
+                ds.add_waveforms(read(f'mseed/{src}'), 'raw_obs')
 
             except Exception:
-                node.write(format_exc(), 'error.log', 'a')
+                root.write(format_exc(), 'error.log', 'a')
         
         for station in stations:
             try:
-                ds.add_stationxml(node.path(f'xml/{station}.xml'))
-                sta = ds.waveforms[station].StationXML.networks[0].stations[0]
+                ds.add_stationxml(f'xml/{station}.xml')
+                sta = ds.waveforms[station].StationXML.networks[0].stations[0] # type: ignore
                 ll = station.split('.')
                 ll.reverse()
                 ll += [f'{sta.latitude:.4f}', f'{sta.longitude:.4f}', f'{sta.elevation:.1f}', f'{sta.channels[0].depth:.1f}']
                 station_lines += format_station(ll)
             
             except Exception:
-                node.write(format_exc(), 'error.log', 'a')
+                root.write(format_exc(), 'error.log', 'a')
         
-        node.write(station_lines, f'STATIONS.{node.event}')
+        root.write(station_lines, f'STATIONS.{event}')
 
 
 def compute_synthetic(node):
