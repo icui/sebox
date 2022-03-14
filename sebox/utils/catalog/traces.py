@@ -30,10 +30,10 @@ def _download_fdsn(node):
     node.mkdir(xdir := f'downloads/{node.event}/mseed')
 
     eventtime = event.preferred_origin().time
-    starttime = eventtime - catalog.download_gap * 60
+    starttime = eventtime - catalog.config['download_gap'] * 60
     endtime = eventtime + (catalog.duration[0] + catalog.download_gap) * 60
 
-    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download)
+    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.config['download'])
     mdl = MassDownloader()
     mdl.download(GlobalDomain(), rst, mseed_storage=mdir, stationxml_storage=xdir)
 

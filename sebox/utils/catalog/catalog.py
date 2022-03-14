@@ -45,6 +45,11 @@ class Catalog(Directory):
         
         else:
             self._config = {}
+    
+    @property
+    def config(self):
+        """Raw content of catalog.toml."""
+        return self._config
 
     @property
     def events(self) -> tp.List[str]:
