@@ -1,13 +1,15 @@
 def process_traces(node):
     """Process downloaded data."""
-    from nnodes import root
+    from functools import partial
     from asdfy import ASDFProcessor
 
     node.mkdir('process')
 
-    for src in node.ls('raw_obs'):
-        ap = ASDFProcessor(f'raw_obs/{src}', f'proc_obs/{src}', _process, 'stream', 'raw_obs', 'proc_obs', True)
-        node.add_mpi(ap.run, name=src.split('.')[0] + '_obs', cwd='process')
+    for mode in ('obs', 'syn'):
+        for src in node.ls(f'raw_{mode}'):
+            ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/{src}',
+                partial(_process, mode=='obs'), 'stream', f'raw_{mode}', f'proc_{mode}', True)
+            node.add_mpi(ap.run, name=src.split('.')[0] + '_' + mode, cwd='process')
 
 
 def _select(stream):
@@ -35,7 +37,7 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(acc):
+def _process(obs, acc):
     from sebox import catalog
     from pytomo3d.signal.process import rotate_stream
 
@@ -47,10 +49,11 @@ def _process(acc):
     taper = catalog.processing.get('taper')
 
     # remove instrument response
-    _detrend(stream, taper)
-    stream.attach_response(acc.inventory)
-    stream.remove_response(output="DISP", zero_mean=False, taper=False,
-        water_level=60, pre_filt=catalog.processing.get('remove_response'))
+    if obs:
+        _detrend(stream, taper)
+        stream.attach_response(acc.inventory)
+        stream.remove_response(output="DISP", zero_mean=False, taper=False,
+            water_level=60, pre_filt=catalog.processing.get('remove_response'))
 
     # resample and align
     origin = acc.origin
