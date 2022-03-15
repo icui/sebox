@@ -65,7 +65,7 @@ class Catalog(Directory):
     @property
     def processing(self):
         """Trace configurations."""
-        return self._config['trace']
+        return self._config['processing']
 
     @property
     def events(self) -> tp.List[str]:

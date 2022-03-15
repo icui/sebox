@@ -36,42 +36,37 @@ def _detrend(stream, taper):
 
 
 def _process(acc):
-    from traceback import format_exc
     from sebox import catalog
     from pytomo3d.signal.process import rotate_stream
 
-    try:
-        if (stream := _select(acc.stream)) is None:
+    print(acc.station)
+
+    if (stream := _select(acc.stream)) is None:
+        return
+    
+    taper = catalog.processing.get('taper')
+
+    # remove instrument response
+    _detrend(stream, taper)
+    stream.attach_response(acc.inventory)
+    stream.remove_response(output="DISP", zero_mean=False, taper=False,
+        water_level=60, pre_filt=catalog.processing.get('remove_response'))
+
+    # resample and align
+    origin = acc.origin
+    stream.interpolate(1/catalog.processing['dt'], starttime=origin.time)
+    
+    # detrend and apply taper
+    _detrend(stream, taper)
+    
+    # rotate
+    stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
+
+    if len(stream) != 3:
+        return
+    
+    for cmp in ['R', 'T', 'Z']:
+        if len(stream.select(component=cmp)) != 1:
             return
-        
-        taper = catalog.processing.get('taper')
 
-        # remove instrument response
-        _detrend(stream, taper)
-        stream.attach_response(acc.inventory)
-        stream.remove_response(output="DISP", zero_mean=False, taper=False,
-            water_level=60, pre_filt=catalog.processing.get('remove_response'))
-
-        # resample and align
-        origin = acc.origin
-        stream.interpolate(1/catalog.processing['dt'], starttime=origin.time)
-        
-        # detrend and apply taper
-        _detrend(stream, taper)
-        
-        # rotate
-        stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
-
-        if len(stream) != 3:
-            return
-        
-        for cmp in ['R', 'T', 'Z']:
-            if len(stream.select(component=cmp)) != 1:
-                return
-
-        return stream
-        
-    except Exception:
-        print(format_exc())
-
-
+    return stream
