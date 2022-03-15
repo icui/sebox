@@ -38,6 +38,7 @@ def _detrend(stream, taper):
 
 
 def _process(obs, acc):
+    import numpy as np
     from sebox import catalog
     from pytomo3d.signal.process import rotate_stream
 
@@ -57,12 +58,17 @@ def _process(obs, acc):
 
     # resample and align
     origin = acc.origin
-    stream.interpolate(1/catalog.processing['dt'], starttime=origin.time)
+    stream.interpolate(1/catalog.dt, starttime=origin.time)
     
     # detrend and apply taper
     _detrend(stream, taper)
     
-    # rotate
+    # pad and rotate
+    nt = int(np.round(catalog.duration * 60 / catalog.dt))
+    for trace in stream:
+        data = np.zeros(nt)
+        data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
+
     stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
 
     if len(stream) != 3:

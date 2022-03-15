@@ -136,6 +136,11 @@ class Catalog(Directory):
         return self._measurements
 
     @property
+    def dt(self) -> int:
+        """Length of a time step."""
+        return self.processing['dt']
+
+    @property
     def nbands(self) -> int:
         """Total number of bands."""
         return self.processing['nbands']
