@@ -1,9 +1,11 @@
-[trace]
+[processing]
 period_min = 17.0                            # minimum period in seconds
-period_max = 100.0                            # maximum period in seconds
+period_max = 100.0                           # maximum period in seconds
 duration = 200.0                             # trace record length in minutes
 duration_ft = 288.0                          # duration to determine frequency step in minutes
 nbands = 5                                   # number of bands to split frequency band
+dt = 1.6                                     # length of a time step
+remove_response = [0.008, 0.01, 0.0589, 0.0735]
 
 [weighting]
 event_cond = 0.33                            # ratio of maximum condition number to determine reference distance

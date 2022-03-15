@@ -3,14 +3,14 @@ import numpy as np
 
 from nnodes import root, Node, Directory
 
-from .traces import prepare_traces
+from .observed import prepare_observed
 from .index import prepare_index
 from .weight import prepare_weighting
 
 
 def create_catalog(node: Node):
     """Create a catalog database."""
-    node.add(prepare_traces)
+    node.add(prepare_observed)
     # node.add(create_index)
     # node.add(create_weighting)
 
@@ -61,7 +61,7 @@ class Catalog(Directory):
         return self._config['download']
     
     @property
-    def trace(self):
+    def processing(self):
         """Trace configurations."""
         return self._config['trace']
 
@@ -136,27 +136,27 @@ class Catalog(Directory):
     @property
     def nbands(self) -> int:
         """Total number of bands."""
-        return self.trace['nbands']
+        return self.processing['nbands']
 
     @property
     def period_min(self) -> float:
         """Min period in minutes."""
-        return self.trace['period_min']
+        return self.processing['period_min']
 
     @property
     def period_max(self) -> float:
         """Max period in minutes."""
-        return self.trace['period_max']
+        return self.processing['period_max']
 
     @property
     def duration(self) -> float:
         """Transient duration and stationary duration in minutes."""
-        return self.trace['duration']
+        return self.processing['duration']
 
     @property
     def duration_ft(self) -> tp.Tuple[float, float]:
         """Transient duration and station duration in minutes."""
-        return self.trace['duration_ft']
+        return self.processing['duration_ft']
 
 
 catalog = Catalog()
