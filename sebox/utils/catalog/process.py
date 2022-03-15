@@ -5,6 +5,7 @@ def process_traces(node):
     node.mkdir('process')
 
     for src in node.ls('raw_obs'):
+        node.rm(f'proc_obs/{src}')
         node.add_mpi(process_trace, 1, (root.job.cpus_per_node, 0),
             arg=src, name=src.split('.')[0] + '_obs', cwd='process')
 
