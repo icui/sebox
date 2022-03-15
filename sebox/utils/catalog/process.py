@@ -15,7 +15,9 @@ def process_trace(src: str):
     from pyasdf import ASDFDataSet
 
     with ASDFDataSet(f'raw_obs/{src}', mode='r', mpi=False, compression=None) as ds:
-        ds.process(partial(_process, ds), f'proc_obs/{src}', {'raw_obs': 'proc_obs'})
+        origin = ds.events[0].preferred_origin()
+        inventory = ds.waveforms[f'{stream[0].stats.network}.{stream[0].stats.station}'].StationXML # type: ignore
+        ds.process(partial(_process, origin, inventory), f'proc_obs/{src}', {'raw_obs': 'proc_obs'})
 
 
 def _select(stream):
@@ -43,7 +45,7 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(ds, stream):
+def _process(origin, inventory, stream):
     from traceback import format_exc
     from sebox import catalog
     from pytomo3d.signal.process import rotate_stream
@@ -52,9 +54,7 @@ def _process(ds, stream):
         if (stream := _select(stream)) is None:
             return
         
-        origin = ds.events[0].preferred_origin()
         taper = catalog.processing.get('taper')
-        inventory = ds.waveforms[f'{stream[0].stats.network}.{stream[0].stats.station}'].StationXML # type: ignore
 
         # remove instrument response
         _detrend(stream, taper)
