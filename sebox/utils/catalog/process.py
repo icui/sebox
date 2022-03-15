@@ -1,23 +1,13 @@
 def process_traces(node):
     """Process downloaded data."""
     from nnodes import root
+    from asdfy import ASDFProcessor
 
     node.mkdir('process')
 
     for src in node.ls('raw_obs'):
-        node.rm(f'proc_obs/{src}')
-        node.add_mpi(process_trace, 1, (root.job.cpus_per_node, 0),
-            arg=src, name=src.split('.')[0] + '_obs', cwd='process')
-
-
-def process_trace(src: str):
-    from functools import partial
-    from pyasdf import ASDFDataSet
-
-    with ASDFDataSet(f'raw_obs/{src}', mode='r', mpi=False, compression=None) as ds:
-        origin = ds.events[0].preferred_origin()
-        inventory = ds.waveforms[f'{stream[0].stats.network}.{stream[0].stats.station}'].StationXML # type: ignore
-        ds.process(partial(_process, origin, inventory), f'proc_obs/{src}', {'raw_obs': 'proc_obs'})
+        ap = ASDFProcessor(f'raw_obs/{src}', f'proc_obs/{src}', _process, 'stream', 'raw_obs', 'proc_obs', True)
+        node.add_mpi(ap.run, name=src.split('.')[0] + '_obs', cwd='process')
 
 
 def _select(stream):
@@ -45,31 +35,32 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(origin, inventory, stream):
+def _process(acc):
     from traceback import format_exc
     from sebox import catalog
     from pytomo3d.signal.process import rotate_stream
 
     try:
-        if (stream := _select(stream)) is None:
+        if (stream := _select(acc.stream)) is None:
             return
         
         taper = catalog.processing.get('taper')
 
         # remove instrument response
         _detrend(stream, taper)
-        stream.attach_response(inventory)
+        stream.attach_response(acc.inventory)
         stream.remove_response(output="DISP", zero_mean=False, taper=False,
             water_level=60, pre_filt=catalog.processing.get('remove_response'))
 
         # resample and align
+        origin = acc.origin
         stream.interpolate(1/catalog.processing['dt'], starttime=origin.time)
         
         # detrend and apply taper
         _detrend(stream, taper)
         
         # rotate
-        stream = rotate_stream(stream, origin.latitude, origin.longitude, inventory)
+        stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
 
         if len(stream) != 3:
             return
