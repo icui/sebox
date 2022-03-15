@@ -1,7 +1,9 @@
 def process_traces(node):
     """Process downloaded data."""
+    from nnodes import root
+
     for src in node.ls('raw_obs'):
-        node.add_mpi(process_trace, arg=src)
+        node.add_mpi(process_trace, 1, (root.job.cpus_per_node), arg=src)
 
 
 def process_trace(src: str):
