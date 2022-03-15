@@ -42,7 +42,8 @@ def _process(obs, acc):
     from sebox import catalog
     from pytomo3d.signal.process import rotate_stream
 
-    print(acc.station)
+    nt = int(np.round(catalog.duration * 60 / catalog.dt))
+    print(acc.station, nt)
 
     if (stream := _select(acc.stream)) is None:
         return
@@ -64,7 +65,6 @@ def _process(obs, acc):
     _detrend(stream, taper)
     
     # pad and rotate
-    nt = int(np.round(catalog.duration * 60 / catalog.dt))
     for trace in stream:
         data = np.zeros(nt)
         data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
