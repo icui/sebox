@@ -3,14 +3,15 @@ import numpy as np
 
 from nnodes import root, Node, Directory
 
-from .observed import prepare_observed
+from .trace import download
+from .process import process_traces
 from .index import prepare_index
 from .weight import prepare_weighting
 
 
 def create_catalog(node: Node):
     """Create a catalog database."""
-    node.add(prepare_observed)
+    # node.add(download)
     # node.add(create_index)
     # node.add(create_weighting)
 
