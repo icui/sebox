@@ -5,10 +5,11 @@ def process_traces(node):
 
     node.mkdir('process')
 
-    for mode in ('obs', 'syn'):
+    for mode in ('obs', 'syn')[1:]:
         for src in node.ls(f'raw_{mode}'):
             ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/{src}',
-                partial(_process, mode=='obs'), 'stream', f'raw_{mode}', f'proc_{mode}', True)
+                partial(_process, mode=='obs'), 'stream',
+                f'raw_obs' if mode=='obs' else 'synthetic', f'proc_{mode}', True)
             node.add_mpi(ap.run, name=src.split('.')[0] + '_' + mode, cwd='process')
 
 
