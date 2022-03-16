@@ -80,3 +80,5 @@ def convert_h5(node):
                 node.write(format_exc(), 'error.log', 'a')
         
         node.write(station_lines, f'STATIONS.{node.event}')
+    
+    node.mv(f'{node.event}.h5', '../../raw_obs')
