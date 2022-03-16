@@ -3,7 +3,7 @@ import numpy as np
 
 from nnodes import root, Node, Directory
 
-from .trace import download
+from .download import download
 from .process import process_traces
 from .index import prepare_index
 from .weight import prepare_weighting

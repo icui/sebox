@@ -9,6 +9,8 @@ def download_events(node):
 
 def download_traces(node):
     """Download observed data."""
+    node.concurrent = True
+    
     for event in node.ls('events'):
         node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
 
