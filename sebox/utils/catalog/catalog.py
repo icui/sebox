@@ -12,7 +12,7 @@ from .weight import prepare_weighting
 def create_catalog(node: Node):
     """Create a catalog database."""
     node.add(download)
-    node.add(process_traces)
+    # node.add(process_traces)
     # node.add(create_index)
     # node.add(create_weighting)
 
