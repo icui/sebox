@@ -10,7 +10,7 @@ def download_events(node):
 def download_traces(node):
     """Download observed data."""
     for event in node.ls('events'):
-        if not node.has(f'raw_obs/{event}.j5'):
+        if not node.has(f'raw_obs/{event}.h5'):
             node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
 
 
