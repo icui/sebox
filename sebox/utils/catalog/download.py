@@ -29,7 +29,7 @@ def request_data(event):
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
     try:
-        evt = read_events(f'events/{event}')[0]
+        evt = read_events(f'../../events/{event}')[0]
         node.mkdir('mseed')
         node.mkdir('xml')
 
@@ -62,7 +62,7 @@ def convert_h5(event):
 
     with ASDFDataSet(f'{event}.h5', mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events((f'events/{event}')))
+            ds.add_quakeml(read_events((f'../../events/{event}')))
         
         except Exception:
             node.write(format_exc(), 'error.log', 'a')
@@ -75,14 +75,14 @@ def convert_h5(event):
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(node.path(f'mseed/{src}')), 'raw_obs')
+                ds.add_waveforms(read(f'mseed/{src}'), 'raw_obs')
 
             except Exception:
                 node.write(format_exc(), 'error.log', 'a')
         
         for station in stations:
             try:
-                ds.add_stationxml(node.path(f'xml/{station}.xml'))
+                ds.add_stationxml(f'xml/{station}.xml')
                 sta = ds.waveforms[station].StationXML.networks[0].stations[0] # type: ignore
                 ll = station.split('.')
                 ll.reverse()
