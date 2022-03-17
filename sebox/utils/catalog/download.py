@@ -16,18 +16,17 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
+    node.ln('../../catalog.toml')
     node.add(f'python -c "from sebox.utils.catalog.download import request_data; request_data(\'{node.event}\')"')
     node.add(f'python -c "from sebox.utils.catalog.download import convert_h5; convert_h5(\'{node.event}\')"')
 
 
 def request_data(event):
     from traceback import format_exc
-    from nnodes import root
+    from nnodes import root as node
     from sebox import catalog
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
-
-    node = root.mpi
 
     try:
         evt = read_events(f'events/{event}')[0]
@@ -53,12 +52,10 @@ def request_data(event):
 
 def convert_h5(event):
     from traceback import format_exc
-    from nnodes import root
+    from nnodes import root as node
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
-
-    node = root.mpi
 
     if not node.has('error_download.log'):
         return
