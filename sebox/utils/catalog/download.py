@@ -79,7 +79,7 @@ def convert_h5(event):
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(node.path(f'mseed/{src})'), 'raw_obs')
+                ds.add_waveforms(read(node.path(f'mseed/{src})')), 'raw_obs')
 
             except Exception:
                 node.write(format_exc(), 'error.log', 'a')
