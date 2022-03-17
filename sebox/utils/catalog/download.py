@@ -95,6 +95,6 @@ def convert_h5(event):
             except Exception:
                 node.write(format_exc(), 'error.log', 'a')
         
-        node.write(station_lines, f'STATIONS.{node.event}')
+        node.write(station_lines, f'STATIONS.{event}')
     
-    node.mv(f'{node.event}.h5', '../../raw_obs')
+    node.mv(f'{event}.h5', '../../raw_obs')
