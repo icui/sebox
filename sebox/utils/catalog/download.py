@@ -79,14 +79,14 @@ def convert_h5(event):
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(f'mseed/{src}'), 'raw_obs')
+                ds.add_waveforms(read(node.path(f'mseed/{src})'), 'raw_obs')
 
             except Exception:
                 node.write(format_exc(), 'error.log', 'a')
         
         for station in stations:
             try:
-                ds.add_stationxml(f'xml/{station}.xml')
+                ds.add_stationxml(node.path(f'xml/{station}.xml'))
                 sta = ds.waveforms[station].StationXML.networks[0].stations[0] # type: ignore
                 ll = station.split('.')
                 ll.reverse()
