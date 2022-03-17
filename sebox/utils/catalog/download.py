@@ -51,7 +51,7 @@ def request_data():
         node.write(format_exc(), 'error_download.log')
 
 
-def convert_h5(node):
+def convert_h5():
     from traceback import format_exc
     from nnodes import root
     from pyasdf import ASDFDataSet
