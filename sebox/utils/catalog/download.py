@@ -16,11 +16,11 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
-    node.add_mpi(request_data)
-    node.add_mpi(convert_h5)
+    node.add_mpi(request_data, arg=node.event)
+    node.add_mpi(convert_h5, arg=node.event)
 
 
-def request_data():
+def request_data(event):
     from traceback import format_exc
     from nnodes import root
     from sebox import catalog
@@ -30,12 +30,12 @@ def request_data():
     node = root.mpi
 
     try:
-        event = read_events(f'events/{node.event}')[0]
+        evt = read_events(f'events/{event}')[0]
         node.mkdir('mseed')
         node.mkdir('xml')
 
         gap = catalog.download['gap']
-        eventtime = event.preferred_origin().time
+        eventtime = evt.preferred_origin().time
         starttime = eventtime - gap * 60
         endtime = eventtime + (catalog.duration + gap) * 60
 
@@ -51,7 +51,7 @@ def request_data():
         node.write(format_exc(), 'error_download.log')
 
 
-def convert_h5():
+def convert_h5(event):
     from traceback import format_exc
     from nnodes import root
     from pyasdf import ASDFDataSet
@@ -63,9 +63,9 @@ def convert_h5():
     if not node.has('error_download.log'):
         return
 
-    with ASDFDataSet(node.path(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
+    with ASDFDataSet(f'{event}.h5', mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events((f'events/{node.event}')))
+            ds.add_quakeml(read_events((f'events/{event}')))
         
         except Exception:
             node.write(format_exc(), 'error.log', 'a')
