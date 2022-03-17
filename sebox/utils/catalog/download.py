@@ -16,8 +16,8 @@ def download_traces(node):
 
 def download_trace(node):
     """Download observed data of an event."""
-    node.add_mpi(request_data, arg=node.event)
-    node.add_mpi(convert_h5, arg=node.event)
+    node.add('python -c from sebox.utils.catalog.download import request_data; request_data({node.event})')
+    node.add('python -c from sebox.utils.catalog.download import convert_h5; convert_h5({node.event})')
 
 
 def request_data(event):
