@@ -9,45 +9,59 @@ def download_events(node):
 
 def download_traces(node):
     """Download observed data."""
-    node.concurrent = True
-    
     for event in node.ls('events'):
-        node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
+        if not node.has(f'raw_obs/{event}.j5'):
+            node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
 
 
 def download_trace(node):
     """Download observed data of an event."""
-    node.add(request_data)
-    node.add(convert_h5)
+    node.add_mpi(request_data)
+    node.add_mpi(convert_h5)
 
 
-def request_data(node):
+def request_data():
+    from traceback import format_exc
+    from nnodes import root
     from sebox import catalog
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-    event = read_events(f'events/{node.event}')[0]
-    node.mkdir('mseed')
-    node.mkdir('xml')
+    node = root.mpi
 
-    gap = catalog.download['gap']
-    eventtime = event.preferred_origin().time
-    starttime = eventtime - gap * 60
-    endtime = eventtime + (catalog.duration + gap) * 60
+    try:
+        event = read_events(f'events/{node.event}')[0]
+        node.mkdir('mseed')
+        node.mkdir('xml')
 
-    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
-    mdl = MassDownloader()
-    mdl.download(GlobalDomain(), rst,
-        threads_per_client=catalog.download.get('threads') or 3,
-        mseed_storage=node.path('mseed'),
-        stationxml_storage=node.path('xml'))
+        gap = catalog.download['gap']
+        eventtime = event.preferred_origin().time
+        starttime = eventtime - gap * 60
+        endtime = eventtime + (catalog.duration + gap) * 60
+
+        rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
+        mdl = MassDownloader()
+        
+        mdl.download(GlobalDomain(), rst,
+            threads_per_client=catalog.download.get('threads') or 3,
+            mseed_storage=node.path('mseed'),
+            stationxml_storage=node.path('xml'))
+    
+    except:
+        node.write(format_exc(), 'error_download.log')
 
 
 def convert_h5(node):
     from traceback import format_exc
+    from nnodes import root
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
+
+    node = root.mpi
+
+    if not node.has('error_download.log'):
+        return
 
     with ASDFDataSet(node.path(f'{node.event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
