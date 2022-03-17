@@ -29,6 +29,7 @@ def request_data(event):
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
     node = root.mpi
+    
     evt = read_events(f'events/{event}')[0]
     node.mkdir('mseed')
     node.mkdir('xml')
