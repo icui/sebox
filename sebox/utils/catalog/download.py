@@ -29,27 +29,22 @@ def request_data(event):
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
     node = root.mpi
+    evt = read_events(f'events/{event}')[0]
+    node.mkdir('mseed')
+    node.mkdir('xml')
 
-    try:
-        evt = read_events(f'events/{event}')[0]
-        node.mkdir('mseed')
-        node.mkdir('xml')
+    gap = catalog.download['gap']
+    eventtime = evt.preferred_origin().time
+    starttime = eventtime - gap * 60
+    endtime = eventtime + (catalog.duration + gap) * 60
 
-        gap = catalog.download['gap']
-        eventtime = evt.preferred_origin().time
-        starttime = eventtime - gap * 60
-        endtime = eventtime + (catalog.duration + gap) * 60
-
-        rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
-        mdl = MassDownloader()
-        
-        mdl.download(GlobalDomain(), rst,
-            threads_per_client=catalog.download.get('threads') or 3,
-            mseed_storage=node.path('mseed'),
-            stationxml_storage=node.path('xml'))
+    rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
+    mdl = MassDownloader()
     
-    except:
-        node.write(format_exc(), 'error_download.log')
+    mdl.download(GlobalDomain(), rst,
+        threads_per_client=catalog.download.get('threads') or 3,
+        mseed_storage=node.path('mseed'),
+        stationxml_storage=node.path('xml'))
 
 
 def convert_h5(event):
