@@ -17,8 +17,8 @@ def download_traces(node):
 def download_trace(node):
     """Download observed data of an event."""
     node.ln('../../catalog.toml')
-    node.add(f'python -c "from sebox.utils.catalog.download import request_data; request_data(\'{node.event}\')"', name='request_data')
-    node.add(f'python -c "from sebox.utils.catalog.download import convert_h5; convert_h5(\'{node.event}\')"', name='convert_h5')
+    node.add_mpi(request_data, arg=node.event, use_multiprocessing=True)
+    node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
 
 
 def request_data(event):
