@@ -23,13 +23,15 @@ def download_trace(node):
 
 def request_data(event):
     from traceback import format_exc
-    from nnodes import root as node
+    from nnodes import root
     from sebox import catalog
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
+    node = root.mpi
+
     try:
-        evt = read_events(f'../../events/{event}')[0]
+        evt = read_events(f'events/{event}')[0]
         node.mkdir('mseed')
         node.mkdir('xml')
 
@@ -52,17 +54,19 @@ def request_data(event):
 
 def convert_h5(event):
     from traceback import format_exc
-    from nnodes import root as node
+    from nnodes import root
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
 
-    if not node.has('error_download.log'):
+    node = root.mpi
+
+    if node.has('error_download.log'):
         return
 
     with ASDFDataSet(f'{event}.h5', mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events((f'../../events/{event}')))
+            ds.add_quakeml(read_events((f'events/{event}')))
         
         except Exception:
             node.write(format_exc(), 'error.log', 'a')
