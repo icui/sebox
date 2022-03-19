@@ -64,7 +64,7 @@ def convert_h5(event):
     if node.has('error_download.log'):
         return
 
-    with ASDFDataSet(f'{event}.h5', mode='w', mpi=False, compression=None) as ds:
+    with ASDFDataSet(node.path(f'{event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
             ds.add_quakeml(read_events((f'events/{event}')))
         
