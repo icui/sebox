@@ -17,7 +17,7 @@ def download_traces(node):
 def download_trace(node):
     """Download observed data of an event."""
     node.ln('../../catalog.toml')
-    node.add_mpi(request_data, arg=node.event, use_multiprocessing=True)
+    # node.add_mpi(request_data, arg=node.event, use_multiprocessing=True)
     node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
 
 
