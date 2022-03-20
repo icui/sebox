@@ -41,7 +41,7 @@ def request_data(event):
         endtime = eventtime + (catalog.duration + gap) * 60
 
         rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
-        mdl = MassDownloader()
+        mdl = MassDownloader(providers=['IRIS'])
         
         mdl.download(GlobalDomain(), rst,
             threads_per_client=catalog.download.get('threads') or 3,
