@@ -4,7 +4,7 @@ import numpy as np
 from nnodes import root, Node, Directory
 
 from .download import download
-from .process import process_traces
+from .process import process
 from .index import prepare_index
 from .weight import prepare_weighting
 

@@ -1,17 +1,26 @@
-def process_traces(node):
+def process(node):
     """Process downloaded data."""
+    node.concurrent = True
+    node.add(process_observed, concurrent=True)
+    node.add(process_synthetic, concurrent=True)
+
+def process_observed(node):
+    _process_traces(node, 'obs')
+
+
+def process_synthetic(node):
+    _process_traces(node, 'syn')
+
+
+def _process_traces(node, mode):
     from functools import partial
     from asdfy import ASDFProcessor
 
-    node.mkdir('process')
-    node.concurrent = True
-
-    for mode in ('obs', 'syn'):
-        for src in node.ls(f'raw_{mode}'):
-            ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/{src}',
-                partial(_process, mode=='obs'), 'stream',
-                f'raw_obs' if mode=='obs' else 'synthetic', f'proc_{mode}', True)
-            node.add_mpi(ap.run, name=src.split('.')[0] + '_' + mode, cwd='process')
+    for src in node.ls(f'raw_{mode}'):
+        ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/{src}',
+            partial(_process, mode=='obs'), 'stream',
+            f'raw_obs' if mode=='obs' else 'synthetic', f'proc_{mode}', True)
+        node.add_mpi(ap.run, node.np, name=src.split('.')[0], cwd=f'log_{mode}')
 
 
 def _select(stream):
