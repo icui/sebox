@@ -4,6 +4,7 @@ def process_traces(node):
     from asdfy import ASDFProcessor
 
     node.mkdir('process')
+    node.concurrent = True
 
     for mode in ('obs', 'syn')[:1]:
         for src in node.ls(f'raw_{mode}'):
