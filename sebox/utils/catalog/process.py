@@ -6,7 +6,7 @@ def process_traces(node):
     node.mkdir('process')
     node.concurrent = True
 
-    for mode in ('obs', 'syn')[:1]:
+    for mode in ('obs', 'syn'):
         for src in node.ls(f'raw_{mode}'):
             ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/{src}',
                 partial(_process, mode=='obs'), 'stream',

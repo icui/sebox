@@ -41,7 +41,7 @@ def request_data(event):
         endtime = eventtime + (catalog.duration + gap) * 60
 
         rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
-        mdl = MassDownloader()
+        mdl = MassDownloader(providers=['IRIS'])
         
         mdl.download(GlobalDomain(), rst,
             threads_per_client=catalog.download.get('threads') or 3,
@@ -64,7 +64,7 @@ def convert_h5(event):
     if node.has('error_download.log'):
         return
 
-    with ASDFDataSet(f'{event}.h5', mode='w', mpi=False, compression=None) as ds:
+    with ASDFDataSet(node.path(f'{event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
             ds.add_quakeml(read_events((f'events/{event}')))
         
@@ -79,7 +79,7 @@ def convert_h5(event):
             stations.add(station)
 
             try:
-                ds.add_waveforms(read(node.path(f'mseed/{src})')), 'raw_obs')
+                ds.add_waveforms(read(node.path(f'mseed/{src}')), 'raw_obs')
 
             except Exception:
                 node.write(format_exc(), 'error.log', 'a')
