@@ -6,13 +6,15 @@ def blend(node):
             node.add(blend_event, event=event)
 
 
-def blend_event(node):
+def blend_event__(node):
+    from collections import namedtuple
     from pyasdf import ASDFDataSet
 
     event = node.event
     
     ds1 = ASDFDataSet(f'proc_obs/{event}.h5', mode='r', mpi=False)
     ds2 = ASDFDataSet(f'proc_syn/{event}.h5', mode='r', mpi=False)
+    A = namedtuple('A', ['event', 'station', 'trace'])
 
     sta = 'TA.C24K'
     # sta = 'AZ.BZN'
@@ -20,29 +22,35 @@ def blend_event(node):
     syn = ds2.waveforms[sta].proc_syn[2]
 
     node.mkdir(f'blend/{event}')
-    _blend(event, obs, syn)
+    _blend(A(event, sta, obs), A(event, sta, syn))
 
 
-def blend_event_(node):
-    from functools import partial
+def blend_event(node):
     from asdfy import ASDFProcessor
 
     event = node.event
     node.mkdir(f'blend/{event}')
     
     ap = ASDFProcessor((f'proc_obs/{event}.h5', f'proc_syn/{event}.h5'), f'blend_obs/{event}.h5',
-        partial(_blend, event), output_tag='blend_obs')
+        _blend, output_tag='blend_obs', accessor=True)
     node.add_mpi(ap.run, node.np, name=f'blend_{event}')
 
 
-def _blend(event, obs, syn):
-    from pyflex import Config, select_windows
+def _blend(obs_acc, syn_acc):
+    from pyflex import Config, WindowSelector
     from sebox import catalog
+    import matplotlib.pyplot as plt
+
+    station = syn_acc.station
+    event = syn_acc.event
+    obs = obs_acc.trace
+    syn = syn_acc.trace
 
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
-    wins = select_windows(obs, syn, config, plot=True, plot_filename=f'blend/{event}/window.png')
+    ws = WindowSelector(obs, syn, config)
+    wins = ws.select_windows()
+    ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
+    plt.title(f'ratio: {ratio:.2f}')
+    ws.plot()
+    
 
-    a_full = sum(syn.data ** 2)
-    a_win = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins)
-
-    print(a_full, a_win)
