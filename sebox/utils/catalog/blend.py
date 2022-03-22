@@ -75,6 +75,7 @@ def _blend(obs_acc, syn_acc):
         for i, win in enumerate(wins):
             fl = 0 if i == 0 else wins[i-1].right + nt + 1
             fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+            print(fl, win.left, win.right, fr)
 
             if win.left - fl >= nt:
                 l = win.left - nt
