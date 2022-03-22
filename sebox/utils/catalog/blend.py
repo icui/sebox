@@ -1,4 +1,5 @@
 def blend(node):
+    node.concurrent = True
     node.mkdir('blend_obs')
 
     for event in node.ls('events')[1:]:
@@ -46,7 +47,10 @@ def _blend(obs_acc, syn_acc):
     from nnodes import root
     from scipy.fft import fft
     import numpy as np
+
     import matplotlib.pyplot as plt
+    from cartopy.crs import AzimuthalEquidistant, PlateCarree
+    from cartopy.feature import LAND
 
     station = syn_acc.station
     event = syn_acc.event
@@ -100,17 +104,33 @@ def _blend(obs_acc, syn_acc):
         f3 = fft(d1)[imin: imax]
         
         plt.clf()
-        plt.subplot(2, 1, 1)
+        plt.subplot(1, 2, 1)
         plt.plot(np.angle(f1), label='obs')
         plt.plot(np.angle(f2), label='syn')
         plt.plot(np.angle(f1 / f2), label='diff')
         plt.legend()
 
-        plt.subplot(2, 1, 2)
+        plt.subplot(1, 2, 2)
         plt.plot(np.angle(f3), label='obs_glue')
         plt.plot(np.angle(f2), label='syn')
         plt.plot(np.angle(f3 / f2), label='diff')
-        # plt.savefig(d.path('frequency.png'))
-        plt.show()
+        plt.legend()
+        plt.savefig(d.path('frequency.png'))
+
+        plt.clf()
+        
+        e = syn_acc.origin
+        s = syn_acc.inventory[0][0]
+        fig = plt.figure()
+        crs = PlateCarree()
+        ax = fig.add_subplot(1, 1, 1, projection=crs)
+        ax.gridlines()
+        ax.add_feature(LAND, zorder=0, edgecolor='black', facecolor=(0.85, 0.85, 0.85))
+
+        ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
+        ax.scatter(s.longitude, s.latitude, s=60, color="steelblue", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
+        plt.savefig(d.path('location.png'))
+
         exit()
+        return obs
 
