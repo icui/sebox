@@ -58,6 +58,4 @@ def _blend(obs_acc, syn_acc):
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
 
     if ratio < catalog.window['energy_threshold']:
-        ws.plot(filename=f'blend/{event}/{station}_{ratio:.2f}')
-    
-
+        ws.plot(filename=f'blend/{event}/{station}_{ratio:.2f}.png')
