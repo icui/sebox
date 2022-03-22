@@ -48,9 +48,12 @@ def _blend(obs_acc, syn_acc):
     from scipy.fft import fft
     import numpy as np
 
+    import matplotlib
     import matplotlib.pyplot as plt
     from cartopy.crs import AzimuthalEquidistant, PlateCarree
     from cartopy.feature import LAND
+
+    matplotlib.use('Agg')
 
     station = syn_acc.station
     event = syn_acc.event
