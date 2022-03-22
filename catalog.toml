@@ -27,4 +27,4 @@ location_priorities = ["", "00", "10"]
 channel_priorities = ["BH[ZNE]", "HH[ZNE]"]
 reject_channels_with_gaps = true
 
-[window]                                     # parameters for pyflex
+[pyflex]                                     # parameters for pyflex

@@ -84,6 +84,9 @@ def _process(obs, acc):
 
     stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
 
+    # bandpass filter
+    stream.filter('bandpass', freqmin=1/catalog.period_max, freqmax=1/catalog.period_min)
+
     if len(stream) != 3:
         return
     

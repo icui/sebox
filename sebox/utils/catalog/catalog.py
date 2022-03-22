@@ -7,6 +7,7 @@ from .download import download
 from .process import process
 from .index import prepare_index
 from .weight import prepare_weighting
+from .blend import blend
 
 
 def create_catalog(node: Node):
