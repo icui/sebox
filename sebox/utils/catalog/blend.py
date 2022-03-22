@@ -43,9 +43,10 @@ def blend_eventx(node):
 
 
 def _blend(obs_acc, syn_acc):
-    from pyflex import Config, WindowSelector
+    from pyflex import Config, WindowSelector, select_windows
     from sebox import catalog
-    import matplotlib.pyplot as plt
+    from nnodes import root
+    import numpy as np
 
     station = syn_acc.station
     event = syn_acc.event
@@ -57,5 +58,32 @@ def _blend(obs_acc, syn_acc):
     wins = ws.select_windows()
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
 
-    if ratio < catalog.window['energy_threshold']:
-        ws.plot(filename=f'blend/{event}/{station}_{ratio:.2f}.png')
+    if ratio > catalog.window['energy_threshold']:
+        d = root.subdir(f'blend/{event}/{station}')
+        d.mkdir()
+        ws.plot(filename=d.path('windows.png'))
+
+        nt = int(catalog.period_max * 60 / catalog.dt / 2)
+        taper = np.hanning(nt * 2)
+
+        d1 = obs.data
+        d2 = syn.data
+
+        for i, win in enumerate(wins):
+            fl = 0 if i == 0 else wins[i-1].right + nt + 1
+            fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+
+            if win.left - fl >= nt:
+                l = win.left - nt
+                r = win.left
+                d1[fl: l] = d2[fl: l]
+                d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
+            
+            if fr - win.right >= nt:
+                l = win.right + 1
+                r = win.right + nt + 1
+                d1[r: fr + 1] = d2[r: fr + 1]
+                d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
+            
+            select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
+            print(f'{station} {ratio:.2f}')
