@@ -69,6 +69,7 @@ def _blend(obs_acc, syn_acc):
         d1 = obs.data
         d2 = syn.data
         from psh import plt
+        plt.clf()
         plt.plot(d1)
 
         for i, win in enumerate(wins):
