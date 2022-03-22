@@ -36,8 +36,7 @@ def blend_eventx(node):
     event = node.event
     node.mkdir(f'blend/{event}')
     
-    ap = ASDFProcessor((f'proc_obs/{event}.h5', f'proc_syn/{event}.h5'), f'blend_obs/{event}.h5',
-        _blend, output_tag='blend_obs', accessor=True)
+    ap = ASDFProcessor((f'proc_obs/{event}.h5', f'proc_syn/{event}.h5'), f'blend_obs/{event}.h5', _blend, output_tag='blend_obs', accessor=True)
     node.add_mpi(ap.run, node.np, name=f'blend_{event}')
 
 
@@ -85,6 +84,5 @@ def _blend(obs_acc, syn_acc):
                 r = win.right + nt + 1
                 d1[r: fr + 1] = d2[r: fr + 1]
                 d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
-            
-            obs.data = d1
-            select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
+
+        select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
