@@ -68,10 +68,15 @@ def _blend(obs_acc, syn_acc):
 
         d1 = obs.data
         d2 = syn.data
+        from psh import plt
+        plt.clf()
+        plt.plot(d1)
+        print(nt)
 
         for i, win in enumerate(wins):
             fl = 0 if i == 0 else wins[i-1].right + nt + 1
             fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+            print(fl, win.left, win.right, fr)
 
             if win.left - fl >= nt:
                 l = win.left - nt
@@ -85,4 +90,7 @@ def _blend(obs_acc, syn_acc):
                 d1[r: fr + 1] = d2[r: fr + 1]
                 d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
 
+        plt.plot(d1)
+        plt.show()
+        exit()
         select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
