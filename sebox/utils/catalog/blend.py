@@ -15,6 +15,7 @@ def blend_event(node):
     ds2 = ASDFDataSet(f'proc_syn/{event}.h5')
 
     sta = 'TA.C24K'
+    # sta = 'AZ.BZN'
     obs = ds1.waveforms[sta].proc_obs[2]
     syn = ds2.waveforms[sta].proc_syn[2]
 
