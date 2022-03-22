@@ -2,7 +2,7 @@ def blend(node):
     node.concurrent = True
     node.mkdir('blend_obs')
 
-    for event in node.ls('events')[1:]:
+    for event in node.ls('events'):
         if node.has(f'proc_obs/{event}.h5') and node.has(f'proc_syn/{event}.h5'):
             node.add(blend_event, event=event)
 
