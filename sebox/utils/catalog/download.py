@@ -18,7 +18,7 @@ def download_trace(node):
     """Download observed data of an event."""
     node.ln('../../catalog.toml')
     node.add_mpi(request_data, arg=node.event, use_multiprocessing=True)
-    node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
+    # node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
 
 
 def request_data(event):
@@ -41,7 +41,7 @@ def request_data(event):
         endtime = eventtime + (catalog.duration + gap) * 60
 
         rst = Restrictions(starttime=starttime, endtime=endtime, **catalog.download['restrictions'])
-        mdl = MassDownloader(providers=['IRIS'])
+        mdl = MassDownloader()
         
         mdl.download(GlobalDomain(), rst,
             threads_per_client=catalog.download.get('threads') or 3,
