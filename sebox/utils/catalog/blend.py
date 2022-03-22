@@ -64,6 +64,7 @@ def _blend(obs_acc, syn_acc):
         d = root.subdir(f'blend/{event}/{station}')
         d.mkdir()
         ws.plot(filename=d.path('windows.png'))
+        plt.clf()
 
         nt = int(catalog.period_max / catalog.dt / 2)
         taper = np.hanning(nt * 2)
@@ -71,7 +72,8 @@ def _blend(obs_acc, syn_acc):
         d1 = obs.data
         d2 = syn.data
 
-        df = 1 / catalog.duration_ft / 60
+        df = 1 / float(syn.stats.endtime - syn.stats.starttime)
+        print(df)
         imin = int(np.ceil(1 / catalog.period_max / df))
         imax = int(np.floor(1 / catalog.period_min / df)) + 1
 
@@ -99,14 +101,15 @@ def _blend(obs_acc, syn_acc):
         
         plt.clf()
         plt.subplot(2, 1, 1)
-        plt.plot(np.angle(f1))
-        plt.plot(np.angle(f2))
-        plt.plot(np.angle(f1 / f2))
+        plt.plot(np.angle(f1), label='obs')
+        plt.plot(np.angle(f2), label='syn')
+        plt.plot(np.angle(f1 / f2), label='diff')
+        plt.legend()
 
         plt.subplot(2, 1, 2)
-        plt.plot(np.angle(f3))
-        plt.plot(np.angle(f2))
-        plt.plot(np.angle(f3 / f2))
+        plt.plot(np.angle(f3), label='obs_glue')
+        plt.plot(np.angle(f2), label='syn')
+        plt.plot(np.angle(f3 / f2), label='diff')
         # plt.savefig(d.path('frequency.png'))
         plt.show()
         exit()
