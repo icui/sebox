@@ -15,6 +15,12 @@ def blend_event(node):
     ds1 = ASDFDataSet(f'proc_obs/{event}.h5')
     ds2 = ASDFDataSet(f'proc_syn/{event}.h5')
 
+    sta = 'TA.C24K'
+    obs = ds1.waveforms[sta].proc_obs[2]
+    syn = ds2.waveforms[sta].proc_syn[2]
+
+    _blend(obs, syn)
+
 
 def blend_event_(node):
     from asdfy import ASDFProcessor
@@ -28,3 +34,7 @@ def blend_event_(node):
 
 def _blend(obs, syn):
     from pyflex import Config, select_windows
+    from sebox import catalog
+
+    config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
+    select_windows(obs, syn, config, plot=True)
