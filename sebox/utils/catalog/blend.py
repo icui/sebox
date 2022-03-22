@@ -63,7 +63,7 @@ def _blend(obs_acc, syn_acc):
         d.mkdir()
         ws.plot(filename=d.path('windows.png'))
 
-        nt = int(catalog.period_max * 60 / catalog.dt / 2)
+        nt = int(catalog.period_max / catalog.dt / 2)
         taper = np.hanning(nt * 2)
 
         d1 = obs.data
@@ -71,6 +71,7 @@ def _blend(obs_acc, syn_acc):
         from psh import plt
         plt.clf()
         plt.plot(d1)
+        print(nt)
 
         for i, win in enumerate(wins):
             fl = 0 if i == 0 else wins[i-1].right + nt + 1
