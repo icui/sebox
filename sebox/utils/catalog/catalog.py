@@ -167,7 +167,7 @@ class Catalog(Directory):
         return self.processing['duration']
 
     @property
-    def duration_ft(self) -> tp.Tuple[float, float]:
+    def duration_ft(self) -> float:
         """Transient duration and station duration in minutes."""
         return self.processing['duration_ft']
 

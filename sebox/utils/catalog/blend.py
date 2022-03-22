@@ -44,7 +44,9 @@ def _blend(obs_acc, syn_acc):
     from pyflex import Config, WindowSelector, select_windows
     from sebox import catalog
     from nnodes import root
+    from scipy.fft import fft
     import numpy as np
+    import matplotlib.pyplot as plt
 
     station = syn_acc.station
     event = syn_acc.event
@@ -68,15 +70,17 @@ def _blend(obs_acc, syn_acc):
 
         d1 = obs.data
         d2 = syn.data
-        from psh import plt
-        plt.clf()
-        plt.plot(d1)
-        print(nt)
+
+        df = 1 / catalog.duration_ft / 60
+        imin = int(np.ceil(1 / catalog.period_max / df))
+        imax = int(np.floor(1 / catalog.period_min / df)) + 1
+
+        f1 = fft(d1)[imin: imax]
+        f2 = fft(d2)[imin: imax]
 
         for i, win in enumerate(wins):
             fl = 0 if i == 0 else wins[i-1].right + nt + 1
             fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
-            print(fl, win.left, win.right, fr)
 
             if win.left - fl >= nt:
                 l = win.left - nt
@@ -90,7 +94,20 @@ def _blend(obs_acc, syn_acc):
                 d1[r: fr + 1] = d2[r: fr + 1]
                 d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
 
-        plt.plot(d1)
+        select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
+        f3 = fft(d1)[imin: imax]
+        
+        plt.clf()
+        plt.subplot(2, 1, 1)
+        plt.plot(np.angle(f1))
+        plt.plot(np.angle(f2))
+        plt.plot(np.angle(f1 / f2))
+
+        plt.subplot(2, 1, 2)
+        plt.plot(np.angle(f3))
+        plt.plot(np.angle(f2))
+        plt.plot(np.angle(f3 / f2))
+        # plt.savefig(d.path('frequency.png'))
         plt.show()
         exit()
-        select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
+
