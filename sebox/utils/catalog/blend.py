@@ -18,11 +18,16 @@ def blend_event(node):
 
     sta = 'TA.C24K'
     # sta = 'AZ.BZN'
-    obs = ds1.waveforms[sta].proc_obs[2]
-    syn = ds2.waveforms[sta].proc_syn[2]
+    l1 = ds1.waveforms.list()
+    l2 = ds2.waveforms.list()
 
-    node.mkdir(f'blend/{event}')
-    _blend(A(event, sta, obs), A(event, sta, syn))
+    for sta in l1:
+        if sta in l2:
+            obs = ds1.waveforms[sta].proc_obs[2]
+            syn = ds2.waveforms[sta].proc_syn[2]
+
+            node.mkdir(f'blend/{event}')
+            _blend(A(event, sta, obs), A(event, sta, syn))
 
 
 def blend_eventx(node):
@@ -49,8 +54,10 @@ def _blend(obs_acc, syn_acc):
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
     ws = WindowSelector(obs, syn, config)
     wins = ws.select_windows()
+    a = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins)
+    b = sum(syn.data ** 2)
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
-    plt.title(f'ratio: {ratio:.2f}')
+    print(station, a, b, ratio)
     ws.plot()
     
 
