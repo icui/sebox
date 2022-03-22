@@ -11,8 +11,8 @@ def blend_event(node):
 
     event = node.event
     
-    ds1 = ASDFDataSet(f'proc_obs/{event}.h5')
-    ds2 = ASDFDataSet(f'proc_syn/{event}.h5')
+    ds1 = ASDFDataSet(f'proc_obs/{event}.h5', mode='r', mpi=False)
+    ds2 = ASDFDataSet(f'proc_syn/{event}.h5', mode='r', mpi=False)
 
     sta = 'TA.C24K'
     # sta = 'AZ.BZN'
