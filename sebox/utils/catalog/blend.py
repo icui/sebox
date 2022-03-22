@@ -19,6 +19,7 @@ def blend_event(node):
     obs = ds1.waveforms[sta].proc_obs[2]
     syn = ds2.waveforms[sta].proc_syn[2]
 
+    node.mkdir(f'blend/{event}')
     _blend(event, obs, syn)
 
 
