@@ -132,8 +132,8 @@ def _blend(obs_acc, syn_acc):
 
         ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
         ax.scatter(s.longitude, s.latitude, s=60, color="steelblue", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
+        plt.title(f'lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
         plt.savefig(d.path('location.png'))
 
-        exit()
         return obs
 
