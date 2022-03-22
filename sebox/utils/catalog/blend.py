@@ -21,14 +21,13 @@ def blend_event(node):
     l1 = ds1.waveforms.list()
     l2 = ds2.waveforms.list()
 
-    for sta in l1:
+    for sta in l1[:5]:
         if sta in l2:
             obs = ds1.waveforms[sta].proc_obs[2]
             syn = ds2.waveforms[sta].proc_syn[2]
 
             node.mkdir(f'blend/{event}')
             _blend(A(event, sta, obs), A(event, sta, syn))
-            break
 
 
 def blend_eventx(node):
