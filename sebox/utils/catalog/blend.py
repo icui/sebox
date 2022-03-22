@@ -28,6 +28,7 @@ def blend_event(node):
 
             node.mkdir(f'blend/{event}')
             _blend(A(event, sta, obs), A(event, sta, syn))
+            break
 
 
 def blend_eventx(node):
@@ -54,10 +55,9 @@ def _blend(obs_acc, syn_acc):
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
     ws = WindowSelector(obs, syn, config)
     wins = ws.select_windows()
-    a = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins)
-    b = sum(syn.data ** 2)
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
-    print(station, a, b, ratio)
-    ws.plot()
+
+    if ratio < catalog.window['energy_threshold']:
+        ws.plot(filename=f'blend/{event}/{station}_{ratio:.2f}')
     
 
