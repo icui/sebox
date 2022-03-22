@@ -17,6 +17,9 @@ def _process_traces(node, mode):
     from asdfy import ASDFProcessor
 
     for src in node.ls(f'raw_{mode}'):
+        if node.has(f'proc_{mode}/{src}'):
+            continue
+        
         ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/{src}',
             partial(_process, mode=='obs'), 'stream',
             f'raw_obs' if mode=='obs' else 'synthetic', f'proc_{mode}', True)
