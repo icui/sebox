@@ -86,6 +86,7 @@ def _process(obs, acc):
 
     # bandpass filter
     stream.filter('bandpass', freqmin=1/catalog.period_max, freqmax=1/catalog.period_min)
+    _detrend(stream, taper)
 
     if len(stream) != 3:
         return
