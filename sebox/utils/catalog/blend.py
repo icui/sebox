@@ -21,7 +21,7 @@ def blend_event(node):
     l1 = ds1.waveforms.list()
     l2 = ds2.waveforms.list()
 
-    for sta in l1[:5]:
+    for sta in l1[1:2]:
         if sta in l2:
             obs = ds1.waveforms[sta].proc_obs[2]
             syn = ds2.waveforms[sta].proc_syn[2]
@@ -58,6 +58,8 @@ def _blend(obs_acc, syn_acc):
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
 
     if ratio > catalog.window['energy_threshold']:
+        print(f'{station} {ratio:.2f}')
+
         d = root.subdir(f'blend/{event}/{station}')
         d.mkdir()
         ws.plot(filename=d.path('windows.png'))
@@ -84,5 +86,5 @@ def _blend(obs_acc, syn_acc):
                 d1[r: fr + 1] = d2[r: fr + 1]
                 d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
+            obs.data = d1
             select_windows(obs, syn, config, plot=True, plot_filename=d.path('windows_blended.png'))
-            print(f'{station} {ratio:.2f}')
