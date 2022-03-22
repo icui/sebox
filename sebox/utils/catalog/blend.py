@@ -40,6 +40,9 @@ def _blend(event, obs, syn):
     from sebox import catalog
 
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
-    win = select_windows(obs, syn, config, plot=True, plot_filename=f'blend/{event}/window.png')
+    wins = select_windows(obs, syn, config, plot=True, plot_filename=f'blend/{event}/window.png')
 
-    print(win)
+    a_full = sum(syn.data ** 2)
+    a_win = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins)
+
+    print(a_full, a_win)
