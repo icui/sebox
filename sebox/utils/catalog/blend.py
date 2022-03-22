@@ -6,7 +6,7 @@ def blend(node):
             node.add(blend_event, event=event)
 
 
-def blend_event__(node):
+def blend_event(node):
     from collections import namedtuple
     from pyasdf import ASDFDataSet
 
@@ -25,7 +25,7 @@ def blend_event__(node):
     _blend(A(event, sta, obs), A(event, sta, syn))
 
 
-def blend_event(node):
+def blend_eventx(node):
     from asdfy import ASDFProcessor
 
     event = node.event
