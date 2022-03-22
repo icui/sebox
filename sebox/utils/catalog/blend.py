@@ -1,10 +1,9 @@
 def blend(node):
     node.mkdir('blend_obs')
 
-    for event in node.ls('events'):
+    for event in node.ls('events')[1:]:
         if node.has(f'proc_obs/{event}.h5') and node.has(f'proc_syn/{event}.h5'):
             node.add(blend_event, event=event)
-            break
 
 
 def blend_event(node):
