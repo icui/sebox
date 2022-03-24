@@ -75,11 +75,11 @@ def index_bands(node: Node):
     node.dump(band_data, 'band_data.npy')
     node.dump(stations, 'stations.pickle')
     
-    df = 1 / catalog.duration[1] / 60
-    kf = int(np.ceil(catalog.duration[0] / catalog.duration[1]))
+    df = 1 / catalog.duration_ft / 60
+    kf = int(np.ceil(catalog.duration / catalog.duration_ft))
 
-    imin = int(np.ceil(1 / catalog.period[1] / df))
-    imax = int(np.floor(1 / catalog.period[0] / df)) + 1
+    imin = int(np.ceil(1 / catalog.period_max / df))
+    imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // catalog.nbands
     imax = imin + catalog.nbands * fincr
 

@@ -4,9 +4,10 @@ import numpy as np
 from nnodes import root, Node, Directory
 
 from .download import download
-from .process import process_traces
+from .process import process
 from .index import prepare_index
 from .weight import prepare_weighting
+from .blend import blend
 
 
 def create_catalog(node: Node):
@@ -66,6 +67,11 @@ class Catalog(Directory):
     def processing(self):
         """Trace configurations."""
         return self._config['processing']
+    
+    @property
+    def window(self):
+        """Window configurations."""
+        return self._config['window']
 
     @property
     def events(self) -> tp.List[str]:
@@ -161,7 +167,7 @@ class Catalog(Directory):
         return self.processing['duration']
 
     @property
-    def duration_ft(self) -> tp.Tuple[float, float]:
+    def duration_ft(self) -> float:
         """Transient duration and station duration in minutes."""
         return self.processing['duration_ft']
 
