@@ -52,21 +52,26 @@ def request_data(event):
         node.write(format_exc(), 'error_download.log')
 
 
-def convert_h5(event):
+def convert_h5(srcs):
+    for src in srcs:
+        _convert(src)
+
+def _convert(src):
     from traceback import format_exc
     from nnodes import root
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
 
-    node = root.mpi
+    event = src.split('/')[-1]
+    node = root.subdir(src)
 
     if node.has('error_download.log'):
         return
 
     with ASDFDataSet(node.path(f'{event}.h5'), mode='w', mpi=False, compression=None) as ds:
         try:
-            ds.add_quakeml(read_events((f'events/{event}')))
+            ds.add_quakeml(read_events(node.path(f'../../events/{event}')))
         
         except Exception:
             node.write(format_exc(), 'error.log', 'a')
@@ -97,5 +102,3 @@ def convert_h5(event):
                 node.write(format_exc(), 'error.log', 'a')
         
         node.write(station_lines, f'STATIONS.{event}')
-    
-    node.mv(f'{event}.h5', '../../raw_obs')
