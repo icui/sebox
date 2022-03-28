@@ -96,7 +96,9 @@ max_surface_wave_velocity = 4.10
 min_surface_wave_velocity = 3.50
 max_surface_wave_velocity = 4.10
 
- [window.flexwin.T]
+[window.flexwin.T]
 # Love wave
 min_surface_wave_velocity = 4.00
 max_surface_wave_velocity = 4.80
+
+[window.check]

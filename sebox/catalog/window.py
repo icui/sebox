@@ -38,8 +38,9 @@ def _blend(obs_acc, syn_acc):
     cha = obs.stats.channel
     savefig = catalog.window.get('savefig')
     
-    config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
-    ws = WindowSelector(obs, syn, config)
+    cfg = catalog.window['flexwin']
+    config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
+    ws = WindowSelector(obs, syn, config, syn_acc.events[0], syn_acc.invenntory)
     wins = ws.select_windows()
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
 
