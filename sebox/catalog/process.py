@@ -31,12 +31,8 @@ def process_event(node):
     ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
         partial(_process, mode=='obs'), 'stream', getattr(node, f'tag_{mode}'), f'proc_{mode}', True)
     
-    node.add_mpi(ap.run, node.np, name=node.event, cwd=f'log_{mode}', check_output=_check)
+    node.add_mpi(ap.run, node.np, name='process_traces', fname=node.event, cwd=f'log_{mode}')
     node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
-
-
-def _check(f, e):
-    print('@@@', f, e)
 
 
 def _select(stream):
