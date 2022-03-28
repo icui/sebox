@@ -1,22 +1,19 @@
-from nnodes import Node
-
-
-def process(node: Node):
+def process(node):
     """Process downloaded data."""
     node.concurrent = True
     node.add(process_observed, concurrent=True)
     node.add(process_synthetic, concurrent=True)
 
 
-def process_observed(node: Node):
+def process_observed(node):
     _process_traces(node, 'obs')
 
 
-def process_synthetic(node: Node):
+def process_synthetic(node):
     _process_traces(node, 'syn')
 
 
-def _process_traces(node: Node, mode: str):
+def _process_traces(node, mode: str):
     from functools import partial
     from asdfy import ASDFProcessor
 
@@ -59,10 +56,11 @@ def _detrend(stream, taper):
 
 def _process(obs, acc):
     import numpy as np
+    from nnodes import root
     from sebox.catalog import catalog
     from pytomo3d.signal.process import rotate_stream, sac_filter_stream
 
-    print(acc.station)
+    print(acc.station, root.mpi.rank)
 
     if (stream := _select(acc.stream)) is None:
         return
