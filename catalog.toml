@@ -50,7 +50,6 @@ cc_acceptance_level = 0.85
 
 # window signal-to-noise ratio
 s2n_limit = 3.0
-s2n_limit_energy = 3.0
 window_signal_to_noise_type = "amplitude"
 
 # min/max surface wave velocity, to calculate slowest/fast
