@@ -1,6 +1,6 @@
 [job]
 name = "sebox"                              # job name
-nnodes = 64                                 # total number of nodes
+nnodes = 2                                 # total number of nodes
 account = "GEO111"                          # job account
 walltime = 120.0                            # walltime to request
 gap = 2.0                                   # terminate job before <gap> minutes before walltime runs out
@@ -8,5 +8,5 @@ debug = false                               # submit to debug queue
 system = ['nnodes.job', 'Traverse']         # job scheduler
 
 [root]
-task = ['sebox.catalog', 'process']         # main task
-np = 20
+task = ['sebox.catalog', 'window']         # main task
+np = 50
