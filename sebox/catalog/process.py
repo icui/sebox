@@ -28,8 +28,8 @@ def _process_traces(node: Node, mode: str):
             partial(_process, mode=='obs'), 'stream',
             f'raw_obs' if mode=='obs' else 'synthetic', f'proc_{mode}', True)
         
-        node.add_mpi(ap.run, node.np, name=src.split('.')[0], cwd=f'log_{mode}')
-        node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
+        node.add_mpi(ap.run, node.np, name=src.split('.')[0], cwd=f'log_{mode}').add(
+            node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
 
 
 def _select(stream):
