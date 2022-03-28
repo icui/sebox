@@ -91,6 +91,7 @@ def _blend(obs_acc, syn_acc):
             import matplotlib.pyplot as plt
             
             plt.clf()
+            plt.figure()
             plt.subplot(3, 1, 1)
             plt.plot(d1, label='obs_blend')
             plt.plot(d2, label='syn')
@@ -127,7 +128,7 @@ def _blend(obs_acc, syn_acc):
                 ax.add_feature(LAND, zorder=0, edgecolor='black', facecolor=(0.85, 0.85, 0.85))
 
                 ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
-                ax.scatter(s.longitude, s.latitude, s=60, color="steelblue", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
+                ax.scatter(s.longitude, s.latitude, s=60, color="b", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 plt.title(f'{event} {station}  lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
                 plt.savefig(d.path('location.png'))
 
