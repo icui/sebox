@@ -68,7 +68,9 @@ def _process(obs, acc):
 
     print(acc.station, root.mpi.rank)
 
-    stream = acc.stream
+    if (stream := _select(acc.stream)) is None:
+        return
+    
     origin = acc.origin
     taper = catalog.process.get('taper')
     pre_filt = catalog.process.get('remove_response')
@@ -100,5 +102,12 @@ def _process(obs, acc):
         trace.data = data
 
     stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
+
+    if len(stream) != 3:
+        return
+    
+    for cmp in ['R', 'T', 'Z']:
+        if len(stream.select(component=cmp)) != 1:
+            return
 
     return stream
