@@ -40,7 +40,7 @@ def _blend(obs_acc, syn_acc):
     
     cfg = catalog.window['flexwin']
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
-    ws = WindowSelector(obs, syn, config, syn_acc.events[0], syn_acc.invenntory)
+    ws = WindowSelector(obs, syn, config, syn_acc.ds.events[0], syn_acc.invenntory)
     wins = ws.select_windows()
     ratio1 = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
     ratio2 = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
