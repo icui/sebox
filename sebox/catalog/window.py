@@ -52,8 +52,8 @@ def _blend(obs_acc, syn_acc):
         d.mkdir()
 
         if savefig:
+            # use non-interactive backend
             import matplotlib
-
             matplotlib.use('Agg')
 
         ws.plot(filename=d.path(f'{cha}_windows.png') if savefig else None)
@@ -93,25 +93,26 @@ def _blend(obs_acc, syn_acc):
             from cartopy.feature import LAND
             
             plt.clf()
-            select_windows(obs, syn, config, plot=True, plot_filename=d.path(f'{cha}_blended.png'))
-
-            f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+            plt.subplot(1, 3, 2)
+            plt.plot(obs, label='obs')
+            plt.plot(syn, label='syn')
+            plt.legend()
             
-            plt.clf()
-            plt.subplot(1, 2, 1)
+            plt.subplot(1, 3, 2)
             plt.plot(np.angle(f1), label='obs')
             plt.plot(np.angle(f2), label='syn')
             plt.plot(np.angle(f1 / f2), label='diff')
             plt.legend()
 
-            plt.subplot(1, 2, 2)
+            plt.subplot(1, 3, 3)
+            f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
             plt.plot(np.angle(f3), label='obs_glue')
             plt.plot(np.angle(f2), label='syn')
             plt.plot(np.angle(f3 / f2), label='diff')
             plt.legend()
 
             plt.title(f'{station}.{cha} {ratio1:.2f} {ratio2:.2f}')
-            plt.savefig(d.path(f'{cha}_frequency.png'))
+            plt.savefig(d.path(f'{cha}_blended.png'))
 
             if not d.has('location.png'):
                 plt.clf()
