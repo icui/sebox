@@ -18,7 +18,7 @@ def _process_traces(node, mode: str):
 
     for event in node.ls(f'events'):
         if node.has(f'raw_{mode}/{event}.h5') and not node.has(f'proc_{mode}/{event}.h5'):
-            node.add(process_event, mode=mode, event=event)
+            node.add(process_event, mode=mode, event=event, name=event)
 
 
 def process_event(node):
@@ -31,7 +31,7 @@ def process_event(node):
     ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
         partial(_process, mode=='obs'), 'stream', getattr(node, f'tag_{mode}'), f'proc_{mode}', True)
     
-    node.add_mpi(ap.run, node.np, name=src.split('.')[0], cwd=f'log_{mode}')
+    node.add_mpi(ap.run, node.np, name='process_traces', cwd=f'log_{mode}')
     node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
 
 
