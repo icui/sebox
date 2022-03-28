@@ -29,9 +29,9 @@ def process_event(node):
     src = f'{node.event}.h5'
 
     ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
-        partial(_process, mode=='obs'), 'stream', getattr(node, f'tag_{mode}'), f'proc_{mode}', True)
+        partial(_process, mode=='obs'), input_type='stream', output_tag=f'proc_{mode}', accessor=True)
     
-    node.add_mpi(ap.run, node.np, name='process_traces', fname=node.event, cwd=f'log_{mode}')
+    node.add_mpi(ap.run, node.np, name='process', fname=node.event, cwd=f'log_{mode}')
     node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
 
 
@@ -68,9 +68,7 @@ def _process(obs, acc):
 
     print(acc.station, root.mpi.rank)
 
-    if (stream := _select(acc.stream)) is None:
-        return
-    
+    stream = acc.stream
     origin = acc.origin
     taper = catalog.process.get('taper')
     pre_filt = catalog.process.get('remove_response')
@@ -102,12 +100,5 @@ def _process(obs, acc):
         trace.data = data
 
     stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
-
-    if len(stream) != 3:
-        return
-    
-    for cmp in ['R', 'T', 'Z']:
-        if len(stream.select(component=cmp)) != 1:
-            return
 
     return stream

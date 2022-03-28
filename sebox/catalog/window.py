@@ -6,20 +6,21 @@ def window(node):
     node.mkdir('blend_obs')
 
     for event in node.ls('events'):
-        if node.has(f'proc_obs/{event}.h5') and node.has(f'proc_syn/{event}.h5'):
-            node.add(window_event, event=event)
+        if node.has(f'proc_obs/{event}.h5') and node.has(f'proc_syn/{event}.h5') and not node.has(f'blend_obs/{event}.h5'):
+            node.add(window_event, name=event, event=event)
 
 
 def window_event(node):
     from asdfy import ASDFProcessor
 
-    event = node.event
-    node.mkdir(f'blend/{event}')
+    src = f'{node.event}.h5'
+    node.mkdir(f'blend/{node.event}')
     
-    ap = ASDFProcessor((f'proc_obs/{event}.h5', f'proc_syn/{event}.h5'), f'blend_obs/{event}.h5',
+    ap = ASDFProcessor((f'proc_obs/{src}', f'proc_syn/{src}'), f'blend_obs/_{src}',
         _blend, output_tag='blend_obs', accessor=True)
     
-    node.add_mpi(ap.run, node.np, name=f'blend_{event}')
+    node.add_mpi(ap.run, node.np, name=f'blend', fname=node.event, cwd=f'log_blend')
+    node.add(node.mv, args=(f'blend_obs/_{src}', f'blend_obs/{src}'), name='move_traces')
 
 
 def _blend(obs_acc, syn_acc):
@@ -36,8 +37,8 @@ def _blend(obs_acc, syn_acc):
     syn = syn_acc.trace
     cha = obs.stats.channel
     savefig = catalog.window.get('savefig')
-
-    config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **catalog.window['flexwin'][cha[-1]])
+    
+    config = Config(min_period=catalog.period_min, max_period=catalog.period_max)
     ws = WindowSelector(obs, syn, config)
     wins = ws.select_windows()
     ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
