@@ -68,9 +68,6 @@ def _blend(obs_acc, syn_acc):
         imin = int(np.ceil(1 / catalog.period_max / df))
         imax = int(np.floor(1 / catalog.period_min / df)) + 1
 
-        f1 = tp.cast(np.ndarray, fft(d1)[imin: imax])
-        f2 = tp.cast(np.ndarray, fft(d2)[imin: imax])
-
         for i, win in enumerate(wins):
             fl = 0 if i == 0 else wins[i-1].right + nt + 1
             fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
@@ -93,18 +90,22 @@ def _blend(obs_acc, syn_acc):
             from cartopy.feature import LAND
             
             plt.clf()
-            plt.subplot(1, 3, 2)
+            plt.subplot(3, 1, 1)
             plt.plot(obs, label='obs')
             plt.plot(syn, label='syn')
             plt.legend()
+
+            f1 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+            f2 = tp.cast(np.ndarray, fft(d2)[imin: imax])
+
+            plt.subplot(3, 1, 2)
             
-            plt.subplot(1, 3, 2)
             plt.plot(np.angle(f1), label='obs')
             plt.plot(np.angle(f2), label='syn')
             plt.plot(np.angle(f1 / f2), label='diff')
             plt.legend()
 
-            plt.subplot(1, 3, 3)
+            plt.subplot(3, 1, 3)
             f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
             plt.plot(np.angle(f3), label='obs_glue')
             plt.plot(np.angle(f2), label='syn')
