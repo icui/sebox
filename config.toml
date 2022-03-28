@@ -5,17 +5,8 @@ account = "GEO111"                          # job account
 walltime = 120.0                            # walltime to request
 gap = 2.0                                   # terminate job before <gap> minutes before walltime runs out
 debug = false                               # submit to debug queue
-system = ['nnodes.job', 'Summit']           # job scheduler
+system = ['nnodes.job', 'Traverse']         # job scheduler
 
 [root]
-task = ['sebox.solver', 'forward']          # main task
-task_nnodes = 1                             # default number of MPI processes to run MPI tasks
-
-solver = 'specfem'                          # module for forward and adjoint simulation
-misfit = 'phase'                            # compute misfit and adjoint source
-kernel = 'ortho'                            # kernel computation
-optimizer = 'gd'                            # determines model update direction
-search = 'bracket'                          # determines step length give search direction
-
-path_catalog = '.'
-path_specfem = '.'
+task = ['sebox.catalog', 'process']         # main task
+np = 20
