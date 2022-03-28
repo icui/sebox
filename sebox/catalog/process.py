@@ -14,19 +14,25 @@ def process_synthetic(node):
 
 
 def _process_traces(node, mode: str):
+    node.mkdir(f'proc_{mode}')
+
+    for event in node.ls(f'events'):
+        if node.has(f'raw_{mode}/{event}.h5') and not node.has(f'proc_{mode}/{event}.h5'):
+            node.add(process_event, mode=mode, event=event)
+
+
+def process_event(node):
     from functools import partial
     from asdfy import ASDFProcessor
 
-    for src in node.ls(f'raw_{mode}'):
-        if node.has(f'proc_{mode}/{src}'):
-            continue
-        
-        ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
-            partial(_process, mode=='obs'), 'stream',
-            f'raw_obs' if mode=='obs' else 'synthetic', f'proc_{mode}', True)
-        
-        node.add_mpi(ap.run, node.np, name=src.split('.')[0], cwd=f'log_{mode}').add(
-            node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
+    mode = node.mode
+    src = f'{node.event}.h5'
+
+    ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
+        partial(_process, mode=='obs'), 'stream', getattr(node, f'tag_{mode}'), f'proc_{mode}', True)
+    
+    node.add_mpi(ap.run, node.np, name=src.split('.')[0], cwd=f'log_{mode}')
+    node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
 
 
 def _select(stream):

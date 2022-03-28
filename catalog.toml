@@ -8,6 +8,8 @@ dt = 1.6                                         # length of a time step
 remove_response = [0.0075, 0.01, 0.0250, 0.0313] # pre-filter in remove_response
 waterlevel = 100                                 # waterlevel in remove_response
 taper = 5.0                                      # taper traces
+tag_obs = 'raw_obs'                              # ASDF tag for observed traces
+tag_syn = 'synthetic'                            # ASDF tag for synhetic traces
 
 [weight]
 event_cond = 0.33                               # ratio of maximum condition number to determine reference distance

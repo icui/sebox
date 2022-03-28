@@ -7,10 +7,10 @@ def window(node):
 
     for event in node.ls('events'):
         if node.has(f'proc_obs/{event}.h5') and node.has(f'proc_syn/{event}.h5'):
-            node.add(blend_event, event=event)
+            node.add(window_event, event=event)
 
 
-def blend_event(node):
+def window_event(node):
     from asdfy import ASDFProcessor
 
     event = node.event
