@@ -114,6 +114,7 @@ def _blend(obs_acc, syn_acc):
             
             plt.savefig(d.path(f'{cha}_blended.png'))
 
+        return obs
 
 def plot_stations(node):
     from pyasdf import ASDFDataSet
