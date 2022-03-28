@@ -92,6 +92,8 @@ def _blend(obs_acc, syn_acc):
             
             plt.clf()
             plt.figure()
+            plt.title(f'{station}.{cha} {ratio1:.2f} {ratio2:.2f}')
+            
             plt.subplot(3, 1, 1)
             plt.plot(d1, label='obs_blend')
             plt.plot(d2, label='syn')
@@ -109,18 +111,22 @@ def _blend(obs_acc, syn_acc):
             plt.plot(np.angle(f2), label='syn')
             plt.plot(np.angle(f3 / f2), label='diff')
             plt.legend()
-
-            plt.title(f'{station}.{cha} {ratio1:.2f} {ratio2:.2f}')
+            
             plt.savefig(d.path(f'{cha}_blended.png'))
 
-            if not d.has('location.png'):
-                from cartopy.crs import PlateCarree
-                from cartopy.feature import LAND
 
-                plt.clf()
-                
-                e = syn_acc.origin
-                s = syn_acc.inventory[0][0]
+def plot_stations(node):
+    from pyasdf import ASDFDataSet
+    from cartopy.crs import PlateCarree
+    from cartopy.feature import LAND
+    import matplotlib.pyplot as plt
+
+    for event in node.ls('blend'):
+        with ASDFDataSet(f'blend_obs/{event}.h5', mode='r', mpi=False) as ds:
+            for station in node.ls(f'blend/{event}'):
+                e = ds.events[0].origin
+                s: tp.Any = ds.waveforms[station].StationXML[0][0]
+
                 fig = plt.figure()
                 crs = PlateCarree()
                 ax = fig.add_subplot(1, 1, 1, projection=crs)
@@ -130,8 +136,4 @@ def _blend(obs_acc, syn_acc):
                 ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 ax.scatter(s.longitude, s.latitude, s=60, color="b", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 plt.title(f'{event} {station}  lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
-                plt.savefig(d.path('location.png'))
-
-        # return obs
-        exit()
-
+                plt.savefig(f'blend/{event}/location.png')
