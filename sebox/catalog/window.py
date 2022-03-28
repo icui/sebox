@@ -42,10 +42,11 @@ def _blend(obs_acc, syn_acc):
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
     ws = WindowSelector(obs, syn, config, syn_acc.events[0], syn_acc.invenntory)
     wins = ws.select_windows()
-    ratio = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
+    ratio1 = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
+    ratio2 = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
 
-    if ratio > catalog.window['energy_threshold']:
-        print(f'{station} {ratio:.2f}')
+    if min(ratio1, ratio2) > catalog.window['energy_threshold']:
+        print(f'{station} {ratio1:.2f} {ratio2:.2f}')
 
         d = root.subdir(f'blend/{event}/{station}')
         d.mkdir()
@@ -108,6 +109,8 @@ def _blend(obs_acc, syn_acc):
             plt.plot(np.angle(f2), label='syn')
             plt.plot(np.angle(f3 / f2), label='diff')
             plt.legend()
+
+            plt.title(f'{station}.{cha} {ratio1:.2f} {ratio2:.2f}')
             plt.savefig(d.path(f'{cha}_frequency.png'))
 
             if not d.has('location.png'):
@@ -123,7 +126,7 @@ def _blend(obs_acc, syn_acc):
 
                 ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 ax.scatter(s.longitude, s.latitude, s=60, color="steelblue", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
-                plt.title(f'lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
+                plt.title(f'{event} {station}  lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
                 plt.savefig(d.path('location.png'))
 
         # return obs
