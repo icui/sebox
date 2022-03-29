@@ -138,4 +138,5 @@ def plot_stations(node):
                 ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 ax.scatter(s.longitude, s.latitude, s=60, color="b", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 plt.title(f'{event} {station}  lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
-                plt.savefig(f'blend/{event}/{station}/location.png')
+                plt.savefig(dst := f'blend/{event}/{station}/location.png')
+                print(dst)
