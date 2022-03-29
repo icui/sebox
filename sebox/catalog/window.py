@@ -128,6 +128,7 @@ def plot_stations(node):
                 e = ds.events[0].preferred_origin()
                 s: tp.Any = ds.waveforms[station].StationXML[0][0]
 
+                plt.clf()
                 fig = plt.figure()
                 crs = PlateCarree()
                 ax = fig.add_subplot(1, 1, 1, projection=crs)
