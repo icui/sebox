@@ -47,9 +47,10 @@ def _blend(obs_acc, syn_acc):
 
     diff = syn.data - obs.data
     ratio3 = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
+    print(f'{station} {ratio1:.2f} {ratio2:.2f} {ratio3:.2f}')
     
     if ratio3 > 0.5:
-        print(f'{station} {ratio1:.2f} {ratio2:.2f}')
+        print(f'>>>>>>')
 
         d = root.subdir(f'blend/{event}/{station}')
         d.mkdir()
