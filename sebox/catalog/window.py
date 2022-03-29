@@ -135,6 +135,7 @@ def plot_stations(node):
                 ax.gridlines()
                 ax.add_feature(LAND, zorder=0, edgecolor='black', facecolor=(0.85, 0.85, 0.85))
 
+                ax.plot([s.longitude, e.longitude], [s.latitude, s.longitude], color='black', alpha=0.5)
                 ax.scatter(e.longitude, e.latitude, s=80, color="r", marker="*", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 ax.scatter(s.longitude, s.latitude, s=60, color="b", marker=".", edgecolor="k", linewidths=0.7, transform=PlateCarree())
                 plt.title(f'{event} {station}  lat: {s.latitude:.2f}  lon: {s.longitude:.2f}')
