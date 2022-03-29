@@ -125,7 +125,7 @@ def plot_stations(node):
     for event in node.ls('blend'):
         with ASDFDataSet(f'blend_obs/{event}.h5', mode='r', mpi=False) as ds:
             for station in node.ls(f'blend/{event}'):
-                e = ds.events[0].origin
+                e = ds.events[0].preferred_origin()
                 s: tp.Any = ds.waveforms[station].StationXML[0][0]
 
                 fig = plt.figure()
