@@ -45,6 +45,25 @@ def _blend(obs_acc, syn_acc):
     ratio1 = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
     ratio2 = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
 
+    diff = syn.data - obs.data
+    ratio3 = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
+    
+    if ratio3 > 0.5:
+        print(f'{station} {ratio1:.2f} {ratio2:.2f}')
+
+        d = root.subdir(f'blend/{event}/{station}')
+        d.mkdir()
+
+        if savefig:
+            # use non-interactive backend
+            import matplotlib
+            matplotlib.use('Agg')
+
+        ws.plot(filename=d.path(f'{cha}_windows.png') if savefig else None)
+    
+    return
+
+
     if min(ratio1, ratio2) > catalog.window['energy_threshold']:
         print(f'{station} {ratio1:.2f} {ratio2:.2f}')
 
