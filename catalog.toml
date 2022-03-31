@@ -1,11 +1,11 @@
 [process]
-period_min = 40.0                                # minimum period in seconds
-period_max = 100.0                               # maximum period in seconds
+periods = [17.0, 40.0, 100.0]                    # period bands
+filters = [[0.0188, 0.0250, 0.0588, 0.0735],     # 13.6-17-40-53
+           [0.0075, 0.0100, 0.0250, 0.0313]]     # 32-40-100-133
 duration = 200.0                                 # trace record length in minutes
 duration_ft = 288.0                              # duration to determine frequency step in minutes
 nbands = 5                                       # number of bands to split frequency band
 dt = 1.6                                         # length of a time step
-remove_response = [0.0075, 0.01, 0.0250, 0.0313] # pre-filter in remove_response
 waterlevel = 100                                 # water level in remove_response
 taper = 5.0                                      # taper traces
 

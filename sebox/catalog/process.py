@@ -73,41 +73,48 @@ def _process(obs, acc):
     
     origin = acc.origin
     taper = catalog.process.get('taper')
-    pre_filt = catalog.process.get('remove_response')
-
-    # detrend and apply taper
-    _detrend(stream, taper)
-
-    # remove instrument response
-    if obs:
-        stream.attach_response(acc.inventory)
-        stream.remove_response(output="DISP", zero_mean=False, taper=False,
-            water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
-    
-    else:
-        sac_filter_stream(stream, pre_filt)
-    
+        
     # detrend and apply taper after filtering
     _detrend(stream, taper)
 
     # resample and align
     stream.interpolate(1/catalog.dt, starttime=origin.time)
-    
-    # pad and rotate
-    nt = int(np.round(catalog.duration * 60 / catalog.dt))
 
-    for trace in stream:
-        data = np.zeros(nt)
-        data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
-        trace.data = data
+    # attach response
+    stream.attach_response(acc.inventory)
 
-    stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
+    # output tagged streams
+    output = {}
 
-    if len(stream) != 3:
-        return
-    
-    for cmp in ['R', 'T', 'Z']:
-        if len(stream.select(component=cmp)) != 1:
-            return
+    for i, pre_filt in catalog.process['filters']:
+        # copy stream
+        st = stream.copy()
 
-    return stream
+        # remove instrument response
+        if obs:
+            st.remove_response(output="DISP", zero_mean=False, taper=False,
+                water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
+        
+        else:
+            sac_filter_stream(st, pre_filt)
+
+        # detrend and apply taper
+        _detrend(st, taper)
+        
+        # pad and rotate
+        nt = int(np.round(catalog.duration * 60 / catalog.dt))
+
+        for trace in st:
+            data = np.zeros(nt)
+            data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
+            trace.data = data
+
+        st = rotate_stream(st, origin.latitude, origin.longitude, acc.inventory)
+
+        # make sure stream has 1 radial, 1 transverse and 1 vertical trace
+        if len(stream) != 3 or any(len(stream.select(component=cmp)) != 1 for cmp in ['R', 'T', 'Z']):
+            continue
+        
+        output[tag] = st
+
+    return output
