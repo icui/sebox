@@ -29,7 +29,7 @@ def process_event(node):
     src = f'{node.event}.h5'
 
     ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
-        partial(_process, mode=='obs'), input_type='stream', output_tag=f'proc_{mode}', accessor=True)
+        partial(_process, mode), input_type='stream', output_tag=f'proc_{mode}', accessor=True)
     
     node.add_mpi(ap.run, node.np, name='process', fname=node.event, cwd=f'log_{mode}')
     node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
@@ -60,7 +60,7 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(obs, acc):
+def _process(mode, acc):
     import numpy as np
     from nnodes import root
     from sebox.catalog import catalog
@@ -72,49 +72,48 @@ def _process(obs, acc):
         return
     
     origin = acc.origin
-    taper = catalog.process.get('taper')
+    proc = catalog.process
+    taper = proc.get('taper')
         
     # detrend and apply taper after filtering
     _detrend(stream, taper)
 
-    # resample and align
-    stream.interpolate(1/catalog.dt, starttime=origin.time)
-
     # attach response
     stream.attach_response(acc.inventory)
 
-    # output tagged streams
-    output = {}
+    # period anchors
+    cl = proc['corner_left']
+    cr = proc['corner_right']
+    pmin = proc['periods'][0]
+    pmax = proc['periods'][-1]
+    pre_filt = [1/pmax*cr*cr, 1/pmax*cr, 1/pmin/cl, 1/pmin/cl/cl]
 
-    for i, pre_filt in catalog.process['filters']:
-        # copy stream
-        st = stream.copy()
+    # remove instrument response
+    if mode == 'obs':
+        stream.remove_response(output="DISP", zero_mean=False, taper=False,
+            water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
+    
+    else:
+        sac_filter_stream(stream, pre_filt)
 
-        # remove instrument response
-        if obs:
-            st.remove_response(output="DISP", zero_mean=False, taper=False,
-                water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
-        
-        else:
-            sac_filter_stream(st, pre_filt)
+    # detrend and apply taper
+    _detrend(stream, taper)
 
-        # detrend and apply taper
-        _detrend(st, taper)
-        
-        # pad and rotate
-        nt = int(np.round(catalog.duration * 60 / catalog.dt))
+    # resample and align
+    stream.interpolate(1/catalog.dt, starttime=origin.time)
+    
+    # pad and rotate
+    nt = int(np.round(catalog.duration * 60 / catalog.dt))
 
-        for trace in st:
-            data = np.zeros(nt)
-            data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
-            trace.data = data
+    for trace in stream:
+        data = np.zeros(nt)
+        data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
+        trace.data = data
 
-        st = rotate_stream(st, origin.latitude, origin.longitude, acc.inventory)
+    stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
 
-        # make sure stream has 1 radial, 1 transverse and 1 vertical trace
-        if len(stream) != 3 or any(len(stream.select(component=cmp)) != 1 for cmp in ['R', 'T', 'Z']):
-            continue
-        
-        output[tag] = st
+    # make sure stream has 1 radial, 1 transverse and 1 vertical trace
+    if len(stream) != 3 or any(len(stream.select(component=cmp)) != 1 for cmp in ['R', 'T', 'Z']):
+        return
 
-    return output
+    return stream

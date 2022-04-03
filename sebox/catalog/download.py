@@ -18,7 +18,7 @@ def download_trace(node):
     """Download observed data of an event."""
     node.ln('../../catalog.toml')
     node.add_mpi(request_data, arg=node.event, use_multiprocessing=True)
-    # node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
+    node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
 
 
 def request_data(event):
@@ -52,19 +52,15 @@ def request_data(event):
         node.write(format_exc(), 'error_download.log')
 
 
-def convert_h5(srcs):
-    for src in srcs:
-        _convert(src)
-
-def _convert(src):
+def convert_h5(node):
     from traceback import format_exc
     from nnodes import root
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
 
-    event = src.split('/')[-1]
-    node = root.subdir(src)
+    event = root.event
+    node = root.mpi
 
     if node.has('error_download.log'):
         return
