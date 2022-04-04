@@ -83,7 +83,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         d = root.subdir(f'blend/{event}/{station}')
 
         if has_full or has_blended:
-            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
+            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f} {savefig}')
             output['Synthetic'][0][imin: imax] = fsyn[imin: imax]
             output['Synthetic'][1]['bands'][iband] = 1
 
@@ -94,6 +94,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
                 d.mkdir()
                 ws.plot(filename=d.path(f'{tag}.png'))
+                print(d.path(f'{tag}.png'))
         
         if has_full:
             output['FullObserved'][0][imin: imax] = fobs[imin: imax]
