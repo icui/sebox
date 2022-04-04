@@ -43,7 +43,10 @@ def _blend(obs_acc, syn_acc):
     fincr = (imax - imin) // 3
     imax = imin + fincr * 3
 
-    ft_obs = np.full(imax - imin, np.nan)
+    output = {
+        'Full': np.full(imax - imin, np.nan),
+        'Blended': np.full(imax - imin, np.nan)
+    }
 
     for i in range(imin, imax, fincr):
         obs = obs_acc.trace.copy()
@@ -68,8 +71,7 @@ def _blend(obs_acc, syn_acc):
         ratio2 = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
         ratio3 = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
 
-        # if min(ratio1, ratio2, ratio3) > catalog.window['energy_threshold']:
-        if ratio3 > catalog.window['energy_threshold']:
+        if ratio1 > catalog.window['threshold_syn'] and ratio2 > catalog.window['threshold_obs']:
             cha = f'{obs.stats.channel}#{int(1/fmax)}-{int(1/fmin)}'
             print(f'{station} {cha} {ratio1:.2f} {ratio2:.2f} {ratio3:.2f}')
 
@@ -83,34 +85,34 @@ def _blend(obs_acc, syn_acc):
                 d.mkdir()
                 ws.plot(filename=d.path(f'{cha}_windows.png'))
 
-            # nt = int(catalog.period_max / catalog.dt / 2)
-            # taper = np.hanning(nt * 2)
+            nt = int(catalog.period_max / catalog.dt / 2)
+            taper = np.hanning(nt * 2)
 
-            # d1 = obs.data
-            # d2 = syn.data
+            d1 = obs.data
+            d2 = syn.data
 
-            # df = 1 / float(syn.stats.endtime - syn.stats.starttime)
-            # imin = int(np.ceil(1 / catalog.period_max / df))
-            # imax = int(np.floor(1 / catalog.period_min / df)) + 1
+            df = 1 / float(syn.stats.endtime - syn.stats.starttime)
+            imin = int(np.ceil(1 / catalog.period_max / df))
+            imax = int(np.floor(1 / catalog.period_min / df)) + 1
 
-            # f1 = tp.cast(np.ndarray, fft(d1)[imin: imax])
-            # f2 = tp.cast(np.ndarray, fft(d2)[imin: imax])
+            f1 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+            f2 = tp.cast(np.ndarray, fft(d2)[imin: imax])
 
-            # for i, win in enumerate(wins):
-            #     fl = 0 if i == 0 else wins[i-1].right + nt + 1
-            #     fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+            for i, win in enumerate(wins):
+                fl = 0 if i == 0 else wins[i-1].right + nt + 1
+                fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
 
-            #     if win.left - fl >= nt:
-            #         l = win.left - nt
-            #         r = win.left
-            #         d1[fl: l] = d2[fl: l]
-            #         d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
+                if win.left - fl >= nt:
+                    l = win.left - nt
+                    r = win.left
+                    d1[fl: l] = d2[fl: l]
+                    d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
                 
-            #     if fr - win.right >= nt:
-            #         l = win.right + 1
-            #         r = win.right + nt + 1
-            #         d1[r: fr + 1] = d2[r: fr + 1]
-            #         d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
+                if fr - win.right >= nt:
+                    l = win.right + 1
+                    r = win.right + nt + 1
+                    d1[r: fr + 1] = d2[r: fr + 1]
+                    d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
 
             # if savefig:
             #     import matplotlib.pyplot as plt
