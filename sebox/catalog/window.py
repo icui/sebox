@@ -42,7 +42,7 @@ def _blend(obs_acc, syn_acc):
     fincr = (imax - imin) // 3
     imax = imin + fincr * 3
 
-    for i in range(imin, imax):
+    for i in range(imin, imax, fincr):
         
         cl = catalog.process['corner_left']
         cr = catalog.process['corner_right']
