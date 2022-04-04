@@ -86,7 +86,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         if has_full or has_blended:
             print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
             print(d.path(f'{tag}.png'), i1, i2, iband)
-            output['Synthetic'][0][i1: i2] = fsyn[i1: i2]
+            output['Synthetic'][0][i1-imin: i2-imin] = fsyn[i1: i2]
             output['Synthetic'][1]['bands'][iband] = 1
 
             if savefig:
@@ -98,7 +98,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 ws.plot(filename=d.path(f'{tag}.png'))
         
         if has_full:
-            output['FullObserved'][0][i1: i2] = fobs[i1: i2]
+            output['FullObserved'][0][i1-imin: i2-imin] = fobs[i1: i2]
             output['FullObserved'][1]['bands'][iband] = 1
 
         if has_blended:
@@ -124,7 +124,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            output['BlendedObserved'][0][i1: i2] = fft(d1)[i1: i2]
+            output['BlendedObserved'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
             output['BlendedObserved'][1]['bands'][iband] = 1
 
             if savefig:
@@ -132,7 +132,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
                 f1 = fobs[i1: i2]
                 f2 = fsyn[i1: i2]
-                f3 = output['BlendedObserved'][0][i1: i2]
+                f3 = output['BlendedObserved'][0][i1-imin: i2-imin]
                 
                 plt.clf()
                 plt.figure()
