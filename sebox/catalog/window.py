@@ -24,10 +24,10 @@ def window_event(node):
 
 
 def _blend(obs_acc, syn_acc):
-    from pyflex import Config, WindowSelector, select_windows
+    from pyflex import Config, WindowSelector
     from nnodes import root
     from scipy.fft import fft
-    from pytomo3d.signal.process import sac_filter_stream
+    from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
 
     from .catalog import catalog
@@ -54,8 +54,8 @@ def _blend(obs_acc, syn_acc):
         fmax = fmin + df * fincr
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
-        sac_filter_stream(obs, pre_filt)
-        sac_filter_stream(syn, pre_filt)
+        sac_filter_trace(obs, pre_filt)
+        sac_filter_trace(syn, pre_filt)
     
         cfg = catalog.window['flexwin']
         config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
