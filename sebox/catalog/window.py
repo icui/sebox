@@ -35,7 +35,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     station = syn_acc.station
     event = syn_acc.event
     cmp = syn_acc.trace.stats.component
-    savefig = catalog.window.get('savefig')
+    # savefig = catalog.window.get('savefig')
+    savefig = False
     nbands = catalog.nbands
 
     df = 1 / catalog.duration_ft / 60
