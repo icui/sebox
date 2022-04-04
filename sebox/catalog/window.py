@@ -33,10 +33,18 @@ def _blend(obs_acc, syn_acc):
 
     station = syn_acc.station
     event = syn_acc.event
+    cha = obs_acc.trace.stats.channel
+    savefig = catalog.window.get('savefig')
+
+    imin = int(np.ceil(1 / catalog.period_max / df))
+    imax = int(np.floor(1 / catalog.period_min / df)) + 1
+
+    for i in range(imin, imax, 300):
+        print(i)
+    
+    exit()
     obs = obs_acc.trace
     syn = syn_acc.trace
-    cha = obs.stats.channel
-    savefig = catalog.window.get('savefig')
     
     cfg = catalog.window['flexwin']
     config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
