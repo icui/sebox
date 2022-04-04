@@ -48,8 +48,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     fsyn = tp.cast(np.ndarray, fft(syn_acc.trace.data))
 
     output = {
-        'FullObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
         'FT': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
+        'FullObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
         'BlendedObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
     }
 
