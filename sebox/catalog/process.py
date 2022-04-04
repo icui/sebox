@@ -84,8 +84,8 @@ def _process(mode, acc):
     # period anchors
     cl = proc['corner_left']
     cr = proc['corner_right']
-    pmin = proc['periods'][0]
-    pmax = proc['periods'][-1]
+    pmin = proc['period_min']
+    pmax = proc['period_max']
     pre_filt = [1/pmax*cr*cr, 1/pmax*cr, 1/pmin/cl, 1/pmin/cl/cl]
 
     # remove instrument response

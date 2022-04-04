@@ -155,12 +155,12 @@ class Catalog(Directory):
     @property
     def period_min(self) -> float:
         """Min period in minutes."""
-        return self.process['periods'][0]
+        return self.process['period_min']
 
     @property
     def period_max(self) -> float:
         """Max period in minutes."""
-        return self.process['periods'][-1]
+        return self.process['period_max']
 
     @property
     def duration(self) -> float:
