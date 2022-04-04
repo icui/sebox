@@ -48,9 +48,9 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     fsyn = tp.cast(np.ndarray, fft(syn_acc.trace.data))
 
     output = {
-        'FullObserved': (np.full(imax - imin, np.nan), {'bands': [0] * nbands}),
-        'Synthetic': (np.full(imax - imin, np.nan), {'bands': [0] * nbands}),
-        'BlendedObserved': (np.full(imax - imin, np.nan), {'bands': [0] * nbands})
+        'FullObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
+        'FT': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
+        'BlendedObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
     }
 
     for iband in range(nbands):
@@ -85,9 +85,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
         if has_full or has_blended:
             print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
-            print(d.path(f'{tag}.png'), i1, i2, iband)
-            output['Synthetic'][0][i1-imin: i2-imin] = fsyn[i1: i2]
-            output['Synthetic'][1]['bands'][iband] = 1
+            output['FT'][0][i1-imin: i2-imin] = fsyn[i1: i2]
+            output['FT'][1]['bands'][iband] = 1
 
             if savefig:
                 # use non-interactive backend

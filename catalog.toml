@@ -34,7 +34,7 @@ reject_channels_with_gaps = true
 threshold_obs = 0.5
 threshold_syn = 0.5
 threshold_diff = 0.5
-savefig = true
+savefig = false
 
 [window.flexwin.default]
 # STA/LAT water level
