@@ -85,12 +85,12 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
         if has_full or has_blended:
             print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
+            print(d.path(f'{tag}.png'), i1, i2, iband)
             output['Synthetic'][0][i1: i2] = fsyn[i1: i2]
             output['Synthetic'][1]['bands'][iband] = 1
 
             if savefig:
                 # use non-interactive backend
-                print(d.path(f'{tag}.png'))
                 import matplotlib
                 matplotlib.use('Agg')
 
