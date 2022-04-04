@@ -34,6 +34,7 @@ def _blend(obs_acc, syn_acc):
 
     station = syn_acc.station
     event = syn_acc.event
+    cmp = syn_acc.trace.stats.component
     savefig = catalog.window.get('savefig')
 
     df = 1 / catalog.duration_ft / 60
@@ -58,7 +59,7 @@ def _blend(obs_acc, syn_acc):
         sac_filter_trace(syn, pre_filt)
     
         cfg = catalog.window['flexwin']
-        config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
+        config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cmp]})
         ws = WindowSelector(obs, syn, config, syn_acc.ds.events[0], syn_acc.inventory)
         wins = ws.select_windows()
 
