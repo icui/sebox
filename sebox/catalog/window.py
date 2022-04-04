@@ -27,13 +27,13 @@ def _blend(obs_acc, syn_acc):
     from pyflex import Config, WindowSelector, select_windows
     from nnodes import root
     from scipy.fft import fft
+    from pytomo3d.signal.process import sac_filter_stream
     import numpy as np
 
     from .catalog import catalog
 
     station = syn_acc.station
     event = syn_acc.event
-    cha = obs_acc.trace.stats.channel
     savefig = catalog.window.get('savefig')
 
     df = 1 / catalog.duration_ft / 60
@@ -42,115 +42,102 @@ def _blend(obs_acc, syn_acc):
     fincr = (imax - imin) // 3
     imax = imin + fincr * 3
 
+    ft_obs = np.full(imax - imin, np.nan)
+
     for i in range(imin, imax, fincr):
-        
+        obs = obs_acc.trace.copy()
+        syn = syn_acc.trace.copy()
+
         cl = catalog.process['corner_left']
         cr = catalog.process['corner_right']
         fmin = i * df
         fmax = fmin + df * fincr
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
-        print(i, pre_filt, 1/fmax, 1/fmin)
-    exit()
-    obs = obs_acc.trace
-    syn = syn_acc.trace
+        
+        sac_filter_stream(obs, pre_filt)
+        sac_filter_stream(syn, pre_filt)
     
-    cfg = catalog.window['flexwin']
-    config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
-    ws = WindowSelector(obs, syn, config, syn_acc.ds.events[0], syn_acc.inventory)
-    wins = ws.select_windows()
+        cfg = catalog.window['flexwin']
+        config = Config(min_period=catalog.period_min, max_period=catalog.period_max, **{**cfg['default'], **cfg[cha[-1]]})
+        ws = WindowSelector(obs, syn, config, syn_acc.ds.events[0], syn_acc.inventory)
+        wins = ws.select_windows()
 
-    diff = syn.data - obs.data
-    ratio1 = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
-    ratio2 = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
-    ratio3 = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
-    print(f'{station} {ratio1:.2f} {ratio2:.2f} {ratio3:.2f}')
-    
-    if ratio3 > 0.5:
-        print(f'>>>>>>')
+        diff = syn.data - obs.data
+        ratio1 = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
+        ratio2 = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
+        ratio3 = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
 
-        d = root.subdir(f'blend/{event}/{station}')
-        d.mkdir()
+        # if min(ratio1, ratio2, ratio3) > catalog.window['energy_threshold']:
+        if ratio3 > catalog.window['energy_threshold']:
+            cha = f'{obs.stats.channel}#{int(1/fmax)}-{int(1/fmin)}'
+            print(f'{station} {cha} {ratio1:.2f} {ratio2:.2f} {ratio3:.2f}')
 
-        if savefig:
-            # use non-interactive backend
-            import matplotlib
-            matplotlib.use('Agg')
+            d = root.subdir(f'blend/{event}/{station}')
 
-        ws.plot(filename=d.path(f'{cha}_windows.png') if savefig else None)
-    
-    return
+            if savefig:
+                # use non-interactive backend
+                import matplotlib
+                matplotlib.use('Agg')
 
+                d.mkdir()
+                ws.plot(filename=d.path(f'{cha}_windows.png'))
 
-    if min(ratio1, ratio2) > catalog.window['energy_threshold']:
-        print(f'{station} {ratio1:.2f} {ratio2:.2f}')
+            # nt = int(catalog.period_max / catalog.dt / 2)
+            # taper = np.hanning(nt * 2)
 
-        d = root.subdir(f'blend/{event}/{station}')
-        d.mkdir()
+            # d1 = obs.data
+            # d2 = syn.data
 
-        if savefig:
-            # use non-interactive backend
-            import matplotlib
-            matplotlib.use('Agg')
+            # df = 1 / float(syn.stats.endtime - syn.stats.starttime)
+            # imin = int(np.ceil(1 / catalog.period_max / df))
+            # imax = int(np.floor(1 / catalog.period_min / df)) + 1
 
-        ws.plot(filename=d.path(f'{cha}_windows.png') if savefig else None)
+            # f1 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+            # f2 = tp.cast(np.ndarray, fft(d2)[imin: imax])
 
-        nt = int(catalog.period_max / catalog.dt / 2)
-        taper = np.hanning(nt * 2)
+            # for i, win in enumerate(wins):
+            #     fl = 0 if i == 0 else wins[i-1].right + nt + 1
+            #     fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
 
-        d1 = obs.data
-        d2 = syn.data
+            #     if win.left - fl >= nt:
+            #         l = win.left - nt
+            #         r = win.left
+            #         d1[fl: l] = d2[fl: l]
+            #         d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
+                
+            #     if fr - win.right >= nt:
+            #         l = win.right + 1
+            #         r = win.right + nt + 1
+            #         d1[r: fr + 1] = d2[r: fr + 1]
+            #         d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
 
-        df = 1 / float(syn.stats.endtime - syn.stats.starttime)
-        imin = int(np.ceil(1 / catalog.period_max / df))
-        imax = int(np.floor(1 / catalog.period_min / df)) + 1
+            # if savefig:
+            #     import matplotlib.pyplot as plt
+                
+            #     plt.clf()
+            #     plt.figure()
+            #     plt.title(f'{station}.{cha} {ratio1:.2f} {ratio2:.2f}')
+                
+            #     plt.subplot(3, 1, 1)
+            #     plt.plot(d1, label='obs_blend')
+            #     plt.plot(d2, label='syn')
+            #     plt.legend()
 
-        f1 = tp.cast(np.ndarray, fft(d1)[imin: imax])
-        f2 = tp.cast(np.ndarray, fft(d2)[imin: imax])
+            #     plt.subplot(3, 1, 2)
+            #     plt.plot(np.angle(f1), label='obs')
+            #     plt.plot(np.angle(f2), label='syn')
+            #     plt.plot(np.angle(f1 / f2), label='diff')
+            #     plt.legend()
 
-        for i, win in enumerate(wins):
-            fl = 0 if i == 0 else wins[i-1].right + nt + 1
-            fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+            #     plt.subplot(3, 1, 3)
+            #     f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+            #     plt.plot(np.angle(f3), label='obs_blend')
+            #     plt.plot(np.angle(f2), label='syn')
+            #     plt.plot(np.angle(f3 / f2), label='diff')
+            #     plt.legend()
+                
+            #     plt.savefig(d.path(f'{cha}_blended.png'))
 
-            if win.left - fl >= nt:
-                l = win.left - nt
-                r = win.left
-                d1[fl: l] = d2[fl: l]
-                d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
-            
-            if fr - win.right >= nt:
-                l = win.right + 1
-                r = win.right + nt + 1
-                d1[r: fr + 1] = d2[r: fr + 1]
-                d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
-
-        if savefig:
-            import matplotlib.pyplot as plt
-            
-            plt.clf()
-            plt.figure()
-            plt.title(f'{station}.{cha} {ratio1:.2f} {ratio2:.2f}')
-            
-            plt.subplot(3, 1, 1)
-            plt.plot(d1, label='obs_blend')
-            plt.plot(d2, label='syn')
-            plt.legend()
-
-            plt.subplot(3, 1, 2)
-            plt.plot(np.angle(f1), label='obs')
-            plt.plot(np.angle(f2), label='syn')
-            plt.plot(np.angle(f1 / f2), label='diff')
-            plt.legend()
-
-            plt.subplot(3, 1, 3)
-            f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
-            plt.plot(np.angle(f3), label='obs_blend')
-            plt.plot(np.angle(f2), label='syn')
-            plt.plot(np.angle(f3 / f2), label='diff')
-            plt.legend()
-            
-            plt.savefig(d.path(f'{cha}_blended.png'))
-
-        return obs
 
 def plot_stations(node):
     from pyasdf import ASDFDataSet
