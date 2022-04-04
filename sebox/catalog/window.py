@@ -35,8 +35,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     station = syn_acc.station
     event = syn_acc.event
     cmp = syn_acc.trace.stats.component
-    # savefig = catalog.window.get('savefig')
-    savefig = False
+    savefig = catalog.window.get('savefig')
     nbands = catalog.nbands
 
     df = 1 / catalog.duration_ft / 60
@@ -89,13 +88,13 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             output['FT'][0][i1-imin: i2-imin] = fsyn[i1: i2]
             output['FT'][1]['bands'][iband] = 1
 
-            if savefig:
-                # use non-interactive backend
-                import matplotlib
-                matplotlib.use('Agg')
+            # if savefig:
+            #     # use non-interactive backend
+            #     import matplotlib
+            #     matplotlib.use('Agg')
 
-                d.mkdir()
-                ws.plot(filename=d.path(f'{tag}.png'))
+            #     d.mkdir()
+            #     ws.plot(filename=d.path(f'{tag}.png'))
         
         if has_full:
             output['FullObserved'][0][i1-imin: i2-imin] = fobs[i1: i2]
@@ -127,36 +126,36 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             output['BlendedObserved'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
             output['BlendedObserved'][1]['bands'][iband] = 1
 
-            if savefig:
-                import matplotlib.pyplot as plt
+            # if savefig:
+            #     import matplotlib.pyplot as plt
 
-                f1 = fobs[i1: i2]
-                f2 = fsyn[i1: i2]
-                f3 = output['BlendedObserved'][0][i1-imin: i2-imin]
+            #     f1 = fobs[i1: i2]
+            #     f2 = fsyn[i1: i2]
+            #     f3 = output['BlendedObserved'][0][i1-imin: i2-imin]
                 
-                plt.clf()
-                plt.figure()
-                plt.title(f'{station}.{tag} {ratio_obs:.2f} {ratio_syn:.2f}')
+            #     plt.clf()
+            #     plt.figure()
+            #     plt.title(f'{station}.{tag} {ratio_obs:.2f} {ratio_syn:.2f}')
                 
-                plt.subplot(3, 1, 1)
-                plt.plot(d1, label='obs_blend')
-                plt.plot(d2, label='syn')
-                plt.legend()
+            #     plt.subplot(3, 1, 1)
+            #     plt.plot(d1, label='obs_blend')
+            #     plt.plot(d2, label='syn')
+            #     plt.legend()
 
-                plt.subplot(3, 1, 2)
-                plt.plot(np.angle(f1), label='obs')
-                plt.plot(np.angle(f2), label='syn')
-                plt.plot(np.angle(f1 / f2), label='diff')
-                plt.legend()
+            #     plt.subplot(3, 1, 2)
+            #     plt.plot(np.angle(f1), label='obs')
+            #     plt.plot(np.angle(f2), label='syn')
+            #     plt.plot(np.angle(f1 / f2), label='diff')
+            #     plt.legend()
 
-                plt.subplot(3, 1, 3)
-                f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
-                plt.plot(np.angle(f3), label='obs_blend')
-                plt.plot(np.angle(f2), label='syn')
-                plt.plot(np.angle(f3 / f2), label='diff')
-                plt.legend()
+            #     plt.subplot(3, 1, 3)
+            #     f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+            #     plt.plot(np.angle(f3), label='obs_blend')
+            #     plt.plot(np.angle(f2), label='syn')
+            #     plt.plot(np.angle(f3 / f2), label='diff')
+            #     plt.legend()
                 
-                plt.savefig(d.path(f'{tag}_blend.png'))
+            #     plt.savefig(d.path(f'{tag}_blend.png'))
         
     return output
 
