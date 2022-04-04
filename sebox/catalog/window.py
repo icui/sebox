@@ -40,8 +40,16 @@ def _blend(obs_acc, syn_acc):
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // 3
-    imax = imin + fincr * 3 + 1
-    print(imin, imax, fincr, list(range(imin, imax, fincr)))
+    imax = imin + fincr * 3
+
+    for i in range(imin, imax):
+        
+        cl = catalog.process['corner_left']
+        cr = catalog.process['corner_right']
+        fmin = i * df * fincr
+        fmax = fmin + df * fincr
+        pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
+        print(i, pre_filt, 1/fmax, 1/fmin)
     exit()
     obs = obs_acc.trace
     syn = syn_acc.trace
