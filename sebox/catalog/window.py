@@ -39,10 +39,8 @@ def _blend(obs_acc, syn_acc):
     df = 1 / catalog.duration_ft / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
-
-    for i in range(imin, imax, 300):
-        print(i)
-    
+    fincr = int(np.ceil((imax - imin) / 3))
+    print(imin, imax, fincr)
     exit()
     obs = obs_acc.trace
     syn = syn_acc.trace
