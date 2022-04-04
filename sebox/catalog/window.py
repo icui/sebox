@@ -46,7 +46,7 @@ def _blend(obs_acc, syn_acc):
         
         cl = catalog.process['corner_left']
         cr = catalog.process['corner_right']
-        fmin = i * df * fincr
+        fmin = i * df
         fmax = fmin + df * fincr
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         print(i, pre_filt, 1/fmax, 1/fmin)
