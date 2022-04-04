@@ -36,6 +36,7 @@ def _blend(obs_acc, syn_acc):
     cha = obs_acc.trace.stats.channel
     savefig = catalog.window.get('savefig')
 
+    df = 1 / catalog.duration_ft / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
 
