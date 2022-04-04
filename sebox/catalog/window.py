@@ -53,8 +53,9 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         'BlendedObserved': (np.full(imax - imin, np.nan), {'bands': [0] * nbands})
     }
 
-    for iband, imin in enumerate(range(imin, imax, fincr)):
-        imax = imin + fincr
+    for iband in range(nbands):
+        i1 = imin + iband * fincr
+        i2 = i1 + fincr
         obs = obs_acc.trace.copy()
         syn = syn_acc.trace.copy()
 
@@ -83,21 +84,21 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         d = root.subdir(f'blend/{event}/{station}')
 
         if has_full or has_blended:
-            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f} {savefig}')
-            output['Synthetic'][0][imin: imax] = fsyn[imin: imax]
+            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
+            output['Synthetic'][0][i1: i2] = fsyn[i1: i2]
             output['Synthetic'][1]['bands'][iband] = 1
 
             if savefig:
                 # use non-interactive backend
+                print(d.path(f'{tag}.png'))
                 import matplotlib
                 matplotlib.use('Agg')
 
                 d.mkdir()
                 ws.plot(filename=d.path(f'{tag}.png'))
-                print(d.path(f'{tag}.png'))
         
         if has_full:
-            output['FullObserved'][0][imin: imax] = fobs[imin: imax]
+            output['FullObserved'][0][i1: i2] = fobs[i1: i2]
             output['FullObserved'][1]['bands'][iband] = 1
 
         if has_blended:
@@ -123,15 +124,15 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            output['BlendedObserved'][0][imin: imax] = fft(d1)[imin: imax]
+            output['BlendedObserved'][0][i1: i2] = fft(d1)[i1: i2]
             output['BlendedObserved'][1]['bands'][iband] = 1
 
             if savefig:
                 import matplotlib.pyplot as plt
 
-                f1 = fobs[imin: imax]
-                f2 = fsyn[imin: imax]
-                f3 = fft(d1)[imin: imax]
+                f1 = fobs[i1: i2]
+                f2 = fsyn[i1: i2]
+                f3 = output['BlendedObserved'][0][i1: i2]
                 
                 plt.clf()
                 plt.figure()
