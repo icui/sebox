@@ -62,7 +62,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         cr = catalog.process['corner_right']
         fmin = imin * df
         fmax = (imax - 1) * df
-        tag = f'{obs.stats.channel}#{int(1/fmax)}-{int(1/fmin)}'
+        tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
         sac_filter_trace(obs, pre_filt)
