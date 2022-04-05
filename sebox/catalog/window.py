@@ -17,7 +17,7 @@ def window_event(node):
     node.mkdir(f'blend/{node.event}')
     
     ap = ASDFProcessor((f'proc_obs/{src}', f'proc_syn/{src}'), f'blend_obs/_{src}',
-        _blend, output_tag='blend_obs', accessor=True, onerror='raise')
+        _blend, output_tag='blend_obs', accessor=True)
     
     node.add_mpi(ap.run, node.np, name=f'blend', fname=node.event, cwd=f'log_blend')
     node.add(node.mv, args=(f'blend_obs/_{src}', f'blend_obs/{src}'), name='move_traces')
