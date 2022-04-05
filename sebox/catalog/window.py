@@ -162,6 +162,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
             #     plt.savefig(d.path(f'{tag}_blend.png'))
 
+    print('>>>', station, cmp, output['FT'][1]['bands'])
     if any(output['FT'][1]['bands']):
         return output
 
