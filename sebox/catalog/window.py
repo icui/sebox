@@ -158,7 +158,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             #     plt.savefig(d.path(f'{tag}_blend.png'))
 
     for tag in 'FullObserved',  'BlendedObserved':
-        if np.any(np.invert(np.isnan(output[tag][0]))):
+        if any(output[tag][1]['bands']):
             return output
 
 
