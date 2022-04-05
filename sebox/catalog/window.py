@@ -44,6 +44,9 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     fincr = (imax - imin) // nbands
     imax = imin + fincr * nbands
 
+    cl = catalog.process['corner_left']
+    cr = catalog.process['corner_right']
+
     fobs = tp.cast(np.ndarray, fft(obs_acc.trace.data))
     fsyn = tp.cast(np.ndarray, fft(syn_acc.trace.data))
 
@@ -53,16 +56,14 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         'Blended': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
     }
 
-    aaa = False
-
     for iband in range(nbands):
+        print(iband)
         i1 = imin + iband * fincr
         i2 = i1 + fincr
+
         obs = obs_acc.trace.copy()
         syn = syn_acc.trace.copy()
-
-        cl = catalog.process['corner_left']
-        cr = catalog.process['corner_right']
+        
         fmin = i1 * df
         fmax = (i2 - 1) * df
         tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
