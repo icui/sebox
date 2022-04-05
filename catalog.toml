@@ -1,6 +1,6 @@
 [process]
 period_min = 17.0                                # minimum period
-period_max = 34.0                                # maximum period
+period_max = 100.0                                # maximum period
 corner_left = 0.8                                # left corner of period in pre-filer
 corner_right = 0.75                              # right corner of period in pre-filter
 duration = 200.0                                 # trace record length in minutes
