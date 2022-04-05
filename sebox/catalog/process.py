@@ -74,6 +74,9 @@ def _process(mode, acc):
     origin = acc.origin
     proc = catalog.process
     taper = proc.get('taper')
+
+    # resample and align
+    stream.interpolate(1/catalog.dt, starttime=origin.time)
         
     # detrend and apply taper after filtering
     _detrend(stream, taper)
@@ -98,9 +101,6 @@ def _process(mode, acc):
 
     # detrend and apply taper
     _detrend(stream, taper)
-
-    # resample and align
-    stream.interpolate(1/catalog.dt, starttime=origin.time)
     
     # pad and rotate
     nt = int(np.round(catalog.duration * 60 / catalog.dt))
