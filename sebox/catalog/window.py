@@ -51,7 +51,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     fsyn = tp.cast(np.ndarray, fft(syn_acc.trace.data))
 
     output = {
-        'FT': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
+        'Synthetic': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
         'Full': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
         'Blended': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
     }
@@ -93,8 +93,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         d = root.subdir(f'blend/{event}/{station}')
 
         if has_full or has_blended:
-            output['FT'][0][i1-imin: i2-imin] = fsyn[i1: i2]
-            output['FT'][1]['bands'][iband] = 1
+            output['Synthetic'][0][i1-imin: i2-imin] = fsyn[i1: i2]
+            output['Synthetic'][1]['bands'][iband] = 1
 
             if savefig:
                 # use non-interactive backend
@@ -165,9 +165,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
                 plt.savefig(d.path(f'{tag}_blend.png'))
 
-    print('>>>', station, cmp, output['FT'][1]['bands'])
-    if any(output['FT'][1]['bands']):
-        return output
+    # if any(output['Synthetic'][1]['bands']):
+    #     return output
 
 
 def plot_stations(node):
