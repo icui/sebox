@@ -156,7 +156,6 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                     plt.legend()
 
                     plt.subplot(3, 1, 3)
-                    f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
                     plt.plot(np.angle(f3), label='obs_blend')
                     plt.plot(np.angle(f2), label='syn')
                     plt.plot(np.angle(f3 / f2), label='diff')
