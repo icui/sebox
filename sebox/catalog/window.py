@@ -157,7 +157,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
             #     plt.savefig(d.path(f'{tag}_blend.png'))
 
-    for tag in 'Full',  'Blended':
+    for tag in 'Full',  'Blended', 'FT':
         print('@', output[tag][1]['bands'])
         if any(output[tag][1]['bands']):
             return output
