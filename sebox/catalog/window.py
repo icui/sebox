@@ -156,8 +156,10 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             #     plt.legend()
                 
             #     plt.savefig(d.path(f'{tag}_blend.png'))
-        
-    return output
+
+    for tag in 'FullObserved',  'BlendedObserved':
+        if np.any(np.invert(np.isnan(output[tag][0]))):
+            return output
 
 
 def plot_stations(node):
