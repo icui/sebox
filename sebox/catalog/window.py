@@ -49,8 +49,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
     output = {
         'FT': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
-        'FullObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
-        'BlendedObserved': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
+        'Full': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
+        'Blended': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
     }
 
     for iband in range(nbands):
@@ -97,8 +97,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             #     ws.plot(filename=d.path(f'{tag}.png'))
         
         if has_full:
-            output['FullObserved'][0][i1-imin: i2-imin] = fobs[i1: i2]
-            output['FullObserved'][1]['bands'][iband] = 1
+            output['Full'][0][i1-imin: i2-imin] = fobs[i1: i2]
+            output['Full'][1]['bands'][iband] = 1
 
         if has_blended:
             nt = int(catalog.period_max / catalog.dt / 2)
@@ -123,8 +123,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            output['BlendedObserved'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
-            output['BlendedObserved'][1]['bands'][iband] = 1
+            output['Blended'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
+            output['Blended'][1]['bands'][iband] = 1
 
             # if savefig:
             #     import matplotlib.pyplot as plt
@@ -157,7 +157,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
             #     plt.savefig(d.path(f'{tag}_blend.png'))
 
-    for tag in 'FullObserved',  'BlendedObserved':
+    for tag in 'Full',  'Blended':
+        print('@', output[tag][1]['bands'])
         if any(output[tag][1]['bands']):
             return output
 
