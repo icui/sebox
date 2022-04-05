@@ -94,7 +94,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             output['Synthetic'][0][i1-imin: i2-imin] = fsyn[i1: i2]
             output['Synthetic'][1]['bands'][iband] = 1
 
-            if savefig:
+            if savefig and not has_full:
                 # use non-interactive backend
                 import matplotlib
                 matplotlib.use('Agg')
@@ -138,7 +138,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 try:
                     f1 = fobs[i1: i2]
                     f2 = fsyn[i1: i2]
-                    f3 = output['BlendedObserved'][0][i1-imin: i2-imin]
+                    f3 = output['Blended'][0][i1-imin: i2-imin]
                     
                     plt.clf()
                     plt.figure()
