@@ -17,7 +17,7 @@ def window_event(node):
     node.mkdir(f'blend/{node.event}')
     
     ap = ASDFProcessor((f'proc_obs/{src}', f'proc_syn/{src}'), f'blend_obs/_{src}',
-        _blend, output_tag='blend_obs', accessor=True)
+        _blend, output_tag='blend_obs', accessor=True, onerror='raise')
     
     node.add_mpi(ap.run, node.np, name=f'blend', fname=node.event, cwd=f'log_blend')
     node.add(node.mv, args=(f'blend_obs/_{src}', f'blend_obs/{src}'), name='move_traces')
@@ -53,6 +53,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         'Blended': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
     }
 
+    aaa = False
+
     for iband in range(nbands):
         i1 = imin + iband * fincr
         i2 = i1 + fincr
@@ -61,8 +63,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
         cl = catalog.process['corner_left']
         cr = catalog.process['corner_right']
-        fmin = imin * df
-        fmax = (imax - 1) * df
+        fmin = i1 * df
+        fmax = (i2 - 1) * df
         tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
@@ -86,7 +88,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         if has_full or has_blended:
             output['FT'][0][i1-imin: i2-imin] = fsyn[i1: i2]
             output['FT'][1]['bands'][iband] = 1
-            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}', output['FT'][1]['bands'])
+            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
+            aaa = True
 
             # if savefig:
             #     # use non-interactive backend
@@ -157,6 +160,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
             #     plt.savefig(d.path(f'{tag}_blend.png'))
 
+    if aaa:
+        print('???', output)
     if any(output['FT'][1]['bands']):
         print('>>>', output)
         return output
