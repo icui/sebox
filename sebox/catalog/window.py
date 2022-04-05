@@ -68,6 +68,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
+        print(tag, i1, i2, 1/fmin, 1/fmax)
+        
         sac_filter_trace(obs, pre_filt)
         sac_filter_trace(syn, pre_filt)
     
@@ -160,10 +162,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
             #     plt.savefig(d.path(f'{tag}_blend.png'))
 
-    if aaa:
-        print('???', output)
     if any(output['FT'][1]['bands']):
-        print('>>>', output)
         return output
 
 
