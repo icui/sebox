@@ -68,8 +68,6 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
-        print(tag, iband, i1, i2, 1/fmin, 1/fmax)
-        
         sac_filter_trace(obs, pre_filt)
         sac_filter_trace(syn, pre_filt)
     
@@ -137,33 +135,37 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             if savefig:
                 import matplotlib.pyplot as plt
 
-                f1 = fobs[i1: i2]
-                f2 = fsyn[i1: i2]
-                f3 = output['BlendedObserved'][0][i1-imin: i2-imin]
-                
-                plt.clf()
-                plt.figure()
-                plt.title(f'{station}.{tag} {ratio_obs:.2f} {ratio_syn:.2f}')
-                
-                plt.subplot(3, 1, 1)
-                plt.plot(d1, label='obs_blend')
-                plt.plot(d2, label='syn')
-                plt.legend()
+                try:
+                    f1 = fobs[i1: i2]
+                    f2 = fsyn[i1: i2]
+                    f3 = output['BlendedObserved'][0][i1-imin: i2-imin]
+                    
+                    plt.clf()
+                    plt.figure()
+                    plt.title(f'{station}.{tag} {ratio_obs:.2f} {ratio_syn:.2f}')
+                    
+                    plt.subplot(3, 1, 1)
+                    plt.plot(d1, label='obs_blend')
+                    plt.plot(d2, label='syn')
+                    plt.legend()
 
-                plt.subplot(3, 1, 2)
-                plt.plot(np.angle(f1), label='obs')
-                plt.plot(np.angle(f2), label='syn')
-                plt.plot(np.angle(f1 / f2), label='diff')
-                plt.legend()
+                    plt.subplot(3, 1, 2)
+                    plt.plot(np.angle(f1), label='obs')
+                    plt.plot(np.angle(f2), label='syn')
+                    plt.plot(np.angle(f1 / f2), label='diff')
+                    plt.legend()
 
-                plt.subplot(3, 1, 3)
-                f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
-                plt.plot(np.angle(f3), label='obs_blend')
-                plt.plot(np.angle(f2), label='syn')
-                plt.plot(np.angle(f3 / f2), label='diff')
-                plt.legend()
+                    plt.subplot(3, 1, 3)
+                    f3 = tp.cast(np.ndarray, fft(d1)[imin: imax])
+                    plt.plot(np.angle(f3), label='obs_blend')
+                    plt.plot(np.angle(f2), label='syn')
+                    plt.plot(np.angle(f3 / f2), label='diff')
+                    plt.legend()
+                    
+                    plt.savefig(d.path(f'{tag}_blend.png'))
                 
-                plt.savefig(d.path(f'{tag}_blend.png'))
+                except Exception as e:
+                    print('???', e)
 
     # if any(output['Synthetic'][1]['bands']):
     #     return output
