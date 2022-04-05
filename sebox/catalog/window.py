@@ -94,7 +94,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             output['Synthetic'][0][i1-imin: i2-imin] = fsyn[i1: i2]
             output['Synthetic'][1]['bands'][iband] = 1
 
-            if savefig and not has_full:
+            if savefig:
                 # use non-interactive backend
                 import matplotlib
                 matplotlib.use('Agg')
@@ -132,42 +132,38 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             output['Blended'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
             output['Blended'][1]['bands'][iband] = 1
 
-            if savefig and not has_full:
+            if savefig:
                 import matplotlib.pyplot as plt
 
-                try:
-                    f1 = fobs[i1: i2]
-                    f2 = fsyn[i1: i2]
-                    f3 = output['Blended'][0][i1-imin: i2-imin]
-                    
-                    plt.clf()
-                    plt.figure()
-                    plt.title(f'{station}.{tag} {ratio_obs:.2f} {ratio_syn:.2f}')
-                    
-                    plt.subplot(3, 1, 1)
-                    plt.plot(d1, label='obs_blend')
-                    plt.plot(d2, label='syn')
-                    plt.legend()
-
-                    plt.subplot(3, 1, 2)
-                    plt.plot(np.angle(f1), label='obs')
-                    plt.plot(np.angle(f2), label='syn')
-                    plt.plot(np.angle(f1 / f2), label='diff')
-                    plt.legend()
-
-                    plt.subplot(3, 1, 3)
-                    plt.plot(np.angle(f3), label='obs_blend')
-                    plt.plot(np.angle(f2), label='syn')
-                    plt.plot(np.angle(f3 / f2), label='diff')
-                    plt.legend()
-                    
-                    plt.savefig(d.path(f'{tag}_blend.png'))
+                f1 = fobs[i1: i2]
+                f2 = fsyn[i1: i2]
+                f3 = output['Blended'][0][i1-imin: i2-imin]
                 
-                except Exception as e:
-                    print('???', e)
+                plt.clf()
+                plt.figure()
+                plt.title(f'{station}.{tag} {ratio_obs:.2f} {ratio_syn:.2f}')
+                
+                plt.subplot(3, 1, 1)
+                plt.plot(d1, label='obs_blend')
+                plt.plot(d2, label='syn')
+                plt.legend()
 
-    # if any(output['Synthetic'][1]['bands']):
-    #     return output
+                plt.subplot(3, 1, 2)
+                plt.plot(np.angle(f1), label='obs')
+                plt.plot(np.angle(f2), label='syn')
+                plt.plot(np.angle(f1 / f2), label='diff')
+                plt.legend()
+
+                plt.subplot(3, 1, 3)
+                plt.plot(np.angle(f3), label='obs_blend')
+                plt.plot(np.angle(f2), label='syn')
+                plt.plot(np.angle(f3 / f2), label='diff')
+                plt.legend()
+                
+                plt.savefig(d.path(f'{tag}_blend.png'))
+
+    if any(output['Synthetic'][1]['bands']):
+        return output
 
 
 def plot_stations(node):

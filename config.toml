@@ -8,5 +8,6 @@ debug = false                               # submit to debug queue
 system = ['nnodes.job', 'Traverse']         # job scheduler
 
 [root]
-task = ['sebox.catalog', 'window']         # main task
-np = 50
+task = ['sebox.catalog', 'process']         # main task
+np = 42
+path_catalog = '../ns'
