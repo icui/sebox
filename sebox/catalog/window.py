@@ -132,7 +132,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
             output['Blended'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
             output['Blended'][1]['bands'][iband] = 1
 
-            if savefig:
+            if savefig and not has_full:
                 import matplotlib.pyplot as plt
 
                 try:
