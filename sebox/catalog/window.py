@@ -57,19 +57,18 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     }
 
     for iband in range(nbands):
-        print(iband)
         i1 = imin + iband * fincr
         i2 = i1 + fincr
 
         obs = obs_acc.trace.copy()
         syn = syn_acc.trace.copy()
-        
+
         fmin = i1 * df
         fmax = (i2 - 1) * df
         tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
-        print(tag, i1, i2, 1/fmin, 1/fmax)
+        print(tag, iband, i1, i2, 1/fmin, 1/fmax)
         
         sac_filter_trace(obs, pre_filt)
         sac_filter_trace(syn, pre_filt)
