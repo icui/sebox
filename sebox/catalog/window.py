@@ -84,9 +84,9 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         d = root.subdir(f'blend/{event}/{station}')
 
         if has_full or has_blended:
-            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}')
             output['FT'][0][i1-imin: i2-imin] = fsyn[i1: i2]
             output['FT'][1]['bands'][iband] = 1
+            print(f'{station} {tag} {ratio_syn:.2f} {ratio_obs:.2f} {ratio_diff:.2f}', output['FT'][1]['bands'])
 
             # if savefig:
             #     # use non-interactive backend
