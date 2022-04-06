@@ -52,14 +52,14 @@ def request_data(event):
         node.write(format_exc(), 'error_download.log')
 
 
-def convert_h5(event):
+def convert_h5(node):
     from traceback import format_exc
     from nnodes import root
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
 
-    node = root.mpi
+    event = node.event
 
     if node.has('error_download.log'):
         return
