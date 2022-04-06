@@ -17,6 +17,9 @@ def _process_traces(node, mode: str):
     node.mkdir(f'proc_{mode}')
 
     for event in node.ls(f'events'):
+        if node.has(f'proc_{mode}/_{event}.h5') and not node.has(f'proc_{mode}/_{event}.h5.lock'):
+            continue
+
         if node.has(f'raw_{mode}/{event}.h5') and not node.has(f'proc_{mode}/{event}.h5'):
             node.add(process_event, mode=mode, event=event, name=event)
 
