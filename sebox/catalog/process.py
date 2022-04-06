@@ -31,7 +31,7 @@ def process_event(node):
     ap = ASDFProcessor(f'raw_{mode}/{src}', f'proc_{mode}/_{src}',
         partial(_process, mode), input_type='stream', output_tag=f'proc_{mode}', accessor=True)
     
-    node.add_mpi(ap.run, node.np, name='process', fname=node.event, cwd=f'log_{mode}')
+    node.add_mpi(ap.run, node.np, name='process', fname=node.event, cwd=f'log_{mode}', timeout=600.0)
     node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
 
 
