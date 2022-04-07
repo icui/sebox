@@ -129,6 +129,7 @@ def _convert_bp(stas, event):
             bp.write('stations', syn_h5.waveforms.list())
         
         print('step 0:', root.mpi.rank)
+        root.mpi.comm.Barrier()
         bp.end_step()
         print('step 1:', root.mpi.rank)
         for sta in stas:
