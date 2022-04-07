@@ -21,14 +21,15 @@ def download_trace(node):
     node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
 
 
-def request_data(event):
+def request_data(arg):
     from traceback import format_exc
     from nnodes import root
     from sebox.catalog import catalog
     from obspy import read_events
     from obspy.clients.fdsn.mass_downloader import GlobalDomain, Restrictions, MassDownloader
 
-    node = root.mpi
+    event = arg[0]
+    node = root.subdir(arg[1])
 
     try:
         evt = read_events(f'events/{event}')[0]
@@ -52,14 +53,15 @@ def request_data(event):
         node.write(format_exc(), 'error_download.log')
 
 
-def convert_h5(event):
+def convert_h5(arg):
     from traceback import format_exc
     from nnodes import root
     from pyasdf import ASDFDataSet
     from obspy import read, read_events
     from .index import format_station
 
-    node = root.mpi
+    event = arg[0]
+    node = root.subdir(arg[1])
 
     if node.has('error_download.log'):
         return
