@@ -81,6 +81,11 @@ def _process(mode, acc):
         return
     
     origin = acc.origin
+
+    if origin is None:
+        from obspy import read_events
+        origin = read_events(f'events/{acc.event}')[0].preferred_origin()
+
     proc = catalog.process
     taper = proc.get('taper')
 
