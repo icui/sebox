@@ -10,15 +10,18 @@ def download_events(node):
 def download_traces(node):
     """Download observed data."""
     for event in node.ls('events'):
-        if not node.has(f'raw_obs/{event}.h5'):
+        # if not node.has(f'raw_obs/{event}.h5'):
             node.add(download_trace, event=event, name=event, cwd=f'downloads/{event}')
+            break
 
 
 def download_trace(node):
     """Download observed data of an event."""
     node.ln('../../catalog.toml')
-    # node.add_mpi(request_data, arg=node.event, use_multiprocessing=True)
-    node.add_mpi(convert_h5, arg=node.event, use_multiprocessing=True)
+    arg = (node.event, f'downloads/{node.event}')
+    # node.add_mpi(request_data, arg=arg, use_multiprocessing=True)
+    # node.add_mpi(convert_h5, arg=arg, use_multiprocessing=True)
+    # node.add_mpi(convert_xml, arg=arg, use_multiprocessing=True)
 
 
 def request_data(arg):
@@ -99,3 +102,22 @@ def convert_h5(arg):
                 node.write(format_exc(), 'error.log', 'a')
         
         node.write(station_lines, f'STATIONS.{event}')
+
+
+# def convert_xml(arg):
+#     from pyasdf import ASDFDataSet
+#     from obspy import Inventory
+#     from nnodes import 
+
+#     event = arg[0]
+    
+#     with ASDFDataSet(f'{arg[1]}/{event}.h5', mode='r', mpi=False) as ds:
+#         inv = Inventory()
+
+
+#     from traceback import format_exc
+#     from nnodes import root
+#     from pyasdf import ASDFDataSet
+#     from obspy import read, read_events, read_inventory
+#     from .index import format_station
+

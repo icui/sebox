@@ -19,21 +19,18 @@ def process_synthetic(node):
 
     for event in node.ls('events'):
         node.add(process_event, mode='syn', event=event, name=event,
-            src=f'raw_syn/{event}.h5', dst=f'proc_syn/{event}.bp')
+            src=f'raw_syn/{event}.h5', dst=f'proc_syn/{event}')
 
 
 def process_event(node):
     from functools import partial
-    from asdfy import ASDFProcessor
+    from pyasdf import ASDFDataSet
 
-    mode = node.mode
-    src = f'{node.event}.h5'
+    with ASDFDataSet(node.src, mode='r', mpi=False) as ds:
+        stations = ds.waveforms.list()
 
-    ap = ASDFProcessor(f'raw_{mode}/{src}', None,
-        partial(_process, mode), input_type='stream', accessor=True)
-    
-    node.add_mpi(ap.run, node.np, name='process', fname=node.event, cwd=f'log_{mode}')
-    node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
+    node.add_mpi(_process, node.np, args=(node.src, node.dst + '_'), mpiarg=stations, cwd=f'log_{node.mode}')
+    node.add(node.mv, args=(node.dst + '_', node.dst), name='move_output')
 
 
 def _select(stream):
@@ -61,7 +58,7 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(mode, acc):
+def _process(src, dst, sta):
     import numpy as np
     from nnodes import root
     from sebox.catalog import catalog
