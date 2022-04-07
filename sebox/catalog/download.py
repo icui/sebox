@@ -104,6 +104,50 @@ def convert_h5(arg):
         node.write(station_lines, f'STATIONS.{event}')
 
 
+def convert_bp(node):
+    from pyasdf import ASDFDataSet
+
+    for event in node.ls('events'):
+        with ASDFDataSet(f'raw_syn/{event}', mode='r', mpi=False) as ds:
+            stas = ds.waveforms.list()
+
+        node.add_mpi(_convert_bp, node.np, args=(event,), mpiarg=stas, group_mpiarg=True)
+        break
+
+
+def _convert_bp(event, stas):
+    import adios2
+    from nnodes import root
+    from pyasdf import ASDFDataSet
+
+    with ASDFDataSet(f'raw_obs/{event}', mode='r', mpi=False) as obs_h5, \
+        ASDFDataSet(f'raw_syn/{event}', mode='r', mpi=False) as syn_h5, \
+        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as obs_bp, \
+        adios2.open(f'bp_syn/{event}.bp', 'w', root.mpi.comm) as syn_bp:
+        bps = [obs_bp, syn_bp]
+        if root.mpi.rank == 0:
+            for bp in bps:
+                bp.write('eventname', event)
+                bp.write('event', syn_h5.events[0])
+                bp.write('stations', syn_h5.waveforms.list())
+        
+        for bp in bps:
+            bp.end_step()
+        
+        for bp in bps:
+            for sta in stas:
+                bp.write(sta, syn_h5.waveforms[sta].StationXML)
+
+            bp.end_step()
+        
+        for sta in stas:
+            obs_bp.write(sta, obs_h5.waveforms[sta].raw_obs)
+            syn_bp.write(sta, syn_h5.waveforms[sta].raw_syn)
+        
+        for bp in bps:
+            bp.end_step()
+
+
 # def convert_xml(arg):
 #     from pyasdf import ASDFDataSet
 #     from obspy import Inventory

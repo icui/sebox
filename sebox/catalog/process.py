@@ -24,32 +24,13 @@ def process_synthetic(node):
 
 def process_event(node):
     from functools import partial
-    from asdfy import ASDFProcessor
+    from pyasdf import ASDFDataSet
 
-    mode = node.mode
-    src = f'{node.event}.h5'
+    with ASDFDataSet(node.src, mode='r', mpi=False) as ds:
+        stations = ds.waveforms.list()
 
-    ap = ASDFProcessor(f'raw_{mode}/{src}', None,
-        partial(_process, mode), input_type='stream', accessor=True)
-    
-    node.add_mpi(partial(_proc, ap, mode, node.event), node.np, name='process', fname=node.event, cwd=f'log_{mode}')
-    node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
-
-
-def _proc(ap, mode, event):
-    from mpi4py import MPI
-    import adios2
-
-    comm = MPI.COMM_WORLD
-
-    # with-as will call adios2.close on fh at the end
-    with adios2.open(f"proc_obs/{event}.bp", "w", comm) as fh:
-
-        for acc in ap.access():
-            st = _process(acc, mode)
-
-            for tr in st:
-                fh.write(acc.station + '.' + tr.stats.channel, tr.data)
+    node.add_mpi(_process, node.np, args=(node.src, node.dst + '_'), mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}')
+    node.add(node.mv, args=(node.dst + '_', node.dst), name='move_output')
 
 
 def _select(stream):
@@ -77,7 +58,7 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(mode, acc):
+def _process(src, dst, stas):
     import numpy as np
     from nnodes import root
     from sebox.catalog import catalog
