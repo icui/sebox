@@ -122,40 +122,28 @@ def _convert_bp(stas, event):
 
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
-        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as obs_bp, \
-        adios2.open(f'bp_syn/{event}.bp', 'w', root.mpi.comm) as syn_bp:
-        bps = [obs_bp, syn_bp]
+        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         if root.mpi.rank == 0:
-            print('>>>', event)
-            for bp in bps:
-                bp.write('eventname', event)
-                bp.write('event', syn_h5.events[0])
-                bp.write('stations', syn_h5.waveforms.list())
+            bp.write('eventname', event)
+            bp.write('event', syn_h5.events[0])
+            bp.write('stations', syn_h5.waveforms.list())
         
         print('step 0:', root.mpi.rank)
-        
-        for bp in bps:
-            bp.end_step()
-        
+        bp.end_step()
         print('step 1:', root.mpi.rank)
-        
-        for bp in bps:
-            for sta in stas:
-                print(sta)
-                bp.write(sta, syn_h5.waveforms[sta].StationXML)
+        for sta in stas:
+            print(sta)
+            bp.write(sta, syn_h5.waveforms[sta].StationXML)
 
-            bp.end_step()
+        bp.end_step()
         
         print('step 2:', root.mpi.rank)
         
         for sta in stas:
-            obs_bp.write(sta, obs_h5.waveforms[sta].raw_obs)
-            syn_bp.write(sta, syn_h5.waveforms[sta].raw_syn)
+            bp.write(sta, obs_h5.waveforms[sta].raw_obs)
         
         print('step 3:', root.mpi.rank)
-        
-        for bp in bps:
-            bp.end_step()
+        bp.end_step()
 
 
 # def convert_xml(arg):
