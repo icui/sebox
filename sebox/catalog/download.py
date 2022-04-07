@@ -120,8 +120,8 @@ def _convert_bp(event, stas):
     from nnodes import root
     from pyasdf import ASDFDataSet
 
-    with ASDFDataSet(f'raw_obs/{event}', mode='r', mpi=False) as obs_h5, \
-        ASDFDataSet(f'raw_syn/{event}', mode='r', mpi=False) as syn_h5, \
+    with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
+        ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as obs_bp, \
         adios2.open(f'bp_syn/{event}.bp', 'w', root.mpi.comm) as syn_bp:
         bps = [obs_bp, syn_bp]
