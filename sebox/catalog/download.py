@@ -115,7 +115,7 @@ def convert_bp(node):
         break
 
 
-def _convert_bp(event, stas):
+def _convert_bp(stas, event):
     import adios2
     from nnodes import root
     from pyasdf import ASDFDataSet
