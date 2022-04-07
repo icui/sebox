@@ -32,8 +32,24 @@ def process_event(node):
     ap = ASDFProcessor(f'raw_{mode}/{src}', None,
         partial(_process, mode), input_type='stream', accessor=True)
     
-    node.add_mpi(ap.run, node.np, name='process', fname=node.event, cwd=f'log_{mode}')
+    node.add_mpi(partial(_proc, ap, mode, node.event), node.np, name='process', fname=node.event, cwd=f'log_{mode}')
     node.add(node.mv, args=(f'proc_{mode}/_{src}', f'proc_{mode}/{src}'), name='move_traces')
+
+
+def _proc(ap, mode, event):
+    from mpi4py import MPI
+    import adios2
+
+    comm = MPI.COMM_WORLD
+
+    # with-as will call adios2.close on fh at the end
+    with adios2.open(f"proc_obs/{event}.bp", "w", comm) as fh:
+
+        for acc in ap.access():
+            st = _process(acc, mode)
+
+            for tr in st:
+                fh.write(acc.station + '.' + tr.stats.channel, tr.data)
 
 
 def _select(stream):
