@@ -108,7 +108,7 @@ def convert_bp(node):
     from pyasdf import ASDFDataSet
 
     for event in node.ls('events'):
-        with ASDFDataSet(f'raw_syn/{event}', mode='r', mpi=False) as ds:
+        with ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as ds:
             stas = ds.waveforms.list()
 
         node.add_mpi(_convert_bp, node.np, args=(event,), mpiarg=stas, group_mpiarg=True)
