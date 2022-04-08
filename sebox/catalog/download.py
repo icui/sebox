@@ -120,35 +120,37 @@ def _convert_bp(stas, event):
     from nnodes import root
     from pyasdf import ASDFDataSet
 
-    with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
-        ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
-        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
-        if root.mpi.rank == 0:
-            print('@1')
-            bp.write('eventname', event)
-            print('@2')
-            bp.write('event', syn_h5.events[0])
-            print('@3')
-            bp.write('stations', syn_h5.waveforms.list())
-            print('@4')
-        
-        print('step 0:', root.mpi.rank)
-        root.mpi.comm.Barrier()
-        bp.end_step()
-        print('step 1:', root.mpi.rank)
-        for sta in stas:
-            print(sta)
-            bp.write(sta, syn_h5.waveforms[sta].StationXML)
+    print(root.mpi.rank, stas, event)
 
-        bp.end_step()
+    # with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
+    #     ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
+    #     adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
+    #     if root.mpi.rank == 0:
+    #         print('@1')
+    #         bp.write('eventname', event)
+    #         print('@2')
+    #         bp.write('event', syn_h5.events[0])
+    #         print('@3')
+    #         bp.write('stations', syn_h5.waveforms.list())
+    #         print('@4')
         
-        print('step 2:', root.mpi.rank)
+    #     print('step 0:', root.mpi.rank)
+    #     root.mpi.comm.Barrier()
+    #     bp.end_step()
+    #     print('step 1:', root.mpi.rank)
+    #     for sta in stas:
+    #         print(sta)
+    #         bp.write(sta, syn_h5.waveforms[sta].StationXML)
+
+    #     bp.end_step()
         
-        for sta in stas:
-            bp.write(sta, obs_h5.waveforms[sta].raw_obs)
+    #     print('step 2:', root.mpi.rank)
         
-        print('step 3:', root.mpi.rank)
-        bp.end_step()
+    #     for sta in stas:
+    #         bp.write(sta, obs_h5.waveforms[sta].raw_obs)
+        
+    #     print('step 3:', root.mpi.rank)
+    #     bp.end_step()
 
 
 # def convert_xml(arg):
