@@ -116,71 +116,20 @@ def convert_bp(node):
 
 
 def _convert_bp(stas, event):
-    from mpi4py import MPI
-    import numpy as np
     import adios2
+    from nnodes import root
+    from pyasdf import ASDFDataSet
 
-
-    # Initialize MPI
-    comm = MPI.COMM_WORLD
-    rank = comm.Get_rank()
-    size = comm.Get_size()
-
-    # Initialize dimensions
-    nx = 10
-    nsteps = 3
-
-    # Global array dimensions scattered across MPI nprocs
-    shape = [size * nx]
-    start = [rank * nx]
-    count = [   1 * nx]
-
-
-    # open adios2 file
-    fw = adios2.open("variable_shapes.bp", "w", comm)
-
-    for step in range(0,3):
-        
-        #global variable that doesn't change
-        #save nsteps as a numpy array
-        if(step == 0):
-            fw.write("nsteps", np.array(nsteps))
-            fw.write("size", np.array(size))
-        
-        #global variable that changes over time
-        #save step as a string
-        fw.write("step", str(step))
-        
-        # local values are independent quantities must be explicit
-        fw.write("rank", np.array(rank), [adios2.LocalValueDim])
-        
-        # global array, there is a total shape, 
-        # and a local "window" for each rank (start and count)
-        fw.write("GlobalArray", np.arange(step, nx+step, dtype=np.float), shape, start, count, adios2.ConstantDims)
-        
-        # local array, no shape, no start offset
-        # only a local "dimension" for each rank (count)
-        fw.write("LocalArray", np.arange(step, nx+step, dtype=np.int), [], [], count)
-        
-    # always close if open if not in a with-as instruction
-    fw.close()
-    # import adios2
-    # from nnodes import root
-    # from pyasdf import ASDFDataSet
-
-    # # with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
-    # #     ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
-    # with adios2.open(f'bpx.bp', 'w', root.mpi.comm) as bp:
-    #     if root.mpi.rank == 0:
-    #         print('@', event)
-    #         bp.write('eventname', 'a')
-    #         # print('@', syn_h5.events[0])
-    #         # bp.write('event', syn_h5.events[0])
-    #         # print('@', syn_h5.waveforms.list())
-    #         # bp.write('stations', syn_h5.waveforms.list())
-            
-        
-    #     print('step 0:', root.mpi.rank)
+    with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
+        ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
+        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
+        print('@', event)
+        bp.write('eventname', event)
+        print('@', syn_h5.events[0])
+        bp.write('event', syn_h5.events[0])
+        print('@', syn_h5.waveforms.list())
+        bp.write('stations', syn_h5.waveforms.list())
+        print('step 0:', root.mpi.rank)
     #     print('step 1:', root.mpi.rank)
     #     for sta in stas:
     #         print(sta)
