@@ -123,17 +123,17 @@ def _convert_bp(stas, event):
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
-        print('@', event)
-        bp.write('eventname', event)
-        print('@', syn_h5.events[0])
-        bp.write('event', syn_h5.events[0])
-        print('@', syn_h5.waveforms.list())
-        bp.write('stations', syn_h5.waveforms.list())
-        print('step 0:', root.mpi.rank)
+        # print('@', event)
+        # bp.set('eventname', event)
+        # print('@', syn_h5.events[0])
+        # bp.write('event', syn_h5.events[0])
+        # print('@', syn_h5.waveforms.list())
+        # bp.write('stations', syn_h5.waveforms.list())
+        # print('step 0:', root.mpi.rank)
     #     print('step 1:', root.mpi.rank)
-    #     for sta in stas:
-    #         print(sta)
-    #         bp.write(sta, syn_h5.waveforms[sta].StationXML)
+        for sta in stas:
+            print(sta)
+            bp.write(sta, syn_h5.waveforms[sta].StationXML)
 
     #     bp.end_step()
         
