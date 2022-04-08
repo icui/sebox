@@ -129,7 +129,7 @@ def _convert_bp(stas, event):
             bp.write('event', event, end_step=True)
         
         else:
-            bp.end_step()
+            bp.write(end_step=True)
         
         # print('@', event)
         # bp.set('eventname', event)
