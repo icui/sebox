@@ -121,8 +121,9 @@ def _convert_bp(stas, event):
     from nnodes import root
     from pyasdf import ASDFDataSet
 
-    obs_h5 = ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False)
-    syn_h5 = ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False)
+    # obs_h5 = ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False)
+    # syn_h5 = ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False)
+
     with adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         # print('@', event)
         # bp.set('eventname', event)
@@ -133,11 +134,12 @@ def _convert_bp(stas, event):
         # print('step 0:', root.mpi.rank)
     #     print('step 1:', root.mpi.rank)
         for sta in stas:
-            s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0]
-            bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]))
+            # s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0]
+            bp.write(sta, np.array([1,2]))
+            # bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]))
 
-    del obs_h5
-    del syn_h5
+    # del obs_h5
+    # del syn_h5
     #     bp.end_step()
         
     #     print('step 2:', root.mpi.rank)
