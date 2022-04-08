@@ -135,7 +135,7 @@ def _convert_bp(stas, event):
     #     print('step 1:', root.mpi.rank)
         for sta in stas:
             s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0]
-            bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]), [4])
+            bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]), count=4)
 
     #     bp.end_step()
         
