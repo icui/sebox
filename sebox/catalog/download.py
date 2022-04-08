@@ -125,7 +125,7 @@ def _convert_bp(stas, event):
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
-        bp.write('event', event, end_step=True)
+        bp.write('event', event + str(root.mpi.rank), end_step=True)
         
         # print('@', event)
         # bp.set('eventname', event)
