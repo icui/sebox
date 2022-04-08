@@ -127,6 +127,10 @@ def _convert_bp(stas, event):
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         if root.mpi.rank == 0:
             bp.write('event', event, end_step=True)
+        
+        else:
+            bp.end_step()
+        
         # print('@', event)
         # bp.set('eventname', event)
         # print('@', syn_h5.events[0])
