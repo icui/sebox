@@ -126,10 +126,6 @@ def _convert_bp(stas, event):
         if root.mpi.rank == 0:
             print('@', event)
             bp.write('eventname', event)
-            print('@', syn_h5.events[0])
-            bp.write('event', syn_h5.events[0])
-            print('@', syn_h5.waveforms.list())
-            bp.write('stations', syn_h5.waveforms.list())
             
         
         print('step 0:', root.mpi.rank)
