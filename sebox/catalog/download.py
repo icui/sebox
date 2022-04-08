@@ -117,6 +117,7 @@ def convert_bp(node):
 
 def _convert_bp(stas, event):
     import adios2
+    import numpy as np
     from nnodes import root
     from pyasdf import ASDFDataSet
 
@@ -132,8 +133,8 @@ def _convert_bp(stas, event):
         # print('step 0:', root.mpi.rank)
     #     print('step 1:', root.mpi.rank)
         for sta in stas:
-            print(sta)
-            bp.write(sta, syn_h5.waveforms[sta].StationXML)
+            s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0]
+            bp.write(sta, np.array([sta.latitude, s.longitude, s.elevation, s.channels[0].depth]))
 
     #     bp.end_step()
         
