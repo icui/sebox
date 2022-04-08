@@ -120,9 +120,9 @@ def _convert_bp(stas, event):
     from nnodes import root
     from pyasdf import ASDFDataSet
 
-    with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
-        ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
-        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
+    # with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
+    #     ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
+    with adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         if root.mpi.rank == 0:
             print('@', event)
             bp.write('eventname', event)
