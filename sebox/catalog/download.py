@@ -125,7 +125,7 @@ def _convert_bp(stas, event):
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         for sta in stas:
-            for tr in obs_h5.waveforms[sta]:
+            for tr in obs_h5.waveforms[sta].raw_obs:
                 bp.write(f'{sta}.{tr.stats.channel}', tr.data, count=tr.data.shape)
         
         # bps = [obs_bp, syn_bp]
