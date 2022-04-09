@@ -123,7 +123,7 @@ def _convert_bp(stas, event):
     
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
-        ASDFDataSet(f'bp_obs/{event}.h5', 'w', root.mpi.comm) as h5:
+        ASDFDataSet(f'bp_obs/{event}.h5', mode='w', mpi=False, compression=None) as h5:
         # adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         for sta in stas:
             h5.add_waveforms(obs_h5.waveforms[sta].raw_obs, 'raw_obs')
