@@ -124,12 +124,22 @@ def _convert_bp(stas, event):
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
-        lines = root.readlines(f'events/{event}')[2:13]
-        bp.write(event, np.array([float(l.split()[-1]) for l in lines]), count=[11], end_step=True)
-
         for sta in stas:
-            s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0]
-            bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]), count=[4], end_step=sta==stas[-1])
+            for tr in obs_h5.waveforms[sta]:
+                bp.write(f'{sta}.{tr.stats.channel}', tr.data, count=tr.data.shape)
+        
+        # bps = [obs_bp, syn_bp]
+        # lines = root.readlines(f'events/{event}')[2:13]
+        # edata = np.array([float(l.split()[-1]) for l in lines])
+
+        # for bp in bps:
+        #     bp.write(event, edata, count=[11], end_step=True)
+
+        #     for sta in stas:
+        #         s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0] # type: ignore
+        #         bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]), count=[4], end_step=(sta==stas[-1]))
+
+
 
     #     bp.end_step()
         
