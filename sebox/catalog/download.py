@@ -120,6 +120,7 @@ def _convert_bp(stas, event):
     import numpy as np
     from nnodes import root
     from pyasdf import ASDFDataSet
+    root.mkdir('bp_obs')
     
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
