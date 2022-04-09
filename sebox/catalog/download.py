@@ -127,7 +127,7 @@ def _convert_bp(stas, event):
         lines = root.readlines(f'events/{event}')[2:13]
         if root.mpi.rank == 0:
             print(lines)
-            print(np.array([str(l.split()[-1]) for l in lines]))
+            print(np.array([float(l.split()[-1]) for l in lines]))
         bp.write(event, np.array([str(l.split()[-1]) for l in lines]), count=11)
         
         # print('@', event)
