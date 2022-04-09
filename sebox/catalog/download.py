@@ -125,7 +125,7 @@ def _convert_bp(stas, event):
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         lines = root.readlines(f'events/{event}')[2:13]
-        bp.write(event, np.array([float(l.split()[-1]) for l in lines]), count=11)
+        bp.write(event, np.array([float(l.split()[-1]) for l in lines]), count=[11])
         
         # print('@', event)
         # bp.set('eventname', event)
