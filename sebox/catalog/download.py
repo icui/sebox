@@ -120,14 +120,12 @@ def _convert_bp(stas, event):
     import numpy as np
     from nnodes import root
     from pyasdf import ASDFDataSet
-
     
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
         adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
         bp.write('event', event)
-        
-
+        bp.write('stations', syn_h5.waveforms.list(), end_step=True)
         
         # print('@', event)
         # bp.set('eventname', event)
