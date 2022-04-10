@@ -129,7 +129,7 @@ def _convert_bp(stas, event):
 
         for sta in stas:
             bp.write(invs[sta])
-        #     bp.write(h5.waveforms[sta].raw_obs)
+            bp.write(h5.waveforms[sta].raw_obs)
 
 
 # def convert_xml(arg):
