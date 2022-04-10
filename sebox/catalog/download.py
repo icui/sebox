@@ -120,14 +120,20 @@ def _convert_bp(stas, event):
     import numpy as np
     from nnodes import root
     from pyasdf import ASDFDataSet
+    from seisbp import SeisBP
     root.mkdir('bp_obs')
     
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
         ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
-        adios2.open(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
+        SeisBP(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
+        bp.write(syn_h5.events)
+
         for sta in stas:
+            bp.write(obs_h5.waveforms[sta].StationXML)
             for tr in obs_h5.waveforms[sta].raw_obs:
-                bp.write(f'{sta}.{tr.stats.channel}', tr.data, count=tr.data.shape)
+                bp.write(tr)
+            
+            break
         
         # bps = [obs_bp, syn_bp]
         # lines = root.readlines(f'events/{event}')[2:13]
