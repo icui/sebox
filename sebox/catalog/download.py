@@ -112,6 +112,7 @@ def convert_bp(node):
             stas = ds.waveforms.list()
 
         node.add_mpi(_convert_bp, node.np, args=(event,), mpiarg=stas, group_mpiarg=True)
+        break
 
 
 def _convert_bp(stas, event):
@@ -130,7 +131,6 @@ def _convert_bp(stas, event):
             print(root.mpi.rank, sta)
             bp.write(invs[sta])
             bp.write(h5.waveforms[sta].raw_obs)
-            break
 
 
 # def convert_xml(arg):
