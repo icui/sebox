@@ -128,6 +128,7 @@ def _convert_bp(stas, event):
         invs = root.load(f'inventories/{event}.pickle')
 
         for sta in stas:
+            print(sta)
             bp.write(invs[sta])
             bp.write(h5.waveforms[sta].raw_obs)
 
