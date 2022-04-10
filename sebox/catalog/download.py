@@ -106,7 +106,7 @@ def convert_h5(arg):
 
 def convert_bp(node):
     node.add_mpi(_convert_bp, 786, args=('obs',), mpiarg=node.ls('events'))
-    # node.add_mpi(_convert_bp, 786, args=('syn'), mpiarg=node.ls('events'))
+    # node.add_mpi(_convert_bp, 786, args=('syn',), mpiarg=node.ls('events'))
 
 
 def _convert_bp(event, mode):
@@ -121,9 +121,10 @@ def _convert_bp(event, mode):
             bp.write(read_events(f'events/{event}'))
 
         invs = root.load(f'inventories/{event}.pickle')
+        stas = h5.waveforms.list()
 
         for sta in invs:
-            if len(tags := h5.waveforms[sta].get_waveform_tags()):
+            if sta in stas and len(tags := h5.waveforms[sta].get_waveform_tags()):
                 bp.write(invs[sta])
                 bp.write(h5.waveforms[sta][tags[0]])
 
