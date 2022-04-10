@@ -131,6 +131,7 @@ def _convert_bp(stas, event):
             print(root.mpi.rank, sta)
             bp.write(invs[sta])
             bp.write(h5.waveforms[sta].raw_obs)
+            break
 
 
 # def convert_xml(arg):
