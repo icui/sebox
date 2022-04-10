@@ -116,7 +116,7 @@ def _convert_bp(event, mode):
     from obspy import read_events
 
     with ASDFDataSet(f'raw_{mode}/{event}.h5', mode='r', mpi=False) as h5, \
-        SeisBP(f'bp_{mode}/{event}.bp', 'w', True) as bp:
+        SeisBP(f'bp_{mode}/{event}.bp', 'w') as bp:
         if root.mpi.rank == 0:
             bp.write(read_events(f'events/{event}'))
 
