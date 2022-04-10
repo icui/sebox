@@ -105,11 +105,11 @@ def convert_h5(arg):
 
 
 def convert_bp(node):
-    node.add_mpi(_convert_bp, 786, args=('obs', 'raw_obs'), mpiarg=node.ls('events'))
-    # node.add_mpi(_convert_bp, 786, args=('syn', 'synthetic'), mpiarg=node.ls('events'))
+    node.add_mpi(_convert_bp, 786, args=('obs'), mpiarg=node.ls('events'))
+    # node.add_mpi(_convert_bp, 786, args=('syn'), mpiarg=node.ls('events'))
 
 
-def _convert_bp(event, mode, tag):
+def _convert_bp(event, mode):
     from nnodes import root
     from pyasdf import ASDFDataSet
     from seisbp import SeisBP
@@ -123,8 +123,9 @@ def _convert_bp(event, mode, tag):
         invs = root.load(f'inventories/{event}.pickle')
 
         for sta in invs:
-            bp.write(invs[sta])
-            bp.write(h5.waveforms[sta][tag])
+            if len(tags := h5.waveforms[sta].get_waveform_tags()):
+                bp.write(invs[sta])
+                bp.write(h5.waveforms[sta][tags[0]])
 
 
     # for event in node.ls('events'):
