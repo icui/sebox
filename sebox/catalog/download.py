@@ -112,7 +112,6 @@ def convert_bp(node):
             stas = ds.waveforms.list()
 
         node.add_mpi(_convert_bp, node.np, args=(event,), mpiarg=stas, group_mpiarg=True)
-        break
 
 
 def _convert_bp(stas, event):
