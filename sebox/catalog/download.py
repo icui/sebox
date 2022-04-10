@@ -105,23 +105,43 @@ def convert_h5(arg):
 
 
 def convert_bp(node):
+    node.add_mpi(_convert_bp, 786, args=('obs', 'raw_obs'), mpiarg=node.ls('events'))
+    # node.add_mpi(_convert_bp, 786, args=('syn', 'synthetic'), mpiarg=node.ls('events'))
+
+
+def _convert_bp(event, mode, tag):
+    from nnodes import root
     from pyasdf import ASDFDataSet
+    from seisbp import SeisBP
+    from obspy import read_events
 
-    for event in node.ls('events'):
-        with ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as ds:
-            stas = ds.waveforms.list()
+    with ASDFDataSet(f'raw_{mode}/{event}.h5', mode='r', mpi=False) as h5, \
+        SeisBP(f'bp_{mode}/{event}.bp', 'w', True) as bp:
+        if root.mpi.rank == 0:
+            bp.write(read_events(f'events/{event}'))
 
-        node.add_mpi(_convert_bp, node.np, args=(event,), mpiarg=stas, group_mpiarg=True)
-        break
+        invs = root.load(f'inventories/{event}.pickle')
+
+        for sta in invs:
+            bp.write(invs[sta])
+            bp.write(h5.waveforms[sta][tag])
 
 
-def _convert_bp(stas, event):
+    # for event in node.ls('events'):
+    #     with ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as ds:
+    #         stas = ds.waveforms.list()
+
+    #     node.add_mpi(_convert_bp, node.np, args=(event,), mpiarg=stas, group_mpiarg=True)
+    #     break
+
+
+def _convert_bp_(stas, event):
     from nnodes import root
     from pyasdf import ASDFDataSet
     from seisbp import SeisBP
     from obspy import read_events
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as h5, \
-        SeisBP(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
+        SeisBP(f'bp_obs/{event}.bp', 'w', True) as bp:
         if root.mpi.rank == 0:
             bp.write(read_events(f'events/{event}'))
 
