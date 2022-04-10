@@ -105,7 +105,7 @@ def convert_h5(arg):
 
 
 def convert_bp(node):
-    node.add_mpi(_convert_bp, 786, args=('obs',), mpiarg=node.ls('events'))
+    node.add_mpi(_convert_bp, 131, args=('obs',), mpiarg=node.ls('events'))
     # node.add_mpi(_convert_bp, 786, args=('syn',), mpiarg=node.ls('events'))
 
 
