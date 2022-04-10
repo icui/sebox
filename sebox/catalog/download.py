@@ -107,6 +107,8 @@ def convert_h5(arg):
 def convert_bp(node):
     from pyasdf import ASDFDataSet
 
+    node.concurrent=True
+    
     for event in node.ls('events'):
         with ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as ds:
             stas = ds.waveforms.list()
