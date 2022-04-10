@@ -116,47 +116,18 @@ def convert_bp(node):
 
 
 def _convert_bp(stas, event):
-    import adios2
-    import numpy as np
     from nnodes import root
     from pyasdf import ASDFDataSet
     from seisbp import SeisBP
-    root.mkdir('bp_obs')
-    
-    with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as obs_h5, \
-        ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as syn_h5, \
+    from obspy import read_events
+    with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as h5, \
         SeisBP(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
-        bp.write(syn_h5.events)
+        bp.write(read_events(f'events/{event}'))
+        invs = root.load(f'inventories/{event}.pickle').values()
 
         for sta in stas:
-            bp.write(obs_h5.waveforms[sta].StationXML)
-            for tr in obs_h5.waveforms[sta].raw_obs:
-                bp.write(tr)
-            
-            break
-        
-        # bps = [obs_bp, syn_bp]
-        # lines = root.readlines(f'events/{event}')[2:13]
-        # edata = np.array([float(l.split()[-1]) for l in lines])
-
-        # for bp in bps:
-        #     bp.write(event, edata, count=[11], end_step=True)
-
-        #     for sta in stas:
-        #         s = syn_h5.waveforms[sta].StationXML.networks[0].stations[0] # type: ignore
-        #         bp.write(sta, np.array([s.latitude, s.longitude, s.elevation, s.channels[0].depth]), count=[4], end_step=(sta==stas[-1]))
-
-
-
-    #     bp.end_step()
-        
-    #     print('step 2:', root.mpi.rank)
-        
-    #     for sta in stas:
-    #         bp.write(sta, obs_h5.waveforms[sta].raw_obs)
-        
-    #     print('step 3:', root.mpi.rank)
-    #     bp.end_step()
+            bp.write(invs[sta])
+            bp.write(h5.waveforms[sta].raw_obs)
 
 
 # def convert_xml(arg):
