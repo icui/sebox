@@ -122,12 +122,14 @@ def _convert_bp(stas, event):
     from obspy import read_events
     with ASDFDataSet(f'raw_obs/{event}.h5', mode='r', mpi=False) as h5, \
         SeisBP(f'bp_obs/{event}.bp', 'w', root.mpi.comm) as bp:
-        bp.write(read_events(f'events/{event}'))
-        invs = root.load(f'inventories/{event}.pickle')
+        if root.mpi.rank == 0:
+            bp.write(read_events(f'events/{event}'))
 
-        for sta in stas:
-            bp.write(invs[sta])
-            bp.write(h5.waveforms[sta].raw_obs)
+        # invs = root.load(f'inventories/{event}.pickle')
+
+        # for sta in stas:
+        #     bp.write(invs[sta])
+        #     bp.write(h5.waveforms[sta].raw_obs)
 
 
 # def convert_xml(arg):
