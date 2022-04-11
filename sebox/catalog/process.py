@@ -23,7 +23,6 @@ def process_synthetic(node):
 
 
 def process_event(node):
-    from functools import partial
     from seisbp import SeisBP
 
     with SeisBP(node.src, 'r') as bp:
@@ -66,6 +65,8 @@ def _process(stas, src, dst):
             stream = raw_bp.stream(sta)
             origin = raw_bp.read(raw_bp.events[0]).preferred_origin()
             inv = raw_bp.read(sta)
+
+            print(stream)
 
             if proc_stream := _process_stream(stream, origin, inv, 'obs'):
                 proc_bp.write(proc_stream)
