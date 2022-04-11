@@ -69,13 +69,13 @@ def _process(stas, src, dst, mode):
     from nnodes import root
     from seisbp import SeisBP
     from pyasdf import ASDFDataSet
-    from obspy import read, read_inventory
+    from obspy import read_events, read_inventory
 
     print(dst)
 
     with SeisBP(src, 'r', True) as ds, SeisBP(dst, 'w', True) as proc_bp:
         event = src.split("/")[-1][:-3]
-        evt = read(f'events/{event}')
+        evt = read_events(f'events/{event}')[0]
         origin = evt.preferred_origin()
         invs = root.load(f'../ns/inventories/{event}.pickle')
 
