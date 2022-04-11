@@ -113,7 +113,7 @@ def convert_bp(node):
         with ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as ds:
             stas = ds.waveforms.list()
 
-        node.add_mpi(_convert_bp, node.np, args=(event, 'obs'), mpiarg=stas, group_mpiarg=True)
+        node.add_mpi(_convert_bp, node.np, args=(event, 'syn'), mpiarg=stas, group_mpiarg=True)
 
     # node.add_mpi(_convert_bp, 131, args=('obs',), mpiarg=node.ls('events'))
     # node.add_mpi(_convert_bp, 786, args=('syn',), mpiarg=node.ls('events'))

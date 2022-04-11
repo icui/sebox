@@ -10,7 +10,7 @@ def process_observed(node):
 
     for event in node.ls('events'):
         node.add(process_event, mode='obs', event=event, name=event,
-            src=f'raw_obs/{event}.h5', dst=f'proc_obs/{event}.bp')
+            src=f'raw_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
         break
 
 
@@ -19,15 +19,15 @@ def process_synthetic(node):
 
     for event in node.ls('events'):
         node.add(process_event, mode='syn', event=event, name=event,
-            src=f'raw_syn/{event}.h5', dst=f'proc_syn/{event}.bp')
+            src=f'raw_syn/{event}.bp', dst=f'proc_syn/{event}.bp')
 
 
 def process_event(node):
     from functools import partial
-    from pyasdf import ASDFDataSet
+    from seisbp import SeisBP
 
-    with ASDFDataSet(node.src, mode='r', mpi=False) as ds:
-        stations = ds.waveforms.list()
+    with SeisBP(node.src, 'r') as bp:
+        stations = bp.stations
 
     node.add_mpi(_process, node.np, args=(node.src, node.dst + '_'), mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}')
     node.add(node.mv, args=(node.dst + '_', node.dst), name='move_output')
@@ -58,22 +58,26 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(src, dst, stas):
+def _process(stas, src, dst):
+    from seisbp import SeisBP
+
+    with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
+        for sta in stas:
+            stream = raw_bp.stream(sta)
+            origin = raw_bp.read(raw_bp.events[0]).preferred_origin()
+            inv = raw_bp.read(sta)
+
+            if proc_stream := _process_stream(stream, origin, inv, 'obs'):
+                proc_bp.write(proc_stream)
+
+
+def _process_stream(st, origin, inv, mode):
     import numpy as np
-    from nnodes import root
     from sebox.catalog import catalog
     from pytomo3d.signal.process import rotate_stream, sac_filter_stream
 
-    print(acc.station, root.mpi.rank)
-
-    if (stream := _select(acc.stream)) is None:
+    if (stream := _select(st)) is None:
         return
-    
-    origin = acc.origin
-
-    if origin is None:
-        from obspy import read_events
-        origin = read_events(f'events/{acc.event}')[0].preferred_origin()
 
     proc = catalog.process
     taper = proc.get('taper')
@@ -85,7 +89,7 @@ def _process(src, dst, stas):
     _detrend(stream, taper)
 
     # attach response
-    stream.attach_response(acc.inventory)
+    stream.attach_response(inv)
 
     # period anchors
     cl = proc['corner_left']
@@ -113,7 +117,7 @@ def _process(src, dst, stas):
         data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
         trace.data = data
 
-    stream = rotate_stream(stream, origin.latitude, origin.longitude, acc.inventory)
+    stream = rotate_stream(stream, origin.latitude, origin.longitude, inv)
 
     # make sure stream has 1 radial, 1 transverse and 1 vertical trace
     if len(stream) != 3 or any(len(stream.select(component=cmp)) != 1 for cmp in ['R', 'T', 'Z']):
