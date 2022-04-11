@@ -67,6 +67,8 @@ def _process(stas, src, dst, mode):
     from nnodes import root
     from seisbp import SeisBP
 
+    print(dst)
+
     with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
         evt = raw_bp.read(raw_bp.events[0])
         origin = evt.preferred_origin()
