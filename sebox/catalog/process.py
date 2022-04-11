@@ -80,13 +80,12 @@ def _process(stas, src, dst, mode):
 
         if root.mpi.rank == 0:
             proc_bp.write(evt)
-        
-        nwrite = 0
 
         for sta in stas:
             if sta not in invs:
                 continue
             
+            print(root.mpi.rank, sta)
             stream = ds.waveforms[sta].raw_obs
             inv = invs[sta]
             # proc_bp.write(raw_bp.stream(sta))
@@ -98,9 +97,8 @@ def _process(stas, src, dst, mode):
                 # proc_bp.write(stream)
 
                 if proc_stream := _process_stream(stream, origin, inv, mode):
-                    nwrite += 1
                     proc_bp.write(inv)
-                    proc_bp.write(proc_stream, end_step=nwrite%10==0)
+                    proc_bp.write(proc_stream)
             
             except:
                 print('?', sta)
