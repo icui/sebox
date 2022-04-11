@@ -19,8 +19,6 @@ def process_synthetic(node):
     for event in node.ls('events'):
         node.add(process_event, mode='syn', event=event, name=event,
             src=f'raw_syn/{event}.bp', dst=f'proc_syn/{event}.bp')
-        
-        break
 
 
 def process_event(node):
