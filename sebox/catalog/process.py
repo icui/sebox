@@ -59,16 +59,23 @@ def _detrend(stream, taper):
 
 
 def _process(stas, src, dst):
+    from nnodes import root
     from seisbp import SeisBP
 
     with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
+        evt = raw_bp.read(raw_bp.events[0])
+
+        if root.mpi.rank == 0:
+            proc_bp.write(evt)
+
         for sta in stas:
             stream = raw_bp.stream(sta)
-            origin = raw_bp.read(raw_bp.events[0]).preferred_origin()
+            origin = evt.preferred_origin()
             inv = raw_bp.read(sta)
 
             try:
                 if proc_stream := _process_stream(stream, origin, inv, 'obs'):
+                    proc_bp.write(inv)
                     proc_bp.write(proc_stream)
             
             except:
