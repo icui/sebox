@@ -73,7 +73,7 @@ def _process(stas, src, dst, mode):
 
     print(dst)
 
-    with SeisBP(src, 'r', True) as ds, SeisBP(dst, 'w', True) as proc_bp:
+    with ASDFDataSet(src, 'r', True) as ds, SeisBP(dst, 'w', True) as proc_bp:
         event = src.split("/")[-1][:-3]
         evt = read_events(f'events/{event}')[0]
         origin = evt.preferred_origin()
@@ -90,12 +90,12 @@ def _process(stas, src, dst, mode):
                 # stream = raw_bp.stream(sta)
                 # inv = raw_bp.read(sta)
 
-                # proc_bp.write(inv)
-                # proc_bp.write(stream)
+                proc_bp.write(inv)
+                proc_bp.write(stream)
 
-                if proc_stream := _process_stream(stream, origin, inv, mode):
-                    proc_bp.write(inv)
-                    proc_bp.write(proc_stream)
+                # if proc_stream := _process_stream(stream, origin, inv, mode):
+                #     proc_bp.write(inv)
+                #     proc_bp.write(proc_stream)
             
             except:
                 print('?', sta)
