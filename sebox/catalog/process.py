@@ -67,11 +67,15 @@ def _process(stas, src, dst, mode):
     from seisbp import SeisBP
 
     with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
-        evt = raw_bp.read(raw_bp.events[0])
-        origin = evt.preferred_origin()
+        try:
+            evt = raw_bp.read(raw_bp.events[0])
+            origin = evt.preferred_origin()
 
-        if root.mpi.rank == 0:
-            proc_bp.write(evt)
+            if root.mpi.rank == 0:
+                proc_bp.write(evt)
+        
+        except:
+            print('??', raw_bp.events[0])
 
         for sta in stas:
             try:
