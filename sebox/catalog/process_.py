@@ -9,10 +9,11 @@ def process_observed(node):
     node.concurrent = True
 
     for event in node.ls('events'):
+        if not node.has(f'bp_obs/{event}.bp'):
+            continue
+
         node.add(process_event, mode='obs', event=event, name=event,
-            src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs2/{event}.bp')
-        
-        break
+            src=f'bp_obs/{event}.bp', dst=f'proc_obs2/{event}.bp')
 
 
 def process_synthetic(node):
@@ -27,14 +28,10 @@ def process_synthetic(node):
 
 
 def process_event(node):
-    # from seisbp import SeisBP
+    from seisbp import SeisBP
 
-    # with SeisBP(node.src, 'r') as bp:
-    #     stations = bp.stations
-    from pyasadf import ASDFDataSet
-
-    with ASDFDataSet(node.src, mode='r', mpi=False) as ds:
-        stations = ds.waveforms.list()
+    with SeisBP(node.src, 'r') as bp:
+        stations = bp.stations
 
     node.add_mpi(_process, node.np, args=(node.src, node.dst, node.mode),
         mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}', name=node.event)
@@ -68,34 +65,28 @@ def _detrend(stream, taper):
 def _process(stas, src, dst, mode):
     from nnodes import root
     from seisbp import SeisBP
-    from pyasdf import ASDFDataSet
-    from obspy import read, read_inventory
 
     print(dst)
 
-    with SeisBP(src, 'r', True) as ds, SeisBP(dst, 'w', True) as proc_bp:
-        event = src.split("/")[-1][:-3]
-        evt = read(f'events/{event}')
+    with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
+        evt = raw_bp.read(raw_bp.events[0])
         origin = evt.preferred_origin()
-        invs = root.load(f'../ns/inventories/{event}.pickle')
 
         if root.mpi.rank == 0:
             proc_bp.write(evt)
 
         for sta in stas:
-            stream = ds.waveforms[sta].raw_obs
-            inv = invs[sta]
             # proc_bp.write(raw_bp.stream(sta))
             try:
-                # stream = raw_bp.stream(sta)
-                # inv = raw_bp.read(sta)
+                stream = raw_bp.stream(sta)
+                inv = raw_bp.read(sta)
 
-                # proc_bp.write(inv)
-                # proc_bp.write(stream)
+                proc_bp.write(inv)
+                proc_bp.write(stream)
 
-                if proc_stream := _process_stream(stream, origin, inv, mode):
-                    proc_bp.write(inv)
-                    proc_bp.write(proc_stream)
+                # if proc_stream := _process_stream(stream, origin, inv, mode):
+                #     proc_bp.write(inv)
+                #     proc_bp.write(proc_stream)
             
             except:
                 print('?', sta)
