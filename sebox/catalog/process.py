@@ -82,9 +82,12 @@ def _process(stas, src, dst, mode):
                 stream = raw_bp.stream(sta)
                 inv = raw_bp.read(sta)
 
-                if proc_stream := _process_stream(stream, origin, inv, mode):
-                    proc_bp.write(inv)
-                    proc_bp.write(proc_stream)
+                proc_bp.write(inv)
+                proc_bp.write(stream)
+
+                # if proc_stream := _process_stream(stream, origin, inv, mode):
+                #     proc_bp.write(inv)
+                #     proc_bp.write(proc_stream)
             
             except:
                 print('?', sta)
