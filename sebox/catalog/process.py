@@ -13,7 +13,7 @@ def process_observed(node):
             continue
 
         node.add(process_event, mode='obs', event=event, name=event,
-            src=f'bp_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
+            src=f'bp_obs/{event}.bp', dst=f'proc_obs2/{event}.bp')
         break
 
 
@@ -75,19 +75,17 @@ def _process(stas, src, dst, mode):
             proc_bp.write(evt)
 
         for sta in stas:
-            print(root.mpi.rank, sta)
+            proc_bp.write(raw_bp.stream(sta))
+            # try:
+            #     stream = raw_bp.stream(sta)
+            #     inv = raw_bp.read(sta)
 
-            try:
-                stream = raw_bp.stream(sta)
-                inv = raw_bp.read(sta)
-                print(inv)
-
-                if proc_stream := _process_stream(stream, origin, inv, mode):
-                    proc_bp.write(inv)
-                    proc_bp.write(proc_stream)
+            #     if proc_stream := _process_stream(stream, origin, inv, mode):
+            #         proc_bp.write(inv)
+            #         proc_bp.write(proc_stream)
             
-            except:
-                print('?', sta)
+            # except:
+            #     print('?', sta)
 
 
 def _process_stream(st, origin, inv, mode):
