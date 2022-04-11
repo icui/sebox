@@ -27,9 +27,8 @@ def process_event(node):
     with SeisBP(node.src, 'r') as bp:
         stations = bp.stations
 
-    node.add_mpi(_process, node.np, args=(node.src, node.dst + '_'),
+    node.add_mpi(_process, node.np, args=(node.src, node.dst),
         mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}', name=node.event)
-    node.add(node.mv, args=(node.dst + '_', node.dst), name='move_output')
 
 
 def _select(stream):
