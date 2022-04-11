@@ -9,7 +9,7 @@ def process_observed(node):
     node.concurrent = True
 
     for event in node.ls('events'):
-        if not node.has(f'bp_obs/{event}.bp'):
+        if node.has(f'bp_obs/{event}.bp'):
             continue
         
         node.add(process_event, mode='obs', event=event, name=event,
@@ -113,14 +113,12 @@ def _process_stream(st, origin, inv, mode):
 
     proc = catalog.process
     taper = proc.get('taper')
-    print('@1')
 
     # resample and align
     stream.interpolate(1/catalog.dt, starttime=origin.time)
         
     # detrend and apply taper after filtering
     _detrend(stream, taper)
-    print('@2')
 
     # period anchors
     cl = proc['corner_left']
@@ -131,15 +129,9 @@ def _process_stream(st, origin, inv, mode):
 
     # remove instrument response
     if mode == 'obs':
-
-        print('@3')
         stream.attach_response(inv)
-
-        print('@4')
         stream.remove_response(output="DISP", zero_mean=False, taper=False,
             water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
-        
-        print('@5')
     
     else:
         sac_filter_stream(stream, pre_filt)
