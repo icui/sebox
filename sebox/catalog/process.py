@@ -86,7 +86,6 @@ def _process(stas, src, dst, mode):
                 continue
             
             print(root.mpi.rank, sta)
-            stream = ds.waveforms[sta].raw_obs
             inv = invs[sta]
             # proc_bp.write(raw_bp.stream(sta))
             try:
@@ -95,6 +94,7 @@ def _process(stas, src, dst, mode):
 
                 # proc_bp.write(inv)
                 # proc_bp.write(stream)
+                stream = ds.waveforms[sta].raw_obs
 
                 if proc_stream := _process_stream(stream, origin, inv, mode):
                     proc_bp.write(inv)
