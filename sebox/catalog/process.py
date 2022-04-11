@@ -80,9 +80,10 @@ def _process(stas, src, dst, mode):
             try:
                 stream = raw_bp.stream(sta)
                 inv = raw_bp.read(sta)
+                print(inv)
 
                 if proc_stream := _process_stream(stream, origin, inv, mode):
-                    # proc_bp.write(inv)
+                    proc_bp.write(inv)
                     proc_bp.write(proc_stream)
             
             except:
