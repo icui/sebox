@@ -11,7 +11,6 @@ def process_observed(node):
     for event in node.ls('events'):
         node.add(process_event, mode='obs', event=event, name=event,
             src=f'raw_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
-        break
 
 
 def process_synthetic(node):
