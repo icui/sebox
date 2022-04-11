@@ -11,7 +11,7 @@ def process_observed(node):
     for event in node.ls('events'):
         if node.has(f'proc_obs/{event}.bp'):
             continue
-        
+
         node.add(process_event, mode='obs', event=event, name=event,
             src=f'raw_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
 
@@ -65,13 +65,14 @@ def _process(stas, src, dst, mode):
 
     with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
         evt = raw_bp.read(raw_bp.events[0])
+        origin = evt.preferred_origin()
 
         if root.mpi.rank == 0:
             proc_bp.write(evt)
 
         for sta in stas:
+            print('>', sta)
             stream = raw_bp.stream(sta)
-            origin = evt.preferred_origin()
             inv = raw_bp.read(sta)
 
             try:

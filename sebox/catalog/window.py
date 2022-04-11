@@ -6,24 +6,51 @@ def window(node):
     node.mkdir('blend_obs')
 
     for event in node.ls('events'):
-        if node.has(f'proc_obs/{event}.h5') and node.has(f'proc_syn/{event}.h5') and not node.has(f'blend_obs/{event}.h5'):
+        if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp') and not node.has(f'blend_obs/{event}.bp'):
             node.add(window_event, name=event, event=event)
+            break
 
 
 def window_event(node):
-    from asdfy import ASDFProcessor
+    from seisbp import SeisBP
 
     src = f'{node.event}.h5'
     node.mkdir(f'blend/{node.event}')
+
+    with SeisBP(f'proc_syn/{src}', 'r') as bp:
+        stations = bp.stations
     
-    ap = ASDFProcessor((f'proc_obs/{src}', f'proc_syn/{src}'), f'blend_obs/_{src}',
-        _blend, output_tag='blend_obs', accessor=True)
-    
-    node.add_mpi(ap.run, node.np, name=f'blend', fname=node.event, cwd=f'log_blend')
-    node.add(node.mv, args=(f'blend_obs/_{src}', f'blend_obs/{src}'), name='move_traces')
+    node.add_mpi(_blend, node.np, name=f'blend',
+        args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{src}'),
+        mpiarg=stations, group_mpiarg=True, name=node.event, cwd=f'log_blend')
 
 
-def _blend(obs_acc, syn_acc) -> tp.Any:
+def _blend(stas, obs, syn, dst) -> tp.Any:
+    from seisbp import SeisBP
+    from nnodes import root
+
+    with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp, \
+        SeisBP(dst, 'w', True) as dst_bp:
+        evt = syn_bp.read(syn_bp.events[0])
+
+        if root.mpi.rank == 0:
+            dst_bp.write(evt)
+
+        for sta in stas:
+            inv = syn_bp.read(sta)
+            for cmp in ('R', 'T', 'Z'):
+                obs_tr = obs_bp.trace(sta, cmp)
+                syn_tr = syn_bp.trace(sta, cmp)
+
+                try:
+                    if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
+                        for tag, data in output.items():
+                            dst_bp.put(f'{sta}.{cmp}:{tag}', data)
+                
+                except:
+                    print('?', sta, cmp)
+
+def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
     from pyflex import Config, WindowSelector
     from nnodes import root
     from scipy.fft import fft
@@ -32,9 +59,6 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
 
     from .catalog import catalog
 
-    station = syn_acc.station
-    event = syn_acc.event
-    cmp = syn_acc.trace.stats.component
     savefig = catalog.window.get('savefig')
     nbands = catalog.nbands
 
@@ -47,21 +71,24 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    fobs = tp.cast(np.ndarray, fft(obs_acc.trace.data))
-    fsyn = tp.cast(np.ndarray, fft(syn_acc.trace.data))
+    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
+    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
 
     output = {
-        'Synthetic': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
-        'Full': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands}),
-        'Blended': (np.full(imax - imin, np.nan, dtype=complex), {'bands': [0] * nbands})
+        'syn': np.full(imax - imin, np.nan, dtype=complex),
+        'syn_bands': np.zeros(nbands, dtype=int),
+        'obs': np.full(imax - imin, np.nan, dtype=complex),
+        'obs_bands': np.zeros(nbands, dtype=int),
+        'blend': np.full(imax - imin, np.nan, dtype=complex),
+        'blend_bands': np.zeros(nbands, dtype=int)
     }
 
     for iband in range(nbands):
         i1 = imin + iband * fincr
         i2 = i1 + fincr
 
-        obs = obs_acc.trace.copy()
-        syn = syn_acc.trace.copy()
+        obs = obs_tr.copy()
+        syn = syn_tr.copy()
 
         fmin = i1 * df
         fmax = (i2 - 1) * df
@@ -73,7 +100,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
     
         cfg = catalog.window['flexwin']
         config = Config(min_period=1/fmax, max_period=1/fmin, **{**cfg['default'], **cfg[cmp]})
-        ws = WindowSelector(obs, syn, config, syn_acc.ds.events[0], syn_acc.inventory)
+        ws = WindowSelector(obs, syn, config, evt, inv)
 
         try:
             wins = ws.select_windows()
@@ -91,8 +118,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
         d = root.subdir(f'blend/{event}/{station}')
 
         if has_full or has_blended:
-            output['Synthetic'][0][i1-imin: i2-imin] = fsyn[i1: i2]
-            output['Synthetic'][1]['bands'][iband] = 1
+            output['syn'][i1-imin: i2-imin] = fsyn[i1: i2]
+            output['syn_bands'][iband] = 1
 
             if savefig:
                 # use non-interactive backend
@@ -103,8 +130,8 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 ws.plot(filename=d.path(f'{tag}.png'))
         
         if has_full:
-            output['Full'][0][i1-imin: i2-imin] = fobs[i1: i2]
-            output['Full'][1]['bands'][iband] = 1
+            output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
+            output['obs_bands'][iband] = 1
 
         if has_blended:
             nt = int(catalog.period_max / catalog.dt / 2)
@@ -129,15 +156,15 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            output['Blended'][0][i1-imin: i2-imin] = fft(d1)[i1: i2]
-            output['Blended'][1]['bands'][iband] = 1
+            output['blend'][i1-imin: i2-imin] = fft(d1)[i1: i2]
+            output['blend_bands'][iband] = 1
 
             if savefig:
                 import matplotlib.pyplot as plt
 
                 f1 = fobs[i1: i2]
                 f2 = fsyn[i1: i2]
-                f3 = output['Blended'][0][i1-imin: i2-imin]
+                f3 = output['blend'][i1-imin: i2-imin]
                 
                 plt.clf()
                 plt.figure()
@@ -162,7 +189,7 @@ def _blend(obs_acc, syn_acc) -> tp.Any:
                 
                 plt.savefig(d.path(f'{tag}_blend.png'))
 
-    if any(output['Synthetic'][1]['bands']):
+    if any(output['syn_bands']):
         return output
 
 
