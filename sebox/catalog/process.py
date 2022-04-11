@@ -66,10 +66,12 @@ def _process(stas, src, dst):
             origin = raw_bp.read(raw_bp.events[0]).preferred_origin()
             inv = raw_bp.read(sta)
 
-            print(stream)
-
-            if proc_stream := _process_stream(stream, origin, inv, 'obs'):
-                proc_bp.write(proc_stream)
+            try:
+                if proc_stream := _process_stream(stream, origin, inv, 'obs'):
+                    proc_bp.write(proc_stream)
+            
+            except:
+                print(sta)
 
 
 def _process_stream(st, origin, inv, mode):
