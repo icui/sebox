@@ -101,7 +101,7 @@ def _process(stas, src, dst, mode):
                     proc_bp.write(proc_stream)
             
             except:
-                print('?', sta)
+                print('?', event, sta)
 
 
 def _process_stream(st, origin, inv, mode):
