@@ -20,9 +20,9 @@ def window_event(node):
     with SeisBP(f'proc_syn/{src}', 'r') as bp:
         stations = bp.stations
     
-    node.add_mpi(_blend, node.np, name=f'blend',
+    node.add_mpi(_blend, node.np, name=f'blend_{node.event}',
         args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{src}'),
-        mpiarg=stations, group_mpiarg=True, name=node.event, cwd=f'log_blend')
+        mpiarg=stations, group_mpiarg=True, cwd=f'log_blend')
 
 
 def _blend(stas, obs, syn, dst) -> tp.Any:
