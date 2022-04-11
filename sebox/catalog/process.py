@@ -14,9 +14,7 @@ def process_observed(node):
         
         node.add(process_event, mode='obs', event=event, name=event,
             src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs2/{event}.bp')
-        
-        break
-
+      
 
 def process_synthetic(node):
     node.concurrent = True
