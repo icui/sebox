@@ -81,6 +81,9 @@ def _process(stas, src, dst, mode):
             proc_bp.write(evt)
 
         for sta in stas:
+            if sta not in invs:
+                continue
+            
             stream = ds.waveforms[sta].raw_obs
             inv = invs[sta]
             # proc_bp.write(raw_bp.stream(sta))
