@@ -13,7 +13,7 @@ def process_observed(node):
             continue
 
         node.add(process_event, mode='obs', event=event, name=event,
-            src=f'raw_obs/{event}.bp', dst=f'proc_obs2/{event}.bp')
+            src=f'bp_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
 
 
 def process_synthetic(node):
@@ -67,15 +67,11 @@ def _process(stas, src, dst, mode):
     from seisbp import SeisBP
 
     with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
-        try:
-            evt = raw_bp.read(raw_bp.events[0])
-            origin = evt.preferred_origin()
+        evt = raw_bp.read(raw_bp.events[0])
+        origin = evt.preferred_origin()
 
-            if root.mpi.rank == 0:
-                proc_bp.write(evt)
-        
-        except:
-            print('??', raw_bp.events[0])
+        if root.mpi.rank == 0:
+            proc_bp.write(evt)
 
         for sta in stas:
             try:
