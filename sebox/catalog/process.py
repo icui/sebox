@@ -9,7 +9,7 @@ def process_observed(node):
     node.concurrent = True
 
     for event in node.ls('events'):
-        if node.has(f'bp_obs/{event}.bp'):
+        if node.has(f'bp_obs/{event}.bp') or node.has(f'proc_obs2/{event}.bp'):
             continue
         
         node.add(process_event, mode='obs', event=event, name=event,
@@ -80,6 +80,8 @@ def _process(stas, src, dst, mode):
 
         if root.mpi.rank == 0:
             proc_bp.write(evt)
+        
+        nwrite = 0
 
         for sta in stas:
             if sta not in invs:
@@ -96,8 +98,9 @@ def _process(stas, src, dst, mode):
                 # proc_bp.write(stream)
 
                 if proc_stream := _process_stream(stream, origin, inv, mode):
+                    nwrite += 1
                     proc_bp.write(inv)
-                    proc_bp.write(proc_stream)
+                    proc_bp.write(proc_stream, end_step=nwrite%10==0)
             
             except:
                 print('?', sta)
