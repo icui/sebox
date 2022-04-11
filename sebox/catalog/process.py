@@ -29,7 +29,7 @@ def process_event(node):
     with SeisBP(node.src, 'r') as bp:
         stations = bp.stations
 
-    node.add_mpi(_process, node.np, args=(node.src, node.dst),
+    node.add_mpi(_process, node.np, args=(node.src, node.dst, node.mode),
         mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}', name=node.event)
 
 
@@ -58,7 +58,7 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(stas, src, dst):
+def _process(stas, src, dst, mode):
     from nnodes import root
     from seisbp import SeisBP
 
@@ -74,7 +74,7 @@ def _process(stas, src, dst):
             inv = raw_bp.read(sta)
 
             try:
-                if proc_stream := _process_stream(stream, origin, inv, 'obs'):
+                if proc_stream := _process_stream(stream, origin, inv, mode):
                     proc_bp.write(inv)
                     proc_bp.write(proc_stream)
             
