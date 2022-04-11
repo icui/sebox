@@ -75,6 +75,7 @@ def _process(stas, src, dst, mode):
             proc_bp.write(evt)
 
         for sta in stas:
+            print('>', sta)
             try:
                 stream = raw_bp.stream(sta)
                 inv = raw_bp.read(sta)
