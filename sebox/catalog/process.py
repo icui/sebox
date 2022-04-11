@@ -9,6 +9,9 @@ def process_observed(node):
     node.concurrent = True
 
     for event in node.ls('events'):
+        if not node.has(f'bp_obs/{event}.bp'):
+            continue
+        
         node.add(process_event, mode='obs', event=event, name=event,
             src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs2/{event}.bp')
         
@@ -91,12 +94,12 @@ def _process(stas, src, dst, mode):
                 # stream = raw_bp.stream(sta)
                 # inv = raw_bp.read(sta)
 
-                proc_bp.write(inv)
-                proc_bp.write(stream)
+                # proc_bp.write(inv)
+                # proc_bp.write(stream)
 
-                # if proc_stream := _process_stream(stream, origin, inv, mode):
-                #     proc_bp.write(inv)
-                #     proc_bp.write(proc_stream)
+                if proc_stream := _process_stream(stream, origin, inv, mode):
+                    proc_bp.write(inv)
+                    proc_bp.write(proc_stream)
             
             except:
                 print('?', sta)
