@@ -31,7 +31,7 @@ def process_event(node):
 
     # with SeisBP(node.src, 'r') as bp:
     #     stations = bp.stations
-    from pyasadf import ASDFDataSet
+    from pyasdf import ASDFDataSet
 
     with ASDFDataSet(node.src, mode='r', mpi=False) as ds:
         stations = ds.waveforms.list()
