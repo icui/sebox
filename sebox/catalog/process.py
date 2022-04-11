@@ -73,7 +73,7 @@ def _process(stas, src, dst, mode):
 
     print(dst)
 
-    with ASDFDataSet(src, 'r', True) as ds, SeisBP(dst, 'w', True) as proc_bp:
+    with ASDFDataSet(src, mode='r', mpi=False) as ds, SeisBP(dst, 'w', True) as proc_bp:
         event = src.split("/")[-1][:-3]
         evt = read_events(f'events/{event}')[0]
         origin = evt.preferred_origin()
