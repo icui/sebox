@@ -111,7 +111,7 @@ def convert_bp(node):
     
     # for event in node.ls('events'):
     for event in ['C201509130814A', 'C071303A', 'C200804280006A', 'C201006030432A']:
-        with ASDFDataSet(f'../ns/raw_syn/{event}.h5', mode='r', mpi=False) as ds:
+        with ASDFDataSet(f'../ns/raw_obs/{event}.h5', mode='r', mpi=False) as ds:
             stas = ds.waveforms.list()
 
         node.add_mpi(_convert_bp, node.np, args=(event, 'obs'), mpiarg=stas, group_mpiarg=True)
