@@ -71,8 +71,6 @@ def _process(stas, src, dst, mode):
     from pyasdf import ASDFDataSet
     from obspy import read_events, read_inventory
 
-    print(dst)
-
     with ASDFDataSet(src, mode='r', mpi=False) as ds, SeisBP(dst, 'w', True) as proc_bp:
         event = src.split("/")[-1][:-3]
         evt = read_events(f'events/{event}')[0]
