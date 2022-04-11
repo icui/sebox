@@ -97,9 +97,6 @@ def _process_stream(st, origin, inv, mode):
     # detrend and apply taper after filtering
     _detrend(stream, taper)
 
-    # attach response
-    stream.attach_response(inv)
-
     # period anchors
     cl = proc['corner_left']
     cr = proc['corner_right']
@@ -109,6 +106,7 @@ def _process_stream(st, origin, inv, mode):
 
     # remove instrument response
     if mode == 'obs':
+        stream.attach_response(inv)
         stream.remove_response(output="DISP", zero_mean=False, taper=False,
             water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
     
