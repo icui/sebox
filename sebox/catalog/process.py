@@ -20,6 +20,9 @@ def process_synthetic(node):
     node.concurrent = True
 
     for event in node.ls('events'):
+        if node.has(f'proc_syn/{event}.bp'):
+            continue
+
         node.add(process_event, mode='syn', event=event, name=event,
             src=f'raw_syn/{event}.bp', dst=f'proc_syn/{event}.bp')
 
