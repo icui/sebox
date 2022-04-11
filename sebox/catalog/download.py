@@ -109,11 +109,12 @@ def convert_bp(node):
 
     node.concurrent=True
     
-    for event in node.ls('events'):
-        with ASDFDataSet(f'raw_syn/{event}.h5', mode='r', mpi=False) as ds:
+    # for event in node.ls('events'):
+    for event in ['C201509130814A', 'C071303A', 'C200804280006A', 'C201006030432A']:
+        with ASDFDataSet(f'../ns/raw_syn/{event}.h5', mode='r', mpi=False) as ds:
             stas = ds.waveforms.list()
 
-        node.add_mpi(_convert_bp, node.np, args=(event, 'syn'), mpiarg=stas, group_mpiarg=True)
+        node.add_mpi(_convert_bp, node.np, args=(event, 'obs'), mpiarg=stas, group_mpiarg=True)
 
     # node.add_mpi(_convert_bp, 131, args=('obs',), mpiarg=node.ls('events'))
     # node.add_mpi(_convert_bp, 786, args=('syn',), mpiarg=node.ls('events'))
