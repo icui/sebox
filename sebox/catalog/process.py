@@ -9,7 +9,7 @@ def process_observed(node):
     node.concurrent = True
 
     for event in node.ls('events'):
-        if node.has(f'proc_obs/{event}.bp'):
+        if not node.has(f'bp_obs/{event}.bp'):
             continue
 
         node.add(process_event, mode='obs', event=event, name=event,
