@@ -138,9 +138,10 @@ def _convert_bp(event, mode):
             bp.write(read_events(f'events/{event}'))
 
         invs = root.load(f'inventories/{event}.pickle')
+        stas = h5.waveforms.list()
 
         for sta, inv in invs.items():
-            if tag not in h5.waveforms[sta].get_waveform_tags():
+            if sta not in stas or tag not in h5.waveforms[sta].get_waveform_tags():
                 traces = []
 
                 for src in root.ls(f'downloads/{event}/mseed'):
