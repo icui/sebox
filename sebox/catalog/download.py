@@ -154,14 +154,14 @@ def _convert_bp(event, mode):
                 if len(traces):
                     print('@', sta)
                     bp.write(Stream(traces))
+                    bp.write(inv)
                 
                 else:
                     print('>', event, sta)
             
             else:
                 bp.write(h5.waveforms[sta][tag])
-            
-            bp.write(inv)
+                bp.write(inv)
 
 
 def __convert_bp_(stas, event, mode):
