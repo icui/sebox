@@ -42,13 +42,9 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                 obs_tr = obs_bp.trace(sta, cmp)
                 syn_tr = syn_bp.trace(sta, cmp)
 
-                try:
-                    if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
-                        for tag, data in output.items():
-                            dst_bp.put(f'{sta}.{cmp}:{tag}', data)
-                
-                except:
-                    print('?', sta, cmp)
+                if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
+                    for tag, data in output.items():
+                        dst_bp.put(f'{sta}.{cmp}:{tag}', data)
 
 def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
     from pyflex import Config, WindowSelector
