@@ -95,10 +95,11 @@ def _process(stas, src, dst, mode):
                 # proc_bp.write(inv)
                 # proc_bp.write(stream)
                 stream = ds.waveforms[sta].raw_obs
+                proc_bp.write(stream)
 
-                if proc_stream := _process_stream(stream, origin, inv, mode):
-                    proc_bp.write(inv)
-                    proc_bp.write(proc_stream)
+                # if proc_stream := _process_stream(stream, origin, inv, mode):
+                #     proc_bp.write(inv)
+                #     proc_bp.write(proc_stream)
             
             except:
                 print('?', event, sta)
@@ -118,35 +119,35 @@ def _process_stream(st, origin, inv, mode):
     # resample and align
     stream.interpolate(1/catalog.dt, starttime=origin.time)
         
-    # # detrend and apply taper after filtering
-    # _detrend(stream, taper)
+    # detrend and apply taper after filtering
+    _detrend(stream, taper)
 
-    # # period anchors
-    # cl = proc['corner_left']
-    # cr = proc['corner_right']
-    # pmin = proc['period_min']
-    # pmax = proc['period_max']
-    # pre_filt = [1/pmax*cr*cr, 1/pmax*cr, 1/pmin/cl, 1/pmin/cl/cl]
+    # period anchors
+    cl = proc['corner_left']
+    cr = proc['corner_right']
+    pmin = proc['period_min']
+    pmax = proc['period_max']
+    pre_filt = [1/pmax*cr*cr, 1/pmax*cr, 1/pmin/cl, 1/pmin/cl/cl]
 
-    # # remove instrument response
-    # if mode == 'obs':
-    #     stream.attach_response(inv)
-    #     stream.remove_response(output="DISP", zero_mean=False, taper=False,
-    #         water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
+    # remove instrument response
+    if mode == 'obs':
+        stream.attach_response(inv)
+        stream.remove_response(output="DISP", zero_mean=False, taper=False,
+            water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
     
-    # else:
-    #     sac_filter_stream(stream, pre_filt)
+    else:
+        sac_filter_stream(stream, pre_filt)
 
-    # # detrend and apply taper
-    # _detrend(stream, taper)
+    # detrend and apply taper
+    _detrend(stream, taper)
     
-    # # pad and rotate
-    # nt = int(np.round(catalog.duration * 60 / catalog.dt))
+    # pad and rotate
+    nt = int(np.round(catalog.duration * 60 / catalog.dt))
 
-    # for trace in stream:
-    #     data = np.zeros(nt)
-    #     data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
-    #     trace.data = data
+    for trace in stream:
+        data = np.zeros(nt)
+        data[:min(nt, trace.stats.npts)] = trace[:min(nt, trace.stats.npts)]
+        trace.data = data
 
     stream = rotate_stream(stream, origin.latitude, origin.longitude, inv)
 
