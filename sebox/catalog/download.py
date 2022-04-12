@@ -128,7 +128,7 @@ def _convert_bp(event, mode):
     from nnodes import root
     from pyasdf import ASDFDataSet
     from seisbp import SeisBP
-    from obspy import read_events
+    from obspy import read_events, read, Stream
 
     tag = 'raw_obs' if mode == 'obs' else 'synthetic'
 
@@ -141,10 +141,22 @@ def _convert_bp(event, mode):
 
         for sta, inv in invs.items():
             if tag not in h5.waveforms[sta].get_waveform_tags():
-                print(event, sta)
+                traces = []
+
+                for src in root.ls(f'downloads/{event}/mseed'):
+                    if src.startswith(sta + '.'):
+                        traces.append(read(f'downloads/{event}/mseed/{src}')[0])
+                
+                if len(traces):
+                    bp.write(Stream(traces))
+                
+                else:
+                    print('>', event, sta)
+            
+            else:
+                bp.write(h5.waveforms[sta][tag])
             
             bp.write(inv)
-            bp.write(h5.waveforms[sta][tag])
 
 
 def __convert_bp_(stas, event, mode):
