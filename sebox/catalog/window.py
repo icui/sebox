@@ -14,7 +14,7 @@ def window(node):
 def window_event(node):
     from seisbp import SeisBP
 
-    src = f'{node.event}.h5'
+    src = f'{node.event}.bp'
     node.mkdir(f'blend/{node.event}')
 
     with SeisBP(f'proc_syn/{src}', 'r') as bp:
