@@ -130,9 +130,10 @@ def _process_stream(st, origin, inv, mode):
 
     # remove instrument response
     if mode == 'obs':
-        stream.attach_response(inv)
-        stream.remove_response(output="DISP", zero_mean=False, taper=False,
-            water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
+        pass
+        # stream.attach_response(inv)
+        # stream.remove_response(output="DISP", zero_mean=False, taper=False,
+        #     water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
     
     else:
         sac_filter_stream(stream, pre_filt)
