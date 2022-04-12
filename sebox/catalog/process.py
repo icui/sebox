@@ -9,11 +9,11 @@ def process_observed(node):
     node.concurrent = True
 
     for event in node.ls('events'):
-        if node.has(f'proc_obs2/{event}.bp'):
+        if node.has(f'proc_obs/{event}.bp'):
             continue
         
         node.add(process_event, mode='obs', event=event, name=event,
-            src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs_core/{event}.bp')
+            src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs/{event}.bp')
       
 
 def process_synthetic(node):
@@ -72,37 +72,36 @@ def _process(stas, src, dst, mode):
     from pyasdf import ASDFDataSet
     from obspy import read_events, read_inventory
 
-    # with ASDFDataSet(src, mode='r', mpi=False) as ds, SeisBP(dst, 'w', True) as proc_bp:
-    #     event = src.split("/")[-1][:-3]
-    #     evt = read_events(f'events/{event}')[0]
-    #     origin = evt.preferred_origin()
-    #     invs = root.load(f'../ns/inventories/{event}.pickle')
+    with ASDFDataSet(src, mode='r', mpi=False) as ds, SeisBP(dst, 'w', True) as proc_bp:
+        event = src.split("/")[-1][:-3]
+        evt = read_events(f'events/{event}')[0]
+        origin = evt.preferred_origin()
+        invs = root.load(f'../ns/inventories/{event}.pickle')
 
-    #     if root.mpi.rank == 0:
-    #         proc_bp.write(evt)
+        if root.mpi.rank == 0:
+            proc_bp.write(evt)
 
-    #     for sta in stas:
-    #         if sta not in invs:
-    #             continue
+        for sta in stas:
+            if sta not in invs:
+                continue
             
-    #         print(root.mpi.rank, sta)
-    #         inv = invs[sta]
-    #         # proc_bp.write(raw_bp.stream(sta))
-    #         try:
-    #             # stream = raw_bp.stream(sta)
-    #             # inv = raw_bp.read(sta)
+            print(root.mpi.rank, sta)
+            inv = invs[sta]
+            # proc_bp.write(raw_bp.stream(sta))
+            try:
+                # stream = raw_bp.stream(sta)
+                # inv = raw_bp.read(sta)
 
-    #             # proc_bp.write(inv)
-    #             # proc_bp.write(stream)
-    #             stream = ds.waveforms[sta].raw_obs
-    #             # proc_bp.write(stream)
+                # proc_bp.write(inv)
+                # proc_bp.write(stream)
+                stream = ds.waveforms[sta].raw_obs
 
-    #             if proc_stream := _process_stream(stream, origin, inv, mode):
-    #                 proc_bp.write(inv)
-    #                 proc_bp.write(proc_stream)
+                if proc_stream := _process_stream(stream, origin, inv, mode):
+                    proc_bp.write(inv)
+                    proc_bp.write(proc_stream)
             
-    #         except:
-    #             print('?', event, sta)
+            except:
+                print('?', event, sta)
 
 
 def _process_stream(st, origin, inv, mode):
