@@ -94,11 +94,11 @@ def _process(stas, src, dst, mode):
 
                 # proc_bp.write(inv)
                 # proc_bp.write(stream)
-                stream = ds.waveforms[sta].raw_obs
-                proc_bp.write(stream)
+                # stream = ds.waveforms[sta].raw_obs
+                # proc_bp.write(stream)
 
                 # if proc_stream := _process_stream(stream, origin, inv, mode):
-                #     proc_bp.write(inv)
+                    proc_bp.write(inv)
                 #     proc_bp.write(proc_stream)
             
             except:
