@@ -106,7 +106,7 @@ def convert_h5(arg):
 
 def convert_bp(node):
     events = node.ls('events')
-    node.add_mpi(_convert_bp, len(events), args=('obs',), mpiarg=events)
+    node.add_mpi(_convert_bp, 131, args=('obs',), mpiarg=events)
 
 
 def convert_bp_(node):
@@ -134,9 +134,7 @@ def _convert_bp(event, mode):
 
     with ASDFDataSet(f'../ns/raw_{mode}/{event}.h5', mode='r', mpi=False) as h5, \
         SeisBP(f'bp_{mode}/{event}.bp', 'w') as bp:
-        if root.mpi.rank == 0:
-            bp.write(read_events(f'events/{event}'))
-
+        bp.write(read_events(f'events/{event}'))
         invs = root.load(f'inventories/{event}.pickle')
         stas = h5.waveforms.list()
 
