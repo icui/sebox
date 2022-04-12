@@ -137,7 +137,6 @@ def _convert_bp(event, mode):
         bp.write(read_events(f'events/{event}'))
         invs = root.load(f'inventories/{event}.pickle')
         stas = h5.waveforms.list()
-        nw = 0
 
         for sta, inv in invs.items():
             if sta not in stas or tag not in h5.waveforms[sta].get_waveform_tags():
@@ -154,16 +153,14 @@ def _convert_bp(event, mode):
                 if len(traces):
                     print('@', sta)
                     bp.write(Stream(traces))
-                    bp.write(inv,end_step=nw%20==0)
-                    nw += 1
+                    bp.write(inv)
                 
                 else:
                     print('>', event, sta)
             
             else:
                 bp.write(h5.waveforms[sta][tag])
-                bp.write(inv,end_step=nw%20==0)
-                nw += 1
+                bp.write(inv)
 
 
 def __convert_bp_(stas, event, mode):

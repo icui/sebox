@@ -5,36 +5,65 @@ def process(node):
     node.add(process_synthetic)
 
 
+# def process_observed(node):
+#     node.concurrent = True
+
+#     for event in node.ls('events'):
+#         if not node.has(f'bp_obs/{event}.bp'):
+#             continue
+
+#         node.add(process_event, mode='obs', event=event, name=event,
+#             src=f'bp_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
+
+
+# def process_synthetic(node):
+#     node.concurrent = True
+
+#     for event in node.ls('events'):
+#         if node.has(f'proc_syn/{event}.bp'):
+#             continue
+
+#         node.add(process_event, mode='syn', event=event, name=event,
+#             src=f'raw_syn/{event}.bp', dst=f'proc_syn/{event}.bp')
+
+
 def process_observed(node):
-    node.concurrent = True
+    events = node.ls('events')
+    node.add_mpi(_process, len(events), args=('obs',), mpiarg=events)
 
-    for event in node.ls('events'):
-        if not node.has(f'bp_obs/{event}.bp'):
-            continue
-
-        node.add(process_event, mode='obs', event=event, name=event,
-            src=f'bp_obs/{event}.bp', dst=f'proc_obs/{event}.bp')
 
 
 def process_synthetic(node):
-    node.concurrent = True
-
-    for event in node.ls('events'):
-        if node.has(f'proc_syn/{event}.bp'):
-            continue
-
-        node.add(process_event, mode='syn', event=event, name=event,
-            src=f'raw_syn/{event}.bp', dst=f'proc_syn/{event}.bp')
+    events = node.ls('events')
+    node.add_mpi(_process, len(events), args=('syn',), mpiarg=events)
 
 
-def process_event(node):
+def _process(event, mode):
     from seisbp import SeisBP
 
-    with SeisBP(node.src, 'r') as bp:
-        stations = bp.stations
+    with SeisBP(f'raw_{mode}/{event}.bp', 'r') as bp_r, SeisBP(f'proc_{mode}/{event}.bp', 'w') as bp_w:
+        evt = bp_r.read(bp_r.events[0])
+        origin = evt.preferred_origin()
+        bp_w.write(evt)
+            
+        for sta in bp_r.channels:
+            try:
+                stream = bp_r.stream(sta)
+                inv = bp_r.read(sta)
 
-    node.add_mpi(_process, node.np, args=(node.src, node.dst, node.mode),
-        mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}', name=node.event)
+                if proc_stream := process_stream(stream, origin, inv, mode):
+                    bp_r.write(inv)
+                    bp_r.write(proc_stream)
+            
+            except:
+                print('?', sta)
+
+
+
+
+
+    # node.add_mpi(_process, node.np, args=(node.src, node.dst, node.mode),
+    #     mpiarg=stations, group_mpiarg=True, cwd=f'log_{node.mode}', name=node.event)
 
 
 def _select(stream):
@@ -62,11 +91,9 @@ def _detrend(stream, taper):
         stream.taper(max_percentage=None, max_length=taper*60)
 
 
-def _process(stas, src, dst, mode):
+def _process_(stas, src, dst, mode):
     from nnodes import root
     from seisbp import SeisBP
-
-    print(dst)
 
     with SeisBP(src, 'r', True) as raw_bp, SeisBP(dst, 'w', True) as proc_bp:
         evt = raw_bp.read(raw_bp.events[0])
@@ -76,7 +103,6 @@ def _process(stas, src, dst, mode):
             proc_bp.write(evt)
 
         for sta in stas:
-            # proc_bp.write(raw_bp.stream(sta))
             try:
                 stream = raw_bp.stream(sta)
                 inv = raw_bp.read(sta)
@@ -92,7 +118,7 @@ def _process(stas, src, dst, mode):
                 print('?', sta)
 
 
-def _process_stream(st, origin, inv, mode):
+def process_stream(st, origin, inv, mode):
     import numpy as np
     from sebox.catalog import catalog
     from pytomo3d.signal.process import rotate_stream, sac_filter_stream
