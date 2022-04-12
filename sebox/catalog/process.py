@@ -114,9 +114,6 @@ def _process_stream(st, origin, inv, mode):
 
     proc = catalog.process
     taper = proc.get('taper')
-
-    # resample and align
-    stream.interpolate(1/catalog.dt, starttime=origin.time)
         
     # detrend and apply taper after filtering
     _detrend(stream, taper)
@@ -136,6 +133,9 @@ def _process_stream(st, origin, inv, mode):
     
     else:
         sac_filter_stream(stream, pre_filt)
+
+    # resample and align
+    stream.interpolate(1/catalog.dt, starttime=origin.time)
 
     # detrend and apply taper
     _detrend(stream, taper)
