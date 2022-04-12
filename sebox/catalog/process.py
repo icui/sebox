@@ -39,6 +39,8 @@ def process_synthetic(node):
 
 
 def _process(event, mode):
+    print(event)
+    
     from seisbp import SeisBP
 
     with SeisBP(f'raw_{mode}/{event}.bp', 'r') as bp_r, SeisBP(f'proc_{mode}/{event}.bp', 'w') as bp_w:
