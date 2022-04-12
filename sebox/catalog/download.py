@@ -141,7 +141,7 @@ def _convert_bp(event, mode):
 
         for sta, inv in invs.items():
             bp.write(inv)
-            bp.write(h5.waveforms[sta][mode])
+            bp.write(h5.waveforms[sta][tag])
 
 
 def __convert_bp_(stas, event, mode):
