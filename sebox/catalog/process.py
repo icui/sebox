@@ -29,7 +29,7 @@ def process(node):
 
 def process_observed(node):
     events = node.ls('events')
-    node.add_mpi(_process, len(events[:2]), args=('obs',), mpiarg=events[:2])
+    node.add_mpi(_process, len(events), args=('obs',), mpiarg=events)
 
 
 
