@@ -48,7 +48,7 @@ def _process(event, mode):
         bp_w.write(evt)
             
         for sta in bp_r.channels:
-            try:
+            # try:
                 stream = bp_r.stream(sta)
                 inv = bp_r.read(sta)
 
@@ -57,8 +57,8 @@ def _process(event, mode):
                     bp_r.write(proc_stream)
                     print(event, sta)
             
-            except:
-                print(event, sta, file=stderr)
+            # except:
+            #     print(event, sta, file=stderr)
 
 
 
