@@ -140,6 +140,9 @@ def _convert_bp(event, mode):
         invs = root.load(f'inventories/{event}.pickle')
 
         for sta, inv in invs.items():
+            if tag not in h5.waveforms[sta].get_waveform_tags():
+                print(event, sta)
+            
             bp.write(inv)
             bp.write(h5.waveforms[sta][tag])
 
