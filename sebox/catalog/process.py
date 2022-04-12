@@ -13,7 +13,7 @@ def process_observed(node):
             continue
         
         node.add(process_event, mode='obs', event=event, name=event,
-            src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs2/{event}.bp')
+            src=f'../ns/raw_obs/{event}.h5', dst=f'proc_obs_core/{event}.bp')
       
 
 def process_synthetic(node):
