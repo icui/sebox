@@ -53,8 +53,8 @@ def _process(event, mode):
                 inv = bp_r.read(sta)
 
                 if proc_stream := process_stream(stream, origin, inv, mode):
-                    bp_r.write(inv)
-                    bp_r.write(proc_stream)
+                    bp_w.write(inv)
+                    bp_w.write(proc_stream)
                     print(event, sta)
             
             # except:
