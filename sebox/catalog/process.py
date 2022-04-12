@@ -39,9 +39,8 @@ def process_synthetic(node):
 
 
 def _process(event, mode):
-    print(event)
-    
     from seisbp import SeisBP
+    from sys import stderr
 
     with SeisBP(f'raw_{mode}/{event}.bp', 'r') as bp_r, SeisBP(f'proc_{mode}/{event}.bp', 'w') as bp_w:
         evt = bp_r.read(bp_r.events[0])
@@ -56,9 +55,10 @@ def _process(event, mode):
                 if proc_stream := process_stream(stream, origin, inv, mode):
                     bp_r.write(inv)
                     bp_r.write(proc_stream)
+                    print(event, sta)
             
             except:
-                print('?', sta)
+                print(event, sta, file=stderr)
 
 
 
