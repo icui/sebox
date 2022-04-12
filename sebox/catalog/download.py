@@ -145,7 +145,11 @@ def _convert_bp(event, mode):
 
                 for src in root.ls(f'downloads/{event}/mseed'):
                     if src.startswith(sta + '.'):
-                        traces.append(read(f'downloads/{event}/mseed/{src}')[0])
+                        try:
+                            traces.append(read(f'downloads/{event}/mseed/{src}')[0])
+                        
+                        except:
+                            pass
                 
                 if len(traces):
                     print('@', sta)
