@@ -54,9 +54,9 @@ def window_event(node):
 def _blend(stas, obs, syn, dst) -> tp.Any:
     from seisbp import SeisBP
     from nnodes import root
-    from logging import getLogger
+    import logging
 
-    getLogger().disabled = True
+    logging.disable()
 
     with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp, \
         SeisBP(dst, 'w', True) as dst_bp:
