@@ -65,8 +65,12 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
         for sta in stas:
             inv = syn_bp.read(sta)
             for cmp in ('R', 'T', 'Z'):
-                obs_tr = obs_bp.trace(sta, cmp)
-                syn_tr = syn_bp.trace(sta, cmp)
+                try:
+                    obs_tr = obs_bp.trace(sta, cmp)
+                    syn_tr = syn_bp.trace(sta, cmp)
+                
+                except:
+                    continue
 
                 if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
                     for tag, data in output.items():
