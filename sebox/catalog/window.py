@@ -1,6 +1,31 @@
 import typing as tp
 
 
+def window2(node):
+    events = node.ls('events')
+    node.add_mpi(_blend2, len(events), mpiarg=events)
+
+
+def _blend2(event) -> tp.Any:
+    from seisbp import SeisBP
+
+    with SeisBP(f'proc_obs/{event}.bp', 'r') as bp_obs, SeisBP(f'proc_syn/{event}.bp', 'r') as bp_syn, \
+        SeisBP(f'blend_obs/{event}.bp', 'w') as bp_w:
+        evt = bp_syn.read(bp_syn.events[0])
+
+        for sta in bp_obs.stations:
+            if sta in bp_syn.stations:
+                inv = bp_syn.read(sta)
+
+                for cmp in ('R', 'T', 'Z'):
+                    obs_tr = bp_obs.trace(sta, cmp)
+                    syn_tr = bp_syn.trace(sta, cmp)
+
+                    if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, bp_syn.events[0], sta):
+                        for tag, data in output.items():
+                            bp_w.put(f'{sta}.{cmp}:{tag}', data)
+
+
 def window(node):
     node.concurrent = True
     node.mkdir('blend_obs')
@@ -14,7 +39,7 @@ def window_event(node):
     from seisbp import SeisBP
 
     src = f'{node.event}.bp'
-    node.mkdir(f'blend/{node.event}')
+    # node.mkdir(f'blend/{node.event}')
 
     with SeisBP(f'proc_syn/{src}', 'r') as bp:
         stations = bp.stations
