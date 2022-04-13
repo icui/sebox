@@ -21,6 +21,8 @@ def _blend2(event) -> tp.Any:
                     obs_tr = bp_obs.trace(sta, cmp)
                     syn_tr = bp_syn.trace(sta, cmp)
 
+                    print('>', sta)
+
                     if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, bp_syn.events[0], sta):
                         for tag, data in output.items():
                             bp_w.put(f'{sta}.{cmp}:{tag}', data)
