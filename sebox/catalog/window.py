@@ -55,8 +55,10 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
     from seisbp import SeisBP
     from nnodes import root
     import logging
+    import warnings
 
     logging.disable()
+    warnings.filterwarnings("ignore")
 
     with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp:
         # SeisBP(dst, 'w', True) as dst_bp:
@@ -79,13 +81,67 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                 except:
                     continue
 
-                if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
+                if output := _window(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
                     root.dump(output, f'{dst}/{sta}.pickle')
                     # print(sta)
                     # for tag, data in output.items():
                     #     dst_bp.put(f'{sta}.{cmp}:{tag}', data)
     
     print(root.mpi.rank, 'done')
+
+
+def _window(obs_tr, syn_tr, evt, inv, cmp, event, station):
+    from pyflex import Config, WindowSelector
+    from nnodes import root
+    from scipy.fft import fft
+    from pytomo3d.signal.process import sac_filter_trace
+    import numpy as np
+
+    from .catalog import catalog
+
+    savefig = catalog.window.get('savefig')
+    nbands = catalog.nbands
+
+    df = 1 / catalog.duration_ft / 60
+    imin = int(np.ceil(1 / catalog.period_max / df))
+    imax = int(np.floor(1 / catalog.period_min / df)) + 1
+    fincr = (imax - imin) // nbands
+    imax = imin + fincr * nbands
+
+    cl = catalog.process['corner_left']
+    cr = catalog.process['corner_right']
+
+    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
+    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
+
+    output = [None] * nbands
+
+    for iband in range(nbands):
+        i1 = imin + iband * fincr
+        i2 = i1 + fincr
+
+        obs = obs_tr.copy()
+        syn = syn_tr.copy()
+
+        fmin = i1 * df
+        fmax = (i2 - 1) * df
+        tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
+        pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
+        
+        sac_filter_trace(obs, pre_filt)
+        sac_filter_trace(syn, pre_filt)
+    
+        cfg = catalog.window['flexwin']
+        config = Config(min_period=1/fmax, max_period=1/fmin, **{**cfg['default'], **cfg[cmp]})
+        ws = WindowSelector(obs, syn, config, evt, inv)
+
+        try:
+            output[iband] = ws.select_windows()
+        
+        except Exception:
+            output[iband] = []
+    
+    return output
 
 
 def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):

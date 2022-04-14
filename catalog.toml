@@ -81,7 +81,7 @@ c_4a = 3.0
 c_4b = 10.0
 
 # window merge strategy
-resolution_strategy = "merge"
+# resolution_strategy = "merge"
 
 # #####################################################
 # component specific settings
