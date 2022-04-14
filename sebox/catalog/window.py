@@ -35,7 +35,6 @@ def window(node):
         # if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp') and not node.has(f'blend_obs/{event}.bp'):
         if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp'):
             node.add(window_event, name=event, event=event)
-            break
 
 
 def window_event(node):
