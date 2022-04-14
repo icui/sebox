@@ -35,6 +35,7 @@ def window(node):
         # if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp') and not node.has(f'blend_obs/{event}.bp'):
         if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp'):
             node.add(window_event, name=event, event=event)
+            break
 
 
 def window_event(node):
@@ -71,6 +72,8 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
             if root.has(f'{dst}/{sta}.pickle'):
                 continue
 
+            output = {}
+
             inv = syn_bp.read(sta)
 
             for cmp in ('R', 'T', 'Z'):
@@ -79,13 +82,11 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     syn_tr = syn_bp.trace(sta, cmp)
                 
                 except:
+                    output[cmp] = [[], [], []]
                     continue
 
-                if output := _window(obs_tr, syn_tr, evt, inv, cmp):
-                    root.dump(output, f'{dst}/{sta}.pickle')
-                    # print(sta)
-                    # for tag, data in output.items():
-                    #     dst_bp.put(f'{sta}.{cmp}:{tag}', data)
+                else:
+                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp)
     
     print(root.mpi.rank, 'done')
 
