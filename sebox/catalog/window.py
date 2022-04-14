@@ -67,7 +67,6 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
 
         for sta in stas:
             if root.has(f'{dst}/{sta}.pickle'):
-                print('skipped', sta)
                 continue
 
             inv = syn_bp.read(sta)
