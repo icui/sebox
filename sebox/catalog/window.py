@@ -79,6 +79,9 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     print(sta)
                     for tag, data in output.items():
                         dst_bp.put(f'{sta}.{cmp}:{tag}', data)
+    
+    print(root.mpi.rank, 'done')
+
 
 def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
     from pyflex import Config, WindowSelector
