@@ -81,7 +81,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                 except:
                     continue
 
-                if output := _window(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
+                if output := _window(obs_tr, syn_tr, evt, inv, cmp):
                     root.dump(output, f'{dst}/{sta}.pickle')
                     # print(sta)
                     # for tag, data in output.items():
@@ -90,16 +90,13 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
     print(root.mpi.rank, 'done')
 
 
-def _window(obs_tr, syn_tr, evt, inv, cmp, event, station):
+def _window(obs_tr, syn_tr, evt, inv, cmp):
     from pyflex import Config, WindowSelector
-    from nnodes import root
-    from scipy.fft import fft
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
 
     from .catalog import catalog
 
-    savefig = catalog.window.get('savefig')
     nbands = catalog.nbands
 
     df = 1 / catalog.duration_ft / 60
@@ -110,9 +107,6 @@ def _window(obs_tr, syn_tr, evt, inv, cmp, event, station):
 
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
-
-    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
-    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
 
     output = [None] * nbands
 
@@ -125,7 +119,6 @@ def _window(obs_tr, syn_tr, evt, inv, cmp, event, station):
 
         fmin = i1 * df
         fmax = (i2 - 1) * df
-        tag = f'{obs.stats.channel}_{int(1/fmax)}-{int(1/fmin)}'
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
         sac_filter_trace(obs, pre_filt)
