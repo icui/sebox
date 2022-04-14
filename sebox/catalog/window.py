@@ -47,7 +47,7 @@ def window_event(node):
         stations = bp.stations
     
     node.add_mpi(_blend, node.np, name=f'blend_{node.event}',
-        args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{src}'),
+        args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'),
         mpiarg=stations, group_mpiarg=True, cwd=f'log_blend')
 
 
@@ -58,15 +58,19 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
 
     logging.disable()
 
-    with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp, \
-        SeisBP(dst, 'w', True) as dst_bp:
+    with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp:
+        # SeisBP(dst, 'w', True) as dst_bp:
         evt = syn_bp.read(syn_bp.events[0])
 
-        if root.mpi.rank == 0:
-            dst_bp.write(evt)
+        # if root.mpi.rank == 0:
+        #     dst_bp.write(evt)
 
         for sta in stas:
+            if root.has(f'{dst}/{sta}.pickle'):
+                continue
+
             inv = syn_bp.read(sta)
+            
             for cmp in ('R', 'T', 'Z'):
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
@@ -76,9 +80,10 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     continue
 
                 if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, syn_bp.events[0], sta):
-                    print(sta)
-                    for tag, data in output.items():
-                        dst_bp.put(f'{sta}.{cmp}:{tag}', data)
+                    root.dump(output, f'{dst}/{sta}.pickle')
+                    # print(sta)
+                    # for tag, data in output.items():
+                    #     dst_bp.put(f'{sta}.{cmp}:{tag}', data)
     
     print(root.mpi.rank, 'done')
 
