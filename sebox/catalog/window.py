@@ -32,7 +32,8 @@ def window(node):
     node.mkdir('blend_obs')
 
     for event in node.ls('events'):
-        if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp') and not node.has(f'blend_obs/{event}.bp'):
+        # if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp') and not node.has(f'blend_obs/{event}.bp'):
+        if node.has(f'proc_obs/{event}.bp') and node.has(f'proc_syn/{event}.bp'):
             node.add(window_event, name=event, event=event)
             break
 
