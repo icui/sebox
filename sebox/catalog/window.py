@@ -67,10 +67,11 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
 
         for sta in stas:
             if root.has(f'{dst}/{sta}.pickle'):
+                print('skipped', sta)
                 continue
 
             inv = syn_bp.read(sta)
-            
+
             for cmp in ('R', 'T', 'Z'):
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
