@@ -82,10 +82,11 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                 
                 except:
                     output[cmp] = [[], [], []]
-                    continue
 
                 else:
                     output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp)
+            
+            root.dump(output, f'{dst}/{sta}.pickle')
     
     print(root.mpi.rank, 'done')
 
