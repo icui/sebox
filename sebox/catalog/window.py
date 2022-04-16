@@ -46,9 +46,27 @@ def window_event(node):
     with SeisBP(f'proc_syn/{src}', 'r') as bp:
         stations = bp.stations
     
-    node.add_mpi(_blend, node.np, name=f'blend_{node.event}',
-        args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'),
-        mpiarg=stations, group_mpiarg=True, cwd=f'log_blend')
+    if node.window_mp:
+        node.add_mpi(_blend3, 1, node.np, name=f'blend_{node.event}',
+            args=(node.np, stations, f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'), cwd=f'log_blend')
+    
+    else:
+        node.add_mpi(_blend, node.np, name=f'blend_{node.event}',
+            args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'),
+            mpiarg=stations, group_mpiarg=True, cwd=f'log_blend')
+
+
+def _blend3(np, stas, obs, syn, dst):
+    from multiprocessing import Pool
+    from functools import partial
+    from nnodes.mpiexec import splitargs
+
+    with Pool(processes=np) as pool:
+        pool.map(partial(_blendx, obs, syn, dst), splitargs(stas, np))
+
+
+def _blendx(obs, syn, dst, stas):
+    _blend(stas, obs, syn, dst)
 
 
 def _blend(stas, obs, syn, dst) -> tp.Any:
