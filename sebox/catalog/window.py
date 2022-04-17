@@ -8,23 +8,50 @@ def window2(node):
 
 def _blend2(event) -> tp.Any:
     from seisbp import SeisBP
+    from nnodes import root
+    import logging
+    import warnings
 
-    with SeisBP(f'proc_obs/{event}.bp', 'r') as bp_obs, SeisBP(f'proc_syn/{event}.bp', 'r') as bp_syn, \
-        SeisBP(f'blend_obs/{event}.bp', 'w') as bp_w:
-        evt = bp_syn.read(bp_syn.events[0])
+    logging.disable()
+    warnings.filterwarnings("ignore")
+    dst = f'blend_obs/{event}'
 
-        for sta in bp_obs.stations:
-            if sta in bp_syn.stations:
-                inv = bp_syn.read(sta)
+    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r') as syn_bp:
+        evt = syn_bp.read(syn_bp.events[0])
+
+        for sta in obs_bp.stations:
+            if sta in syn_bp.stations:
+                if root.has(f'{dst}/{sta}.pickle'):
+                    continue
+
+                output = {}
+
+                inv = syn_bp.read(sta)
 
                 for cmp in ('R', 'T', 'Z'):
-                    obs_tr = bp_obs.trace(sta, cmp)
-                    syn_tr = bp_syn.trace(sta, cmp)
+                    try:
+                        obs_tr = obs_bp.trace(sta, cmp)
+                        syn_tr = syn_bp.trace(sta, cmp)
+                    
+                    except:
+                        output[cmp] = [[], [], []]
 
-                    if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, bp_syn.events[0], sta):
-                        for tag, data in output.items():
-                            bp_w.put(f'{sta}.{cmp}:{tag}', data)
-                            print(event, sta)
+                    else:
+                        output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp)
+                
+                root.dump(output, f'{dst}/{sta}.pickle')
+
+
+                # inv = bp_syn.read(sta)
+
+                # for cmp in ('R', 'T', 'Z'):
+                #     obs_tr = bp_obs.trace(sta, cmp)
+                #     syn_tr = bp_syn.trace(sta, cmp)
+
+                #     if output := _blend_trace(obs_tr, syn_tr, evt, inv, cmp, bp_syn.events[0], sta):
+                #         for tag, data in output.items():
+                #             bp_w.put(f'{sta}.{cmp}:{tag}', data)
+                #             print(event, sta)
 
 
 def window(node):
@@ -105,6 +132,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp)
             
             root.dump(output, f'{dst}/{sta}.pickle')
+            print(f'{dst}/{sta}.pickle')
     
     print(root.mpi.rank, 'done')
 
@@ -127,7 +155,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    output = [None] * nbands
+    output = [[]] * nbands
 
     for iband in range(nbands):
         i1 = imin + iband * fincr
@@ -151,7 +179,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp):
             output[iband] = ws.select_windows()
         
         except Exception:
-            output[iband] = []
+            pass
     
     return output
 
