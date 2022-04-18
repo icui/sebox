@@ -2,7 +2,7 @@ import typing as tp
 
 
 def window2(node):
-    events = node.ls('events')[:2]
+    events = node.ls('events')
     node.add_mpi(_blend2, len(events), mpiarg=events)
 
 
