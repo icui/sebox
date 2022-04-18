@@ -40,6 +40,7 @@ def _blend2(event) -> tp.Any:
                         output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp)
                 
                 root.dump(output, f'{dst}/{sta}.pickle')
+                print(f'{dst}/{sta}.pickle')
 
 
                 # inv = bp_syn.read(sta)
