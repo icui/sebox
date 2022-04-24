@@ -69,11 +69,17 @@ def window3(node):
     from seisbp import SeisBP
 
     for e in node.ls('blend_obs'):
+        if node.has(f'done/{e}'):
+            continue
+
         with SeisBP(f'proc_syn/{e}.bp', 'r') as bp:
             ratio = len(node.ls(f'blend_obs/{e}')) / len(bp.stations)
 
             if ratio != 1:
                 node.add(window_event, name=e, event=e)
+            
+            else:
+                node.write(str(len(bp.stations)), f'done/{e}')
 
 
 def window_event(node):
