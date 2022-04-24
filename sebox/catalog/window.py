@@ -64,6 +64,17 @@ def window(node):
             node.add(window_event, name=event, event=event)
 
 
+def window3(node):
+    from seisbp import SeisBP
+
+    for e in node.ls('blend_obs'):
+        with SeisBP(f'proc_syn/{e}.bp', 'r') as bp:
+            ratio = len(node.ls(f'blend_obs/{e}')) / len(bp.stations)
+
+            if ratio != 1:
+                node.add(window_event, name=e, event=e)
+
+
 def window_event(node):
     from seisbp import SeisBP
 
@@ -73,14 +84,9 @@ def window_event(node):
     with SeisBP(f'proc_syn/{src}', 'r') as bp:
         stations = bp.stations
     
-    if node.window_mp:
-        node.add_mpi(_blend3, 1, node.np, name=f'blend_{node.event}',
-            args=(node.np, stations, f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'), cwd=f'log_blend')
-    
-    else:
-        node.add_mpi(_blend, node.np, name=f'blend_{node.event}',
-            args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'),
-            mpiarg=stations, group_mpiarg=True, cwd=f'log_blend')
+    node.add_mpi(_blend, node.np, name=f'blend_{node.event}',
+        args=(f'proc_obs/{src}', f'proc_syn/{src}', f'blend_obs/{node.event}'),
+        mpiarg=stations, group_mpiarg=True, cwd=f'log_blend')
 
 
 def _blend3(np, stas, obs, syn, dst):
