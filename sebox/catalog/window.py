@@ -68,6 +68,8 @@ def window(node):
 def window3(node):
     from seisbp import SeisBP
 
+    node.concurrent = True
+
     for e in node.ls('blend_obs'):
         if node.has(f'done/{e}'):
             continue
