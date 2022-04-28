@@ -178,12 +178,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    try:
-        fobs = tp.cast(np.ndarray, fft(obs_tr.data))
-        fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
-    
-    except:
-        return
+    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
+    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
 
     output = {
         'syn': np.full(imax - imin, np.nan, dtype=complex),
@@ -206,8 +202,12 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
         fmax = (i2 - 1) * df
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
         
-        sac_filter_trace(obs, pre_filt)
-        sac_filter_trace(syn, pre_filt)
+        try:
+            sac_filter_trace(obs, pre_filt)
+            sac_filter_trace(syn, pre_filt)
+        
+        except:
+            return
 
         diff = syn.data - obs.data
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
