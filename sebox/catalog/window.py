@@ -218,7 +218,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
             # sac_filter_trace(syn, pre_filt)
         
         except:
-            print('?', syn.data, obs.data)
+            # print('?', syn.data, obs.data)
             return
 
         diff = syn.data - obs.data
