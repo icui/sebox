@@ -213,6 +213,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         try:
             obs.filter('bandpass', freqmin=fmin, freqmax=fmax)
             syn.filter('bandpass', freqmin=fmin, freqmax=fmax)
+            print(obs.stats.delta, syn.stats.delta)
             # sac_filter_trace(obs, pre_filt)
             # sac_filter_trace(syn, pre_filt)
         
