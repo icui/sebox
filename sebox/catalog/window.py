@@ -85,7 +85,7 @@ def window3(node):
 
 
 def ft(node):
-    events = node.ls('events')[:42]
+    events = node.ls('events')[:2]
     node.add_mpi(_ft, len(events), mpiarg=events)
 
 
@@ -110,7 +110,7 @@ def _ft(event):
         ASDFDataSet(f'ft_obs/{event}.h5', mode='w', mpi=False) as obs_h5, ASDFDataSet(f'ft_syn/{event}.h5', mode='w', mpi=False) as syn_h5, \
         ASDFDataSet(f'ft_win/{event}.h5', mode='w', mpi=False) as win_h5:
         for sta in syn_bp.stations:
-            if not root.has(pkl := f'blend_obs/{sta}.pickle'):
+            if not root.has(pkl := f'blend_obs/{event}/{sta}.pickle'):
                 continue
             
             wins_rtz = root.load(pkl)
