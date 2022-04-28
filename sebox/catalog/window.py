@@ -167,7 +167,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
     from .catalog import catalog
 
     nbands = catalog.nbands
-
+    print(obs_tr.stats.npts, obs_tr.stats.delta)
     df = 1 / catalog.duration_ft / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
@@ -179,7 +179,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
 
     fobs = tp.cast(np.ndarray, fft(obs_tr.data))
     fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
-    print(fobs, fsyn)
 
     output = {
         'syn': np.full(imax - imin, np.nan, dtype=complex),
