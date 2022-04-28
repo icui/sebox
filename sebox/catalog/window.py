@@ -117,7 +117,7 @@ def _ft(event):
                 wins_rtz = root.load(pkl)
             
             except:
-                print(event, sta)
+                # print(event, sta)
                 continue
 
             if not any(len(wins) for wins in wins_rtz):
@@ -134,9 +134,11 @@ def _ft(event):
                     pass
                 
                 else:
-                    if syn_tr.stats.delta < 0.1:
-                        print(event, sta, cmp)
-                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    try:
+                        output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    
+                    except:
+                        print(event,sta,cmp)
             
             if len(output):
                 measurements[sta] = {}
@@ -203,7 +205,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         obs = obs_tr.copy()
         syn = syn_tr.copy()
         
-        if sum(win.right - win.left + 1 for win in wins) / len(syn.data) > catalog.window['threshold_duration']:
+        if sum(win.right - win.left + 1 for win in wins) / len(syn.data) < catalog.window['threshold_duration']:
             continue
 
         fmin = i1 * df
