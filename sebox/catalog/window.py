@@ -134,13 +134,14 @@ def _ft(event):
                     pass
                 
                 else:
-                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    if (m := _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)) is not None:
+                        output[cmp] = m
             
             if len(output):
                 measurements[sta] = {}
 
                 for cmp in ('R', 'T', 'Z'):
-                    if cmp in output and output[cmp] is not None:
+                    if cmp in output:
                         measurements[sta][cmp] = {}
                         ft_obs = output[cmp]['obs']
                         ft_syn = output[cmp]['syn']
@@ -202,6 +203,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         syn = syn_tr.copy()
         
         if sum(win.right - win.left + 1 for win in wins) / len(syn.data) < catalog.window['threshold_duration']:
+            print(sum(win.right - win.left + 1 for win in wins) / len(syn.data))
             continue
 
         fmin = i1 * df
