@@ -224,6 +224,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
 
+        if syn_sum == 0 or obs_sum == 0 or diff_sum == 0:
+            return
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
