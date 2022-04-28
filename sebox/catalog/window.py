@@ -85,7 +85,7 @@ def window3(node):
 
 
 def ft(node):
-    events = node.ls('events')[:2]
+    events = node.ls('events')[:42]
     node.add_mpi(_ft, len(events), mpiarg=events)
 
 
@@ -118,8 +118,6 @@ def _ft(event):
 
             if not any(len(wins) for wins in wins_rtz):
                 continue
-
-            print(sta)
             
             output = {}
 
