@@ -217,7 +217,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
         diff = syn.data - obs.data
         
-        if np.count_nonzero(np.isnan(diff)):
+        if np.count_nonzero(np.isnan(diff)) or max(syn.data) > 1 or max(obs.data) > 1:
             return
         
         print(cmp, max(diff))
