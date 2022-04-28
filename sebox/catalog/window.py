@@ -169,7 +169,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
     from .catalog import catalog
 
     nbands = catalog.nbands
-    df = 1 / obs_tr.stats.npts / obs_tr.stats.delta / 60
+    df = 1 / obs_tr.stats.npts / obs_tr.stats.delta
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
