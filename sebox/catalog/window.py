@@ -134,7 +134,14 @@ def _ft(event):
                     pass
                 
                 else:
-                    if (m := _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)) is not None:
+                    try:
+                        m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    
+                    except:
+                        print(event, sta, cmp, obs_tr.data)
+                        continue
+
+                    if m is not None:
                         output[cmp] = m
             
             if len(output):
