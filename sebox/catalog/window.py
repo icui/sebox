@@ -84,6 +84,172 @@ def window3(node):
                 node.write(str(len(bp.stations)), f'done/{e}')
 
 
+def ft(node):
+    events = node.ls('events')[:2]
+    node.add_mpi(_ft, len(events), mpiarg=events)
+
+
+def _ft(event):
+    from pyasdf import ASDFDataSet
+    from seisbp import SeisBP
+    from nnodes import root
+    from sebox.catalog import catalog
+    import numpy as np
+
+    nbands = catalog.nbands
+
+    df = 1 / catalog.duration_ft / 60
+    imin = int(np.ceil(1 / catalog.period_max / df))
+    imax = int(np.floor(1 / catalog.period_min / df)) + 1
+    fincr = (imax - imin) // nbands
+    nf = fincr * nbands
+
+    measurements = {}
+
+    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r', True) as syn_bp, \
+        ASDFDataSet(f'ft_obs/{event}.h5') as obs_h5, ASDFDataSet(f'ft_syn/{event}.h5') as syn_h5, \
+        ASDFDataSet(f'ft_win/{event}.h5') as win_h5:
+        for sta in syn_bp.stations:
+            if not root.has(pkl := f'blend_obs/{sta}.pickle'):
+                continue
+            
+            wins_rtz = root.load(pkl)
+
+            if not any(len(wins) for wins in wins_rtz):
+                continue
+
+            print(sta)
+            
+            output = {}
+
+            for cmp in ('R', 'T', 'Z'):
+                try:
+                    obs_tr = obs_bp.trace(sta, cmp)
+                    syn_tr = syn_bp.trace(sta, cmp)
+                
+                except:
+                    pass
+
+                else:
+                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[sta])
+            
+            if len(output):
+                measurements[sta] = {}
+
+                for cmp in ('R', 'T', 'Z'):
+                    if cmp in output:
+                        measurements[sta][cmp] = {}
+                        ft_obs = output[cmp]['obs']
+                        ft_syn = output[cmp]['syn']
+                        ft_win = output[cmp]['win']
+                        
+                        measurements[sta]['obs'] = output[cmp]['obs_bands']
+                        measurements[sta]['syn'] = output[cmp]['syn_bands']
+                        measurements[sta]['win'] = output[cmp]['win_bands']
+                    
+                    else:
+                        ft_obs = np.zeros(nf, dtype=complex)
+                        ft_syn = np.zeros(nf, dtype=complex)
+                        ft_win = np.zeros(nf, dtype=complex)
+                    
+                    obs_h5.add_auxiliary_data(ft_obs, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
+                    syn_h5.add_auxiliary_data(ft_syn, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
+                    win_h5.add_auxiliary_data(ft_win, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
+        
+        root.dump(measurements, f'bands/{event}.npy')
+
+
+def _ft_trace(obs_tr, syn_tr, wins_all):
+    from scipy.fft import fft
+    from pytomo3d.signal.process import sac_filter_trace
+    import numpy as np
+
+    from .catalog import catalog
+
+    nbands = catalog.nbands
+
+    df = 1 / catalog.duration_ft / 60
+    imin = int(np.ceil(1 / catalog.period_max / df))
+    imax = int(np.floor(1 / catalog.period_min / df)) + 1
+    fincr = (imax - imin) // nbands
+    imax = imin + fincr * nbands
+
+    cl = catalog.process['corner_left']
+    cr = catalog.process['corner_right']
+
+    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
+    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
+
+    output = {
+        'syn': np.full(imax - imin, np.nan, dtype=complex),
+        'syn_bands': np.zeros(nbands, dtype=int),
+        'obs': np.full(imax - imin, np.nan, dtype=complex),
+        'obs_bands': np.zeros(nbands, dtype=int),
+        'win': np.full(imax - imin, np.nan, dtype=complex),
+        'win_bands': np.zeros(nbands, dtype=int)
+    }
+
+    for iband in range(nbands):
+        wins = wins_all[iband]
+        i1 = imin + iband * fincr
+        i2 = i1 + fincr
+
+        obs = obs_tr.copy()
+        syn = syn_tr.copy()
+
+        fmin = i1 * df
+        fmax = (i2 - 1) * df
+        pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
+        
+        sac_filter_trace(obs, pre_filt)
+        sac_filter_trace(syn, pre_filt)
+
+        diff = syn.data - obs.data
+        ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
+        ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
+        ratio_diff = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
+
+        has_full = ratio_diff > catalog.window['threshold_diff']
+        has_blended = ratio_syn > catalog.window['threshold_syn'] and ratio_obs > catalog.window['threshold_obs']
+
+        if has_full or has_blended:
+            output['syn'][i1-imin: i2-imin] = fsyn[i1: i2]
+            output['syn_bands'][iband] = 1
+        
+        if has_full:
+            output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
+            output['obs_bands'][iband] = 1
+
+        if has_blended:
+            nt = int(catalog.period_max / catalog.dt / 2)
+            taper = np.hanning(nt * 2)
+
+            d1 = obs.data
+            d2 = syn.data
+
+            for i, win in enumerate(wins):
+                fl = 0 if i == 0 else wins[i-1].right + nt + 1
+                fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+
+                if win.left - fl >= nt:
+                    l = win.left - nt
+                    r = win.left
+                    d1[fl: l] = d2[fl: l]
+                    d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
+                
+                if fr - win.right >= nt:
+                    l = win.right + 1
+                    r = win.right + nt + 1
+                    d1[r: fr + 1] = d2[r: fr + 1]
+                    d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
+            
+            output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
+            output['win_bands'][iband] = 1
+
+    if any(output['syn_bands']):
+        return output
+
+
 def window_event(node):
     from seisbp import SeisBP
 
