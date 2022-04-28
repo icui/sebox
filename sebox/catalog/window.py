@@ -212,15 +212,13 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
             sac_filter_trace(syn, pre_filt)
         
         except:
-            print('?', pre_filt)
+            print('?', syn.data, obs.data)
             return
 
         diff = syn.data - obs.data
         
         if np.count_nonzero(np.isnan(diff)) or max(syn.data) > 1 or max(obs.data) > 1:
             return
-        
-        print(cmp, max(diff))
 
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
