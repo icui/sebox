@@ -137,7 +137,7 @@ def _ft(event):
                 measurements[sta] = {}
 
                 for cmp in ('R', 'T', 'Z'):
-                    if cmp in output:
+                    if cmp in output and output[cmp] is not None:
                         measurements[sta][cmp] = {}
                         ft_obs = output[cmp]['obs']
                         ft_syn = output[cmp]['syn']
