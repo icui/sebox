@@ -107,8 +107,8 @@ def _ft(event):
     measurements = {}
 
     with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r', True) as syn_bp, \
-        ASDFDataSet(f'ft_obs/{event}.h5') as obs_h5, ASDFDataSet(f'ft_syn/{event}.h5') as syn_h5, \
-        ASDFDataSet(f'ft_win/{event}.h5') as win_h5:
+        ASDFDataSet(f'ft_obs/{event}.h5', mode='w', mpi=False) as obs_h5, ASDFDataSet(f'ft_syn/{event}.h5', mode='w', mpi=False) as syn_h5, \
+        ASDFDataSet(f'ft_win/{event}.h5', mode='w', mpi=False) as win_h5:
         for sta in syn_bp.stations:
             if not root.has(pkl := f'blend_obs/{sta}.pickle'):
                 continue
@@ -142,7 +142,7 @@ def _ft(event):
                         ft_obs = output[cmp]['obs']
                         ft_syn = output[cmp]['syn']
                         ft_win = output[cmp]['win']
-                        
+
                         measurements[sta]['obs'] = output[cmp]['obs_bands']
                         measurements[sta]['syn'] = output[cmp]['syn_bands']
                         measurements[sta]['win'] = output[cmp]['win_bands']
