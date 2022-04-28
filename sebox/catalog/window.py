@@ -131,7 +131,7 @@ def _ft(event):
                     pass
 
                 else:
-                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[sta])
+                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz)
             
             if len(output):
                 measurements[sta] = {}
