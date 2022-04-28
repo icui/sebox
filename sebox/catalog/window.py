@@ -192,11 +192,15 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
 
     for iband in range(nbands):
         wins = wins_all[iband]
+
         i1 = imin + iband * fincr
         i2 = i1 + fincr
 
         obs = obs_tr.copy()
         syn = syn_tr.copy()
+        
+        if sum(win.right - win.left + 1 for win in wins) / len(syn.data) > catalog.window['threshold_duration']:
+            continue
 
         fmin = i1 * df
         fmax = (i2 - 1) * df
@@ -213,9 +217,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
-
-        if syn_sum == 0 or obs_sum == 0 or diff_sum == 0:
-            return
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
