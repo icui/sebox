@@ -155,6 +155,8 @@ def _ft(event):
                     obs_h5.add_auxiliary_data(ft_obs, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
                     syn_h5.add_auxiliary_data(ft_syn, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
                     win_h5.add_auxiliary_data(ft_win, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
+
+                    print(sta, cmp)
         
         root.dump(measurements, f'bands/{event}.npy')
 
