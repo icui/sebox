@@ -126,12 +126,10 @@ def _ft(event):
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
                     syn_tr = syn_bp.trace(sta, cmp)
+                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp])
                 
                 except:
                     pass
-
-                else:
-                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp])
             
             if len(output):
                 measurements[sta] = {}
