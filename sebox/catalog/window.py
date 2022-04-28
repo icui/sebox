@@ -214,7 +214,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         
         if sum(win.right - win.left + 1 for win in wins) / len(syn.data) < catalog.window['threshold_duration']:
             continue
-        print(sum(win.right - win.left + 1 for win in wins) / len(syn.data))
 
         fmin = i1 * df
         fmax = (i2 - 1) * df
