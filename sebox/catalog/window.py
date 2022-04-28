@@ -85,7 +85,7 @@ def window3(node):
 
 
 def ft(node):
-    events = node.ls('events')[:2]
+    events = node.ls('events')
     node.add_mpi(_ft, len(events), mpiarg=events)
 
 
@@ -143,9 +143,9 @@ def _ft(event):
                         ft_syn = output[cmp]['syn']
                         ft_win = output[cmp]['win']
 
-                        measurements[sta]['obs'] = output[cmp]['obs_bands']
-                        measurements[sta]['syn'] = output[cmp]['syn_bands']
-                        measurements[sta]['win'] = output[cmp]['win_bands']
+                        measurements[sta][cmp]['obs'] = output[cmp]['obs_bands']
+                        measurements[sta][cmp]['syn'] = output[cmp]['syn_bands']
+                        measurements[sta][cmp]['win'] = output[cmp]['win_bands']
                     
                     else:
                         ft_obs = np.zeros(nf, dtype=complex)
