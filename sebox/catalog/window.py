@@ -220,7 +220,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
 
-        print(1/np.array(pre_filt))
+        print(max(diff_sum))
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
