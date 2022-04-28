@@ -109,6 +109,7 @@ def _ft(event):
     with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r', True) as syn_bp, \
         ASDFDataSet(f'ft_obs/{event}.h5', mode='w', mpi=False) as obs_h5, ASDFDataSet(f'ft_syn/{event}.h5', mode='w', mpi=False) as syn_h5, \
         ASDFDataSet(f'ft_win/{event}.h5', mode='w', mpi=False) as win_h5:
+        print(syn_bp.stations)
         for sta in syn_bp.stations:
             if not root.has(pkl := f'blend_obs/{sta}.pickle'):
                 continue
