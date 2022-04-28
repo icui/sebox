@@ -183,7 +183,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
         fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
     
     except:
-        pass
+        return
 
     output = {
         'syn': np.full(imax - imin, np.nan, dtype=complex),
