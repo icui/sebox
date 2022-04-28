@@ -207,7 +207,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         fmax = (i2 - 1) * df
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
 
-        if max(syn.data) == 0 or max(obs.data) == 0:
+        if max(abs(syn.data)) < 1e-10 or max(abs(obs.data)) == 1e-10:
             return
         
         try:
@@ -220,7 +220,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
         diff = syn.data - obs.data
         
-        if np.count_nonzero(np.isnan(diff)) or max(syn.data) > 1 or max(obs.data) > 1:
+        if np.count_nonzero(np.isnan(diff)) or max(abs(syn.data)) > 1 or max(abs(obs.data)) > 1:
             return
 
         syn_sum = sum(syn.data ** 2)
