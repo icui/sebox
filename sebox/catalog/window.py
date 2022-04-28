@@ -156,7 +156,7 @@ def _ft(event):
 
                     print(sta, cmp)
         
-        root.dump(measurements, f'bands/{event}.npy')
+        root.dump(measurements, f'bands/{event}.pickle')
 
 
 def _ft_trace(obs_tr, syn_tr, wins_all):
@@ -179,6 +179,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
 
     fobs = tp.cast(np.ndarray, fft(obs_tr.data))
     fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
+    print(fobs, fsyn)
 
     output = {
         'syn': np.full(imax - imin, np.nan, dtype=complex),
@@ -214,13 +215,14 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
 
         if has_full or has_blended:
             output['syn'][i1-imin: i2-imin] = fsyn[i1: i2]
+            output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
             output['syn_bands'][iband] = 1
         
         if has_full:
-            output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
             output['obs_bands'][iband] = 1
 
         if has_blended:
+            output['win_bands'][iband] = 1
             nt = int(catalog.period_max / catalog.dt / 2)
             taper = np.hanning(nt * 2)
 
@@ -244,7 +246,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
             output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
-            output['win_bands'][iband] = 1
 
     if any(output['syn_bands']):
         return output
