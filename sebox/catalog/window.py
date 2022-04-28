@@ -106,7 +106,7 @@ def _ft(event):
 
     measurements = {}
 
-    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r', True) as syn_bp, \
+    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r') as syn_bp, \
         ASDFDataSet(f'ft_obs/{event}.h5', mode='w', mpi=False) as obs_h5, ASDFDataSet(f'ft_syn/{event}.h5', mode='w', mpi=False) as syn_h5, \
         ASDFDataSet(f'ft_win/{event}.h5', mode='w', mpi=False) as win_h5:
         for sta in syn_bp.stations:
@@ -201,8 +201,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
         obs = obs_tr.copy()
         syn = syn_tr.copy()
-
-        print(obs.stats.delta, syn.stats.delta)
         
         if sum(win.right - win.left + 1 for win in wins) / len(syn.data) > catalog.window['threshold_duration']:
             continue
@@ -221,8 +219,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         except:
             # print('?', syn.data, obs.data)
             return
-        
-        print('>', obs.stats.delta, syn.stats.delta)
 
         diff = syn.data - obs.data
         syn_sum = sum(syn.data ** 2)
