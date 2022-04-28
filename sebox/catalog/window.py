@@ -134,8 +134,8 @@ def _ft(event):
                     pass
                 
                 else:
-                    if syn_tr.stats.delta != 0.16:
-                        print(event, sta)
+                    if syn_tr.stats.delta < 0.1:
+                        print(event, sta, cmp)
                     output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
             
             if len(output):
