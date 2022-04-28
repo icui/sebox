@@ -118,6 +118,8 @@ def _ft(event):
             if not any(len(wins) for wins in wins_rtz):
                 continue
             
+            print(sta)
+            
             output = {}
 
             for cmp in ('R', 'T', 'Z'):
