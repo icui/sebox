@@ -211,8 +211,10 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
             return
         
         try:
-            sac_filter_trace(obs, pre_filt)
-            sac_filter_trace(syn, pre_filt)
+            obs.filter('bandpass', freqmin=fmin, freqmax=fmax)
+            syn.filter('bandpass', freqmin=fmin, freqmax=fmax)
+            # sac_filter_trace(obs, pre_filt)
+            # sac_filter_trace(syn, pre_filt)
         
         except:
             print('?', syn.data, obs.data)
