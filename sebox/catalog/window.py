@@ -134,7 +134,7 @@ def _ft(event):
                     pass
                 
                 else:
-                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp])
+                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
             
             if len(output):
                 measurements[sta] = {}
@@ -162,7 +162,7 @@ def _ft(event):
         root.dump(measurements, f'bands/{event}.pickle')
 
 
-def _ft_trace(obs_tr, syn_tr, wins_all):
+def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     from scipy.fft import fft
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
@@ -216,7 +216,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
             return
 
         diff = syn.data - obs.data
-        print(max(diff))
+        print(cmp, max(diff))
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
