@@ -206,6 +206,9 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         fmin = i1 * df
         fmax = (i2 - 1) * df
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
+
+        if max(syn.data) == 0 or max(obs.data) == 0:
+            return
         
         try:
             sac_filter_trace(obs, pre_filt)
