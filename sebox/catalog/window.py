@@ -201,6 +201,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
         obs = obs_tr.copy()
         syn = syn_tr.copy()
+
+        print(obs.stats.delta, syn.stats.delta)
         
         if sum(win.right - win.left + 1 for win in wins) / len(syn.data) > catalog.window['threshold_duration']:
             continue
@@ -208,32 +210,24 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         fmin = i1 * df
         fmax = (i2 - 1) * df
         pre_filt = [fmin * cr, fmin, fmax, fmax / cl]
-
-        if max(abs(syn.data)) < 1e-10 or max(abs(obs.data)) == 1e-10:
-            return
         
         try:
-            obs.filter('bandpass', freqmin=fmin, freqmax=fmax)
-            syn.filter('bandpass', freqmin=fmin, freqmax=fmax)
+            # obs.filter('bandpass', freqmin=fmin, freqmax=fmax)
+            # syn.filter('bandpass', freqmin=fmin, freqmax=fmax)
             # print(obs.stats.npts, obs.stats.delta, syn.stats.npts, syn.stats.delta)
-            # sac_filter_trace(obs, pre_filt)
-            # sac_filter_trace(syn, pre_filt)
+            sac_filter_trace(obs, pre_filt)
+            sac_filter_trace(syn, pre_filt)
         
         except:
             # print('?', syn.data, obs.data)
             return
+        
+        print('>', obs.stats.delta, syn.stats.delta)
 
         diff = syn.data - obs.data
-        
-        if np.count_nonzero(np.isnan(diff)) or max(abs(syn.data)) > 1 or max(abs(obs.data)) > 1:
-            return
-
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
-
-        if syn_sum == 0 or obs_sum == 0 or diff_sum == 0:
-            return
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
