@@ -113,12 +113,15 @@ def _ft(event):
             if not root.has(pkl := f'blend_obs/{event}/{sta}.pickle'):
                 continue
             
-            wins_rtz = root.load(pkl)
+            try:
+                wins_rtz = root.load(pkl)
+            
+            except:
+                print(event, sta)
+                continue
 
             if not any(len(wins) for wins in wins_rtz):
                 continue
-            
-            print(sta)
             
             output = {}
 
@@ -211,6 +214,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
             sac_filter_trace(syn, pre_filt)
         
         except:
+            print('?', pre_filt)
             return
 
         diff = syn.data - obs.data
