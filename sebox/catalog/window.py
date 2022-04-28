@@ -126,10 +126,12 @@ def _ft(event):
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
                     syn_tr = syn_bp.trace(sta, cmp)
-                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp])
                 
                 except:
                     pass
+                
+                else:
+                    output[cmp] = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp])
             
             if len(output):
                 measurements[sta] = {}
@@ -176,8 +178,12 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
-    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
+    try:
+        fobs = tp.cast(np.ndarray, fft(obs_tr.data))
+        fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
+    
+    except:
+        pass
 
     output = {
         'syn': np.full(imax - imin, np.nan, dtype=complex),
