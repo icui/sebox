@@ -174,7 +174,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
     imax = imin + fincr * nbands
-    print(imin, imax)
 
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
@@ -199,7 +198,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
         wins = wins_all[iband]
         i1 = imin + iband * fincr
         i2 = i1 + fincr
-        print('>', i1, i2)
 
         obs = obs_tr.copy()
         syn = syn_tr.copy()
