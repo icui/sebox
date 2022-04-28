@@ -219,6 +219,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         
         if np.count_nonzero(np.isnan(diff)):
             return
+        
+        print(cmp, max(diff))
 
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
