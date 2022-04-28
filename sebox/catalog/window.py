@@ -157,9 +157,7 @@ def _ft(event):
                     
                     obs_h5.add_auxiliary_data(ft_obs, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
                     syn_h5.add_auxiliary_data(ft_syn, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
-                    win_h5.add_auxiliary_data(ft_win, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
-
-                    print(sta, cmp)
+                    win_h5.add_auxiliary_data(ft_win, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignores
         
         root.dump(measurements, f'bands/{event}.pickle')
 
@@ -221,6 +219,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
+
+        print(pre_filt)
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
