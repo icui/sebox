@@ -210,9 +210,12 @@ def _ft_trace(obs_tr, syn_tr, wins_all):
             return
 
         diff = syn.data - obs.data
-        ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2) for win in wins) / sum(syn.data ** 2)
-        ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2) for win in wins) / sum(obs.data ** 2)
-        ratio_diff = sum(sum(diff[win.left: win.right] ** 2) for win in wins) / sum(diff ** 2)
+        syn_sum = sum(syn.data ** 2)
+        obs_sum = sum(obs.data ** 2)
+        diff_sum = sum(diff ** 2)
+        ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
+        ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
+        ratio_diff = sum(sum(diff[win.left: win.right] ** 2 / diff_sum) for win in wins)
 
         has_full = ratio_diff > catalog.window['threshold_diff']
         has_blended = ratio_syn > catalog.window['threshold_syn'] and ratio_obs > catalog.window['threshold_obs']
