@@ -168,6 +168,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     from scipy.fft import fft
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
+    np.seterr(all='raise')
 
     from .catalog import catalog
 
@@ -224,9 +225,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
-
-        if max(obs.data) > 1:
-            print('>>>', cmp, obs)
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
