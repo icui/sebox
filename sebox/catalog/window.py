@@ -1,6 +1,62 @@
 import typing as tp
 
 
+def index(node):
+    event_stations = {}
+
+    for e in node.ls('events'):
+        pkl = node.load(f'bands/{e}.pickle')
+        event_stations[e] = list(pkl.keys())
+    
+    node.dump(event_stations, 'event_stations.pickle')
+
+
+def index2(node):
+    stations = node.load('stations.pickle')
+    station_locations = {}
+    station_lines = {}
+
+    for e in node.ls('events'):
+        for line in node.readlines(f'../ns/stations/STATIONS.{e}'):
+            if len(ll := line.split()) == 6:
+                sta = ll[1] + '.' + ll[0]
+
+                if sta in stations and sta not in station_locations:
+                    slat = float(ll[2])
+                    slon = float(ll[3])
+                    station_locations[sta] = slat, slon
+                    _format_station(station_lines, ll)
+    
+    node.dump(station_locations, 'station_locations.pickle')
+    node.dump(station_lines, 'station_lines.pickle')
+
+
+def _format_station(lines: dict, ll: tp.List[str]):
+    """Format a line in STATIONS file."""
+    # location of dots for floating point numbers
+    dots = 28, 41, 55, 62
+
+    # line with station name
+    line = ll[0].ljust(13) + ll[1].ljust(5)
+
+    # add numbers with correct indentation
+    for i in range(4):
+        num = ll[i + 2]
+
+        if '.' in num:
+            nint, _ = num.split('.')
+        
+        else:
+            nint = num
+
+        while len(line) + len(nint) < dots[i]:
+            line += ' '
+        
+        line += num
+    
+    lines[ll[1] + '.' + ll[0]] = line
+
+
 def window2(node):
     events = node.ls('events')
     node.add_mpi(_blend2, len(events), mpiarg=events)
