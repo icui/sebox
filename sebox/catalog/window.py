@@ -265,7 +265,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
     nbands = catalog.nbands
     
-    nt = len(obs_tr.data)
+    nt_d = len(obs_tr.data)
     nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
     df = 1 / catalog.dt / nt_se
 
@@ -278,9 +278,9 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     cr = catalog.process['corner_right']
 
     buf = np.zeros(nt_se)
-    buf[:nt] = obs_tr.data
+    buf[:nt_d] = obs_tr.data
     fobs = tp.cast(np.ndarray, fft(buf))
-    buf[:nt] = syn_tr.data
+    buf[:nt_d] = syn_tr.data
     fsyn = tp.cast(np.ndarray, fft(buf))
     # fobs = tp.cast(np.ndarray, fft(obs_tr.data))
     # fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
@@ -368,7 +368,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            buf[:nt] = d1
+            buf[:nt_d] = d1
             output['win'][i1-imin: i2-imin] = fft(buf)[i1: i2]
             # output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
 
