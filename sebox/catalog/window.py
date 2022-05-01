@@ -180,11 +180,14 @@ def _ft(event):
 
     nbands = catalog.nbands
 
-    df = 1 / catalog.duration_ft / 60
+    nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
+    df = 1 / catalog.dt / nt_se
+
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
     nf = fincr * nbands
+    print(event, fincr, nbands)
 
     measurements = {}
 
@@ -261,7 +264,11 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     from .catalog import catalog
 
     nbands = catalog.nbands
-    df = 1 / obs_tr.stats.npts / obs_tr.stats.delta
+    
+    nt = len(obs_tr.data)
+    nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
+    df = 1 / catalog.dt / nt_se
+
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
@@ -270,8 +277,13 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    fobs = tp.cast(np.ndarray, fft(obs_tr.data))
-    fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
+    buf = np.zeros(nt_se)
+    buf[:nt] = obs_tr.data
+    fobs = tp.cast(np.ndarray, fft(buf))
+    buf[:nt] = syn_tr.data
+    fsyn = tp.cast(np.ndarray, fft(buf))
+    # fobs = tp.cast(np.ndarray, fft(obs_tr.data))
+    # fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
 
     output = {
         'syn': np.full(imax - imin, np.nan, dtype=complex),
@@ -356,7 +368,9 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
+            buf[:nt] = d1
+            output['win'][i1-imin: i2-imin] = fft(buf)[i1: i2]
+            # output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
 
     if any(output['syn_bands']):
         return output
