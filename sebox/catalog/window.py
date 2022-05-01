@@ -31,6 +31,32 @@ def index2(node):
     node.dump(station_lines, 'station_lines.pickle')
 
 
+def index3(node):
+    import numpy as np
+
+    es = node.load('events.pickle')
+    ss = node.load('stations.pickle')
+    cs = ('R', 'T', 'Z')
+
+    m = np.zeros([len(es), len(ss), 3, 3], dtype=int)
+
+    for i, e in enumerate(es):
+        print(e)
+        
+        bands = node.load(f'bands/{e}.pickle')
+
+        for s in bands:
+            j = ss.index(s)
+
+            for c in bands[s]:
+                k = cs.index(c)
+
+                m[i, j, k, :] = bands[s][c]['syn']
+    
+    node.dump(m, 'measurements.npy')
+
+
+
 def _format_station(lines: dict, ll: tp.List[str]):
     """Format a line in STATIONS file."""
     # location of dots for floating point numbers
