@@ -219,12 +219,12 @@ def _ft(event):
                     pass
                 
                 else:
-                    try:
-                        m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    # try:
                     
-                    except:
-                        print(event, sta, cmp, obs_tr.data)
-                        continue
+                    # except:
+                    #     print(event, sta, cmp, obs_tr.data)
+                    #     continue
 
                     if m is not None:
                         output[cmp] = m
