@@ -262,7 +262,6 @@ def _pad(data, nt):
     from sebox.catalog import catalog
 
     shape = data.shape
-    taper = catalog.process['taper']
     dt = catalog.process['dt']
 
     if nt > shape[-1]:
@@ -271,7 +270,7 @@ def _pad(data, nt):
         pad[-1] = nt - shape[-1]
 
         taper = np.zeros(pad, dtype=data.dtype)
-        ntaper = int(taper * 60 / dt)
+        ntaper = int(catalog.process['taper'] * 60 / dt)
         data[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
         
         data = np.concatenate([data, taper], axis=-1)
