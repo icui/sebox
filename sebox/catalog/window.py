@@ -297,6 +297,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
+    print(nt_se, imin, imax, fincr)
+
     fobs = tp.cast(np.ndarray, fft(_pad(obs_tr.data, nt_se)))
     fsyn = tp.cast(np.ndarray, fft(_pad(syn_tr.data, nt_se)))
     # fobs = tp.cast(np.ndarray, fft(obs_tr.data))
