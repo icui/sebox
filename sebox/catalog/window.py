@@ -219,12 +219,12 @@ def _ft(event):
                     pass
                 
                 else:
-                    m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
-                    # try:
+                    try:
+                        m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
                     
-                    # except:
-                    #     print(event, sta, cmp, obs_tr.data)
-                    #     continue
+                    except:
+                        print(event, sta, cmp, obs_tr.data)
+                        continue
 
                     if m is not None:
                         output[cmp] = m
@@ -255,6 +255,28 @@ def _ft(event):
         root.dump(measurements, f'bands/{event}.pickle')
 
 
+def _pad(data, nt):
+    import numpy as np
+    from scipy.fft import fft
+    from sebox.catalog import catalog
+
+    shape = data.shape
+    taper = catalog.process['taper']
+    dt = catalog.process['dt']
+
+    if nt > shape[-1]:
+        # expand observed data with zeros
+        pad = list(shape)
+        pad[-1] = nt - shape[-1]
+
+        taper = np.zeros(pad, dtype=data.dtype)
+        ntaper = int(taper * 60 / dt)
+        data[..., -ntaper:] *= np.hanning(2 * ntaper)[ntaper:]
+        
+        data = np.concatenate([data, taper], axis=-1)
+    
+    return data
+
 def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     from scipy.fft import fft
     from pytomo3d.signal.process import sac_filter_trace
@@ -265,7 +287,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
     nbands = catalog.nbands
     
-    nt_d = len(obs_tr.data)
     nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
     df = 1 / catalog.dt / nt_se
 
@@ -277,11 +298,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    buf = np.zeros(nt_se)
-    buf[:nt_d] = obs_tr.data
-    fobs = tp.cast(np.ndarray, fft(buf))
-    buf[:nt_d] = syn_tr.data
-    fsyn = tp.cast(np.ndarray, fft(buf))
+    fobs = tp.cast(np.ndarray, fft(_pad(obs_tr.data, nt_se)))
+    fsyn = tp.cast(np.ndarray, fft(_pad(syn_tr.data, nt_se)))
     # fobs = tp.cast(np.ndarray, fft(obs_tr.data))
     # fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
 
@@ -339,6 +357,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
         if has_full or has_blended:
             output['syn'][i1-imin: i2-imin] = fsyn[i1: i2]
             output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
+            output['win'][i1-imin: i2-imin] = fobs[i1: i2]
             output['syn_bands'][iband] = 1
         
         if has_full:
@@ -368,8 +387,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
                     d1[r: fr + 1] = d2[r: fr + 1]
                     d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
             
-            buf[:nt_d] = d1
-            output['win'][i1-imin: i2-imin] = fft(buf)[i1: i2]
+            output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
             # output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
 
     if any(output['syn_bands']):
