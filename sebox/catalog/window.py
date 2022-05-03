@@ -187,7 +187,7 @@ def _ft(event):
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
     nf = fincr * nbands
-    print(event, fincr, nbands)
+    print(event, imin, nt_se, fincr, nbands)
 
     measurements = {}
 
@@ -298,7 +298,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     cr = catalog.process['corner_right']
 
     print(nt_se, imin, imax, fincr)
-    exit()
 
     fobs = tp.cast(np.ndarray, fft(_pad(obs_tr.data, nt_se)))
     fsyn = tp.cast(np.ndarray, fft(_pad(syn_tr.data, nt_se)))
