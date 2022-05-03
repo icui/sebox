@@ -188,6 +188,7 @@ def _ft(event):
     fincr = (imax - imin) // nbands
     nf = fincr * nbands
     print(event, imin, nt_se, fincr, nbands)
+    exit()
 
     measurements = {}
 
