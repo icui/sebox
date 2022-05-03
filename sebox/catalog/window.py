@@ -258,7 +258,6 @@ def _ft(event):
 
 def _pad(data, nt):
     import numpy as np
-    from scipy.fft import fft
     from sebox.catalog import catalog
 
     shape = data.shape
