@@ -187,8 +187,6 @@ def _ft(event):
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
     nf = fincr * nbands
-    print(event, imin, nt_se, fincr, nbands)
-    exit()
 
     measurements = {}
 
@@ -246,9 +244,9 @@ def _ft(event):
                         measurements[sta][cmp]['win'] = output[cmp]['win_bands']
                     
                     else:
-                        ft_obs = np.zeros(nf, dtype=complex)
-                        ft_syn = np.zeros(nf, dtype=complex)
-                        ft_win = np.zeros(nf, dtype=complex)
+                        ft_obs = np.full(nf, np.nan + 0j, dtype=complex)
+                        ft_syn = np.full(nf, np.nan + 0j, dtype=complex)
+                        ft_win = np.full(nf, np.nan + 0j, dtype=complex)
                     
                     obs_h5.add_auxiliary_data(ft_obs, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
                     syn_h5.add_auxiliary_data(ft_syn, 'FT', sta.replace('.', '_') + '_MX' + cmp, {}) # type: ignore
