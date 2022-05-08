@@ -150,8 +150,8 @@ def process_stream(st, origin, inv, mode):
         stream.remove_response(output="DISP", zero_mean=False, taper=False,
             water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
     
-    else:
-        sac_filter_stream(stream, pre_filt)
+    # else:
+    #     sac_filter_stream(stream, pre_filt)
 
     # detrend and apply taper
     _detrend(stream, taper)
