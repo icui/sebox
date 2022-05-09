@@ -131,6 +131,9 @@ def process_stream(st, origin, inv, mode):
     proc = catalog.process
     taper = proc.get('taper')
 
+    # resample and align
+    stream.interpolate(1/catalog.dt, starttime=origin.time)
+
     # period anchors
     cl = proc['corner_left']
     cr = proc['corner_right']
@@ -140,9 +143,6 @@ def process_stream(st, origin, inv, mode):
 
     # remove instrument response
     if mode == 'obs':
-        # resample and align
-        stream.interpolate(1/catalog.dt, starttime=origin.time)
-
         # detrend and apply taper after filtering
         _detrend(stream, taper)
 
