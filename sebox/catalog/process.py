@@ -132,7 +132,11 @@ def process_stream(st, origin, inv, mode):
     taper = proc.get('taper')
 
     # resample and align
-    stream.interpolate(1/catalog.dt, starttime=origin.time)
+    if mode == 'obs':
+        stream.interpolate(1/catalog.dt, starttime=origin.time)
+    
+    else:
+        stream.resample(1/catalog.dt)
 
     # period anchors
     cl = proc['corner_left']
