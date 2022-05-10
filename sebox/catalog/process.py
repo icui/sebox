@@ -132,11 +132,10 @@ def process_stream(st, origin, inv, mode):
     taper = proc.get('taper')
 
     # resample and align
-    if mode == 'obs':
-        stream.interpolate(1/catalog.dt, starttime=origin.time)
-    
-    else:
-        stream.resample(1/catalog.dt)
+    stream.interpolate(1/catalog.dt, starttime=origin.time)
+        
+    # detrend and apply taper after filtering
+    _detrend(stream, taper)
 
     # period anchors
     cl = proc['corner_left']
@@ -147,18 +146,15 @@ def process_stream(st, origin, inv, mode):
 
     # remove instrument response
     if mode == 'obs':
-        # detrend and apply taper after filtering
-        _detrend(stream, taper)
-
         stream.attach_response(inv)
         stream.remove_response(output="DISP", zero_mean=False, taper=False,
             water_level=catalog.process.get('water_level'), pre_filt=pre_filt)
     
-    # else:
-    #     sac_filter_stream(stream, pre_filt)
+    else:
+        sac_filter_stream(stream, pre_filt)
 
-        # detrend and apply taper
-        _detrend(stream, taper)
+    # detrend and apply taper
+    _detrend(stream, taper)
     
     # pad and rotate
     nt = int(np.round(catalog.duration * 60 / catalog.dt))
