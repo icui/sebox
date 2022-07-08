@@ -2,6 +2,12 @@ import numpy as np
 from nnodes import root, Node
 from collections import ChainMap
 
+from .catalog import d
+
+
+def index_events(node):
+    node.add_mpi()
+
 
 def index(node: Node):
     """Index events and stations."""
