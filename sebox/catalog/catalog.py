@@ -3,20 +3,23 @@ from nnodes import root, Node, Directory
 
 # determine working directory
 if root.has('config.toml'):
-    _cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
+    cwd = root.load('config.toml')['root'].get('path_catalog') or '.'
 
 else:
-    _cwd = '.'
+    cwd = '.'
 
 # directory object for catalog
-_dir = Directory(_cwd)
+d = Directory(_cwd)
 
-# cache of config.toml
-_config = _dir.load('catalog.toml') if _dir.has('catalog.toml') else {}
+# read catalog.toml
+if d.has('catalog.toml'):
+    _catalog = d.load('catalog.toml')
 
+else:
+    _catalog = {}
 
 # cache of catalog items stored as pickle
-_catalog = {
+_cache = {
     # event names
     'events': None,
 
@@ -41,17 +44,18 @@ _catalog = {
 
 
 def __getattr__(name):
-    if name == 'd':
-        return _dir
+    if name in _cache:
+        # read items stored as pickle in catalog directory
+        if _cache[name] is None:
+            if d.has(f'{name}.pickle'):
+                _cache[name] = d.load(f'{name}.pickle')
 
-    if name in _catalog:
-        # items stored as pickle in catalog directory
-        if _catalog[name] is None:
-            _catalog[name] = _dir.load(f'{name}.pickle')
+            if d.has(f'{name}.npy'):
+                _cache[name] = d.load(f'{name}.npy')
             
-    if name in _config:
+    if name in _catalog:
         # items in config.toml
-        _config[name]
+        _catalog[name]
 
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 

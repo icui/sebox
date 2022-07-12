@@ -6,7 +6,48 @@ from .catalog import d
 
 
 def index_events(node):
-    node.add_mpi()
+    """Create event list and event data array."""
+    if not d.has('components.pickle'):
+        d.dump(['R', 'T', 'Z'], 'components.pickle')
+
+    if not d.has('events.pickle') or not d.has('event_data.npy'):
+        node.add_mpi(_index_events, root.job.cpus_per_node, mpiarg=d.ls('events'))
+
+
+def _index_events(evts):
+    # dict of event data
+    evt_dict = {}
+
+    for event in evts:
+        lines = d.readlines(f'events/{event}')
+        lat = float(lines[4].split()[-1])
+        lon = float(lines[5].split()[-1])
+        depth = float(lines[6].split()[-1])
+        hdur = float(lines[3].split()[-1])
+
+        # event latitude, longitude, depth and half duration
+        evt_dict[event] = lat, lon, depth, hdur
+
+    # gather results
+    evt_dict = root.mpi.comm.gather(evt_dict, root=0)
+    
+    if root.mpi.rank == 0:
+        event_dict = dict(ChainMap(*evt_dict))
+        events = sorted(list(event_dict.keys()))
+
+        # merge event data into one array
+        event_data = np.zeros([len(events), 4])
+
+        for i, event in enumerate(events):
+            event_data[i, :] = event_dict[event]  
+
+        # save data
+        catalog.dump(events, 'events.pickle')
+        catalog.dump(event_data, 'event_data.npy')
+
+
+def index_bands(node):
+    pass
 
 
 def index(node: Node):
@@ -25,40 +66,6 @@ def index(node: Node):
     if not catalog.has('stations.pickle') or not catalog.has('station_data.npy') or not catalog.has('SUPERSTATION'):
         # save station data
         node.add_mpi(index_stations, arg_mpi=events)
-
-
-def index_events(evts):
-    from .catalog import catalog
-    
-    # dict of event data
-    evt_dict = {}
-
-    for event in evts:
-        lines = catalog.readlines(f'events/{event}')
-        lat = float(lines[4].split()[-1])
-        lon = float(lines[5].split()[-1])
-        depth = float(lines[6].split()[-1])
-        hdur = float(lines[3].split()[-1])
-
-        # event latitude, longitude, depth and half duration
-        evt_dict[event] = lat, lon, depth, hdur
-
-    # gather results
-    evt_dict = root.mpi.comm.gather(evt_dict, root=0)
-    
-    if root.mpi.rank == 0:
-        event_dict = dict(ChainMap(*evt_dict))
-        events = sorted(list(event_dict.keys()))
-
-        # merge event data into one array
-        event_npy = np.zeros([len(events), 4])
-
-        for i, event in enumerate(events):
-            event_npy[i, :] = event_dict[event]  
-
-        # save data
-        catalog.dump(events, 'events.pickle')
-        catalog.dump(event_npy, 'event_data.npy')
 
 
 def index_bands(node: Node):
