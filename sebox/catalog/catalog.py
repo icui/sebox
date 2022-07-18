@@ -55,7 +55,7 @@ def __getattr__(name):
             
     if name in _catalog:
         # items in config.toml
-        _catalog[name]
+        return _catalog[name]
 
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
