@@ -471,7 +471,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp):
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
 
-    from .catalog import catalog
+    from sebox.catalog import catalog
 
     nbands = catalog.nbands
 
@@ -520,7 +520,7 @@ def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
 
-    from .catalog import catalog
+    from sebox.catalog import catalog
 
     savefig = catalog.window.get('savefig')
     nbands = catalog.nbands
