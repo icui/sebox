@@ -436,6 +436,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
 
     ###### FIXME
     traces = root.load('traces.pickle')
+    root.mkdir(f'{dst}/plots')
     ######
 
     with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp:
@@ -453,7 +454,9 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
 
             inv = syn_bp.read(sta)
 
-            for cmp in ('R', 'T', 'Z'):
+            ###### FIXME
+            for cmp in ('Z',):
+            # for cmp in ('R', 'T', 'Z'):
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
                     syn_tr = syn_bp.trace(sta, cmp)
@@ -462,7 +465,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     output[cmp] = [[], [], []]
 
                 else:
-                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp], f'{dst}/{sta}')
+                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp], f'{dst}/plots/{sta}')
             
             root.dump(output, f'{dst}/{sta}.pickle')
             print(f'{dst}/{sta}.pickle')
