@@ -273,17 +273,11 @@ def _pad(data, nt):
         
         return np.concatenate([data, taper], axis=-1)
     
-<<<<<<< HEAD
-    else:
-        return data[:nt]
-
-=======
     # ntaper = int(catalog.process['taper'] * 60 / dt)
     # data[3000: 3000 + ntaper] *= np.hanning(2 * ntaper)[ntaper:]
     # data[3000 + ntaper:] = 0.0
     
-    return data
->>>>>>> 4dbae0d7ce6b771e9eb069d3972f8ee55753e9d8
+    return data[:nt]
 
 def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     from scipy.fft import fft

@@ -1,3 +1,5 @@
+import typing as tp
+
 import numpy as np
 from nnodes import root, Node
 from collections import ChainMap
@@ -28,7 +30,7 @@ def _index_events(evts):
     evt_dict = root.mpi.comm.gather(evt_dict, root=0)
     
     if root.mpi.rank == 0:
-        event_dict = dict(ChainMap(*evt_dict))
+        event_dict = dict(ChainMap(*tp.cast(tp.List, evt_dict)))
         events = sorted(list(event_dict.keys()))
 
         # merge event data into one array
@@ -38,8 +40,8 @@ def _index_events(evts):
             event_data[i, :] = event_dict[event]
 
         # save data
-        catalog.dump(events, 'events.pickle')
-        catalog.dump(event_data, 'event_data.npy')
+        d.dump(events, 'events.pickle')
+        d.dump(event_data, 'event_data.npy')
 
 
 def index_encoding(node):

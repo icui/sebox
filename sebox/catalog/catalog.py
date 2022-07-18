@@ -9,7 +9,7 @@ else:
     cwd = '.'
 
 # directory object for catalog
-d = Directory(_cwd)
+d = Directory(cwd)
 
 # read catalog.toml
 if d.has('catalog.toml'):
