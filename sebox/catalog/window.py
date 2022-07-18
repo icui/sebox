@@ -462,7 +462,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     output[cmp] = [[], [], []]
 
                 else:
-                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp])
+                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp], f'{dst}/{sta}.png')
             
             root.dump(output, f'{dst}/{sta}.pickle')
             print(f'{dst}/{sta}.pickle')
@@ -470,7 +470,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
     print(root.mpi.rank, 'done')
 
 
-def _window(obs_tr, syn_tr, evt, inv, cmp, bands):
+def _window(obs_tr, syn_tr, evt, inv, cmp, bands, dst):
     from pyflex import Config, WindowSelector
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
@@ -491,7 +491,8 @@ def _window(obs_tr, syn_tr, evt, inv, cmp, bands):
     output = [[]] * nbands
 
     for iband in range(nbands):
-        ###### FIXME: remove parameter bands
+        ###### FIXME: remove parameter `bands` and `dst`
+        savefig = catalog.window.get('savefig')
         if bands[iband] == 0:
             output[iband] = []
             continue
@@ -516,6 +517,13 @@ def _window(obs_tr, syn_tr, evt, inv, cmp, bands):
 
         try:
             output[iband] = ws.select_windows()
+
+            if savefig and len(output[iband]):
+                # use non-interactive backend
+                import matplotlib
+                matplotlib.use('Agg')
+
+                ws.plot(filename=dst)
         
         except Exception:
             pass
