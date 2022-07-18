@@ -462,7 +462,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     output[cmp] = [[], [], []]
 
                 else:
-                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp], f'{dst}/{sta}.png')
+                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp], f'{dst}/{sta}')
             
             root.dump(output, f'{dst}/{sta}.pickle')
             print(f'{dst}/{sta}.pickle')
@@ -493,6 +493,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp, bands, dst):
     for iband in range(nbands):
         ###### FIXME: remove parameter `bands` and `dst`
         savefig = catalog.window.get('savefig')
+        bnames = ['#17-23s', '#23-40s', '#40-100s']
         if bands[iband] == 0:
             output[iband] = []
             continue
@@ -523,7 +524,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp, bands, dst):
                 import matplotlib
                 matplotlib.use('Agg')
 
-                ws.plot(filename=dst)
+                ws.plot(filename=dst + bnames[iband] + '.png')
         
         except Exception:
             pass
