@@ -285,7 +285,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     import numpy as np
     np.seterr(all='raise')
 
-    from .catalog import catalog
+    from sebox.catalog import catalog
 
     nbands = catalog.nbands
     
