@@ -180,7 +180,7 @@ def _ft(event):
 
     nbands = catalog.process['nbands']
 
-    nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
+    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.dt))
     df = 1 / catalog.dt / nt_se
 
     imin = int(np.ceil(1 / catalog.period_max / df))
@@ -289,7 +289,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
     nbands = catalog.process['nbands']
     
-    nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
+    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.dt))
     df = 1 / catalog.dt / nt_se
 
     imin = int(np.ceil(1 / catalog.period_max / df))
@@ -475,7 +475,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp):
 
     nbands = catalog.process['nbands']
 
-    df = 1 / catalog.duration_ft / 60
+    df = 1 / catalog.process['duration_encoding'] / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
@@ -525,7 +525,7 @@ def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
     savefig = catalog.window.get('savefig')
     nbands = catalog.process['nbands']
 
-    df = 1 / catalog.duration_ft / 60
+    df = 1 / catalog.process['duration_encoding'] / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
     imax = int(np.floor(1 / catalog.period_min / df)) + 1
     fincr = (imax - imin) // nbands
