@@ -178,7 +178,7 @@ def _ft(event):
     from sebox.catalog import catalog
     import numpy as np
 
-    nbands = catalog.nbands
+    nbands = catalog.process['nbands']
 
     nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
     df = 1 / catalog.dt / nt_se
@@ -287,7 +287,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
     from sebox.catalog import catalog
 
-    nbands = catalog.nbands
+    nbands = catalog.process['nbands']
     
     nt_se = int(round((catalog.duration_ft) * 60 / catalog.dt))
     df = 1 / catalog.dt / nt_se
@@ -523,7 +523,7 @@ def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
     from sebox.catalog import catalog
 
     savefig = catalog.window.get('savefig')
-    nbands = catalog.nbands
+    nbands = catalog.process['nbands']
 
     df = 1 / catalog.duration_ft / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
