@@ -66,7 +66,7 @@ def create_catalog(node: Node):
     node.add(index_events)
 
     # create pickle file for encoding parameters
-    node.add(index_bands)
+    node.add(index_encoding)
 
     # # download raw seismic data
     # node.add(download)

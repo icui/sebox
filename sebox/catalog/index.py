@@ -20,13 +20,9 @@ def _index_events(evts):
 
     for event in evts:
         lines = d.readlines(f'events/{event}')
-        lat = float(lines[4].split()[-1])
-        lon = float(lines[5].split()[-1])
-        depth = float(lines[6].split()[-1])
-        hdur = float(lines[3].split()[-1])
 
-        # event latitude, longitude, depth and half duration
-        evt_dict[event] = lat, lon, depth, hdur
+        # event time shift, half duration, latitude, longitude, depth and moment tensor
+        evt_dict[event] = np.array([float(line.split()[-1]) for line in lines[2:13]])
 
     # gather results
     evt_dict = root.mpi.comm.gather(evt_dict, root=0)
@@ -36,18 +32,25 @@ def _index_events(evts):
         events = sorted(list(event_dict.keys()))
 
         # merge event data into one array
-        event_data = np.zeros([len(events), 4])
+        event_data = np.zeros([len(events), 11])
 
         for i, event in enumerate(events):
-            event_data[i, :] = event_dict[event]  
+            event_data[i, :] = event_dict[event]
 
         # save data
         catalog.dump(events, 'events.pickle')
         catalog.dump(event_data, 'event_data.npy')
 
 
-def index_bands(node):
-    pass
+def index_encoding(node):
+    """Save source encoding parameters and DFT matrix."""
+    from .catalog import process
+
+    encoding = {
+        'dt': process['dt'],
+        'nt_ts': int(np.round(process['duration'] * 60 / process['dt'])),
+        'nt_se': int(np.round(process['duration_encoding'] * 60 / process['dt']))
+    }
 
 
 def index(node: Node):
