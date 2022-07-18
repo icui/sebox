@@ -180,8 +180,8 @@ def _ft(event):
 
     nbands = catalog.process['nbands']
 
-    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.process['dt']))
-    df = 1 / catalog.process['dt'] / nt_se
+    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.dt))
+    df = 1 / catalog.dt / nt_se
 
     imin = int(np.ceil(1 / catalog.process['period_max'] / df))
     imax = int(np.floor(1 / catalog.process['period_min'] / df)) + 1
@@ -289,8 +289,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
     nbands = catalog.process['nbands']
     
-    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.process['dt']))
-    df = 1 / catalog.process['dt'] / nt_se
+    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.dt))
+    df = 1 / catalog.dt / nt_se
 
     imin = int(np.ceil(1 / catalog.process['period_max'] / df))
     imax = int(np.floor(1 / catalog.process['period_min'] / df)) + 1
@@ -369,7 +369,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
 
         if has_blended:
             output['win_bands'][iband] = 1
-            nt = int(catalog.process['period_max'] / catalog.process['dt'] / 2)
+            nt = int(catalog.process['period_max'] / catalog.dt / 2)
             taper = np.hanning(nt * 2)
 
             d1 = obs.data
@@ -619,7 +619,7 @@ def _blend_trace(obs_tr, syn_tr, evt, inv, cmp, event, station):
             output['obs_bands'][iband] = 1
 
         if has_blended:
-            nt = int(catalog.process['period_max'] / catalog.process['dt'] / 2)
+            nt = int(catalog.process['period_max'] / catalog.dt / 2)
             taper = np.hanning(nt * 2)
 
             d1 = obs.data
