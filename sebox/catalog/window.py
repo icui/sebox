@@ -434,6 +434,10 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
     logging.disable()
     warnings.filterwarnings("ignore")
 
+    ###### FIXME
+    traces = root.load('traces.pickle')
+    ######
+
     with SeisBP(obs, 'r', True) as obs_bp, SeisBP(syn, 'r', True) as syn_bp:
         # SeisBP(dst, 'w', True) as dst_bp:
         evt = syn_bp.read(syn_bp.events[0])
@@ -450,6 +454,11 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
             inv = syn_bp.read(sta)
 
             for cmp in ('R', 'T', 'Z'):
+                ###### FIXME
+                if traces[sta][cmp] == 0:
+                    continue
+                ######
+
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
                     syn_tr = syn_bp.trace(sta, cmp)
