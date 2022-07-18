@@ -454,11 +454,6 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
             inv = syn_bp.read(sta)
 
             for cmp in ('R', 'T', 'Z'):
-                ###### FIXME
-                if traces[sta][cmp] == 0:
-                    continue
-                ######
-
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
                     syn_tr = syn_bp.trace(sta, cmp)
@@ -467,7 +462,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
                     output[cmp] = [[], [], []]
 
                 else:
-                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp)
+                    output[cmp] = _window(obs_tr, syn_tr, evt, inv, cmp, traces[sta][cmp])
             
             root.dump(output, f'{dst}/{sta}.pickle')
             print(f'{dst}/{sta}.pickle')
@@ -475,7 +470,7 @@ def _blend(stas, obs, syn, dst) -> tp.Any:
     print(root.mpi.rank, 'done')
 
 
-def _window(obs_tr, syn_tr, evt, inv, cmp):
+def _window(obs_tr, syn_tr, evt, inv, cmp, bands):
     from pyflex import Config, WindowSelector
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
@@ -496,6 +491,12 @@ def _window(obs_tr, syn_tr, evt, inv, cmp):
     output = [[]] * nbands
 
     for iband in range(nbands):
+        ###### FIXME: remove parameter bands
+        if bands[iband] == 0:
+            output[iband] = []
+            continue
+        ######
+
         i1 = imin + iband * fincr
         i2 = i1 + fincr
 
