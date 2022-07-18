@@ -473,7 +473,7 @@ def _window(obs_tr, syn_tr, evt, inv, cmp):
 
     from sebox.catalog import catalog
 
-    nbands = catalog.nbands
+    nbands = catalog.process['nbands']
 
     df = 1 / catalog.duration_ft / 60
     imin = int(np.ceil(1 / catalog.period_max / df))
