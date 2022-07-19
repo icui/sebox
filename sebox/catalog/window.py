@@ -521,9 +521,9 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
         plt.figure(figsize=(12, 8))
         plt.plot(np.angle(fobs[i1: i2] / fsyn[i1: i2]), label='original')
         if len(bwins):
-            plt.plot(np.angle(fft(_pad(d1, nt_se))[i1: i2]) / fsyn[i1: i2], label='w1')
+            plt.plot(np.angle(fft(_pad(d1, nt_se))[i1: i2] / fsyn[i1: i2]), label='w1')
         if len(bwins2):
-            plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2]) / fsyn[i1: i2], label='w2')
+            plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn[i1: i2]), label='w2')
         plt.legend()
         plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_phase.pdf')
 
