@@ -173,7 +173,7 @@ def ft(node):
 
 def ft2(node):
     for event in node.ls('events'):
-        node.add(_ft2, args=(event,), mpiarg=node.ls(f'blend_obs/{event}'), group_mpiarg=True)
+        node.add_mpi(_ft2, node.np, args=(event,), mpiarg=node.ls(f'blend_obs/{event}'), group_mpiarg=True)
 
 
 def _ft2(stas, event):
