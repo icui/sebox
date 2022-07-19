@@ -421,7 +421,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             plt.plot(obs.data, label='obs')
             plt.plot(syn.data, label='syn')
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.png')
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.svg')
         
         if has_full:
             output['obs_bands'][iband] = 1
