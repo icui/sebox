@@ -431,6 +431,7 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
             plt.figure(figsize=(20, 15))
             plt.plot(t, obs.data, label='obs')
             plt.plot(t, syn.data, label='syn')
+            plt.plot(t, syn2_tr.data, label='syn_new')
             
             for win in wins:
                 plt.axvspan(win.left * dtx, win.right * dtx, facecolor='lightgray')
@@ -510,17 +511,29 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
         #     plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w1.pdf')
         
         if len(bwins2):
-            # plt.figure(figsize=(12, 8))
             plt.figure(figsize=(20, 15))
-            plt.plot(t, d1_2, label='obs')
-            plt.plot(t, d2, label='syn')
+            plt.plot(t, obs.data, label='obs')
+            plt.plot(t, d1_2, label='obs_win')
+            plt.plot(t, syn.data, label='syn')
             plt.plot(t, syn2_tr.data, label='syn_new')
             
-            for win in bwins2:
-                plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='lightgray')
+            for win in wins:
+                plt.axvspan(win.left * dtx, win.right * dtx, facecolor='lightgray')
             
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w.pdf')
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.pdf')
+
+            # # plt.figure(figsize=(12, 8))
+            # plt.figure(figsize=(20, 15))
+            # plt.plot(t, d1_2, label='obs')
+            # plt.plot(t, d2, label='syn')
+            # plt.plot(t, syn2_tr.data, label='syn_new')
+            
+            # for win in bwins2:
+            #     plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='palegreen')
+            
+            # plt.legend()
+            # plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w.pdf')
         
         output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
         plt.figure(figsize=(12, 8))
