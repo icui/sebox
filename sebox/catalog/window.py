@@ -423,6 +423,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             output['win'][i1-imin: i2-imin] = fobs[i1: i2]
             output['syn_bands'][iband] = 1
 
+            # plt.figure(figsize=(12, 8))
             plt.figure(figsize=(20, 15))
             plt.plot(t, obs.data, label='obs')
             plt.plot(t, syn.data, label='syn')
@@ -431,7 +432,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
                 plt.axvspan(win.left * dtx, win.right * dtx, facecolor='lightgray')
             
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.svg')
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.pdf')
         
         else:
             continue
@@ -492,6 +493,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
                     bwins2.append((l,fr+1))
         
         if len(bwins):
+            # plt.figure(figsize=(12, 8))
             plt.figure(figsize=(20, 15))
             plt.plot(t, d1, label='obs')
             plt.plot(t, d2, label='syn')
@@ -504,6 +506,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w1.pdf')
         
         if len(bwins2):
+            # plt.figure(figsize=(12, 8))
             plt.figure(figsize=(20, 15))
             plt.plot(t, d1_2, label='obs')
             plt.plot(t, d2, label='syn')
@@ -514,7 +517,14 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             plt.legend()
             plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w2.pdf')
         
-        output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
+        # output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
+        plt.figure(figsize=(12, 8))
+        fsyn = fft(_pad(d2, nt_se))[i1: i2]
+        plt.plot(np.angle(fft(_pad(obs.data, nt_se))[i1: i2]) / fsyn, label='original')
+        plt.plot(np.angle(fft(_pad(d1, nt_se))[i1: i2]) / fsyn, label='win1')
+        plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2]) / fsyn, label='win2')
+        plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_phase.pdf')
+
 
     if any(output['syn_bands']):
         return output
