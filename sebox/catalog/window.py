@@ -517,7 +517,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             plt.legend()
             plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w2.pdf')
         
-        # output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
+        output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
         plt.figure(figsize=(12, 8))
         fsyn = fft(_pad(d2, nt_se))[i1: i2]
         plt.plot(np.angle(fft(_pad(obs.data, nt_se))[i1: i2]) / fsyn, label='original')
