@@ -171,6 +171,12 @@ def ft(node):
     node.add_mpi(_ft, len(events), mpiarg=events)
 
 
+def ft2(node):
+    from functools import partial
+
+    node.add(_ft, args=node.ls('events'))
+
+
 def _ft(event):
     from pyasdf import ASDFDataSet
     from seisbp import SeisBP
