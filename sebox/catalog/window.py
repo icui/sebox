@@ -561,8 +561,11 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
         if len(bwins2):
             plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn[i1: i2]), label='windowed')
             plt.plot(np.angle(fft(_pad(d1_3, nt_se))[i1: i2] / fsyn[i1: i2]), label='windowed(49)')
-        plt.legend()
-        plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.pdf')
+            plt.legend()
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.pdf')
+        else:
+            plt.legend()
+            plt.savefig(f'plots3/{sta}.{cmp}{bnames[iband]}.pdf')
 
         
         if len(bwins2):
