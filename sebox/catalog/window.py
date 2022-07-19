@@ -417,7 +417,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
         has_full = ratio_diff > catalog.window['threshold_diff']
         has_blended = ratio_syn > catalog.window['threshold_syn'] and ratio_obs > catalog.window['threshold_obs']
 
-        if has_full or has_blended:
+        # if has_full or has_blended:
+        if has_full:
             output['syn'][i1-imin: i2-imin] = fsyn[i1: i2]
             output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
             output['win'][i1-imin: i2-imin] = fobs[i1: i2]
@@ -520,12 +521,15 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
         output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
         plt.figure(figsize=(12, 8))
         plt.plot(np.angle(fobs[i1: i2] / fsyn[i1: i2]), label='original')
+        pname = f'plots/{sta}.{cmp}{bnames[iband]}_phase'
         if len(bwins):
             plt.plot(np.angle(fft(_pad(d1, nt_se))[i1: i2] / fsyn[i1: i2]), label='w1')
+            pname += '1'
         if len(bwins2):
             plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn[i1: i2]), label='w2')
+            pname += '2'
         plt.legend()
-        plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_phase.pdf')
+        plt.savefig(f'{pname}.pdf')
 
 
     if any(output['syn_bands']):
