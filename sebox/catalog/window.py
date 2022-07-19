@@ -451,6 +451,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
 
         bwins = []
         bwins2 = []
+        title = ' '
 
         syn_mean = 0.0
         for win in wins:
@@ -467,10 +468,14 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
                 d1[fl: l] = d2[fl: l]
                 d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
                 bwins.append((fl,r))
+                
+                rb = emean(d2[fl:r]) / syn_mean
+                title += f'{rb:.2f} '
 
-                if emean(d2[fl:r]) / syn_mean < catalog.window['threshold_blend']:
+                if rb < catalog.window['threshold_blend']:
                     d1_2[fl:r] = d1[fl:r]
                     bwins2.append((fl,r))
+
             
             if fr - win.right >= nt:
                 l = win.right + 1
@@ -479,7 +484,10 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
                 d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
                 bwins.append((l,fr+1))
 
-                if emean(d2[l:fr+1]) / syn_mean < catalog.window['threshold_blend']:
+                rb = emean(d2[l:fr+1]) / syn_mean
+                title += f'{rb:.2f} '
+
+                if rb < catalog.window['threshold_blend']:
                     d1_2[l:fr+1] = d1[l:fr+1]
                     bwins2.append((l,fr+1))
         
@@ -487,7 +495,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             plt.figure(figsize=(20, 15))
             plt.plot(t, d1, label='obs')
             plt.plot(t, d2, label='syn')
-            
+
             for win in bwins:
                 plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='lightgray')
             
