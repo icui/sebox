@@ -36,6 +36,7 @@ threshold_obs = 0.5
 threshold_syn = 0.5
 threshold_diff = 0.5
 threshold_duration = 0.01
+threshold_blend = 0.1
 savefig = false
 
 [window.flexwin.default]

@@ -406,6 +406,10 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
+        syn_mean = syn_sum = len(syn.data)
+
+        def emean(data):
+            return sum(data ** 2) / len(data)
 
         ratio_syn = sum(sum(syn.data[win.left: win.right] ** 2 / syn_sum) for win in wins)
         ratio_obs = sum(sum(obs.data[win.left: win.right] ** 2 / obs_sum) for win in wins)
@@ -430,35 +434,74 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             plt.legend()
             plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.svg')
         
+        else:
+            continue
+        
         if has_full:
             output['obs_bands'][iband] = 1
 
         if has_blended:
             output['win_bands'][iband] = 1
-            nt = int(catalog.process['period_max'] / catalog.process['dt'] / 2)
-            taper = np.hanning(nt * 2)
+        
+        nt = int(catalog.process['period_max'] / catalog.process['dt'] / 2)
+        taper = np.hanning(nt * 2)
 
-            d1 = obs.data
-            d2 = syn.data
+        d1 = obs.data.copy()
+        d1_2 = obs.data.copy()
+        d2 = syn.data
 
-            for i, win in enumerate(wins):
-                fl = 0 if i == 0 else wins[i-1].right + nt + 1
-                fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+        bwins = []
+        bwins2 = []
 
-                if win.left - fl >= nt:
-                    l = win.left - nt
-                    r = win.left
-                    d1[fl: l] = d2[fl: l]
-                    d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
-                
-                if fr - win.right >= nt:
-                    l = win.right + 1
-                    r = win.right + nt + 1
-                    d1[r: fr + 1] = d2[r: fr + 1]
-                    d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
+        for i, win in enumerate(wins):
+            fl = 0 if i == 0 else wins[i-1].right + nt + 1
+            fr = len(d1) - 1 if i == len(wins) - 1 else wins[i+1].left - nt - 1
+
+            if win.left - fl >= nt:
+                l = win.left - nt
+                r = win.left
+                d1[fl: l] = d2[fl: l]
+                d1[l: r] += (d2[l: r] - d1[l: r]) * taper[nt:]
+                bwins.append((fl,r))
+
+                if emean(d2[fl:r]) / syn_mean < catalog.window['threshold_blend']:
+                    d1_2[fl:r] = d1[fl:r]
+                    bwins2.append((fl,r))
             
-            output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
-            # output['win'][i1-imin: i2-imin] = fft(d1)[i1: i2]
+            if fr - win.right >= nt:
+                l = win.right + 1
+                r = win.right + nt + 1
+                d1[r: fr + 1] = d2[r: fr + 1]
+                d1[l: r] += (d2[l: r] - d1[l: r]) * taper[:nt]
+                bwins.append((l,fr+1))
+
+                if emean(d2[l:fr+1]) / syn_mean < catalog.window['threshold_blend']:
+                    d1_2[l:fr+1] = d1[l:fr+1]
+                    bwins2.append((l,fr+1))
+        
+        if len(bwins):
+            plt.figure(figsize=(20, 15))
+            plt.plot(t, d1, label='obs')
+            plt.plot(t, d2, label='syn')
+            
+            for win in bwins:
+                plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='lightgray')
+            
+            plt.legend()
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w1.svg')
+        
+        if len(bwins2):
+            plt.figure(figsize=(20, 15))
+            plt.plot(t, d1_2, label='obs')
+            plt.plot(t, d2, label='syn')
+            
+            for win in bwins2:
+                plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='lightgray')
+            
+            plt.legend()
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w2.svg')
+        
+        output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
 
     if any(output['syn_bands']):
         return output
