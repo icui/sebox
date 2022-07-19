@@ -500,7 +500,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
                 plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='lightgray')
             
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w1.svg')
+            plt.title(title)
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w1.pdf')
         
         if len(bwins2):
             plt.figure(figsize=(20, 15))
@@ -511,7 +512,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
                 plt.axvspan(win[0] * dtx, win[1] * dtx, facecolor='lightgray')
             
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w2.svg')
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w2.pdf')
         
         output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
 
