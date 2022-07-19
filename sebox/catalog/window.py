@@ -193,7 +193,8 @@ def _ft2(stas, event):
 
     measurements = {}
 
-    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r') as syn_bp:
+    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r') as syn_bp, \
+        SeisBP(f'proc_49/{event}.bp', 'r') as syn2_bp:
         for stap in stas:
             sta = '.'.join(stap.split('.')[:2])
             
@@ -211,12 +212,13 @@ def _ft2(stas, event):
                 try:
                     obs_tr = obs_bp.trace(sta, cmp)
                     syn_tr = syn_bp.trace(sta, cmp)
+                    syn2_tr = syn2_bp.trace(sta, cmp)
                 
                 except:
                     pass
                 
                 else:
-                    _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], sta, cmp)
+                    _ft_trace(obs_tr, syn_tr, syn2_tr, wins_rtz[cmp], sta, cmp)
 
 
 def _ft(event):
@@ -327,7 +329,7 @@ def _pad(data, nt):
     
     return data[:nt]
 
-def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
+def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
     from scipy.fft import fft
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
@@ -360,6 +362,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
 
     fobs = tp.cast(np.ndarray, fft(_pad(obs_tr.data, nt_se)))
     fsyn = tp.cast(np.ndarray, fft(_pad(syn_tr.data, nt_se)))
+    fsyn2 = tp.cast(np.ndarray, fft(_pad(syn2_tr.data, nt_se)))
     # fobs = tp.cast(np.ndarray, fft(obs_tr.data))
     # fsyn = tp.cast(np.ndarray, fft(syn_tr.data))
 
@@ -530,6 +533,19 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             pname += '2'
         plt.legend()
         plt.savefig(f'{pname}.pdf')
+
+        
+        plt.figure(figsize=(12, 8))
+        plt.plot(np.angle(fobs[i1: i2] / fsyn2[i1: i2]), label='original')
+        pname = f'plots/{sta}.{cmp}{bnames[iband]}_phase'
+        if len(bwins):
+            plt.plot(np.angle(fft(_pad(d1, nt_se))[i1: i2] / fsyn2[i1: i2]), label='w1')
+            pname += '1'
+        if len(bwins2):
+            plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn2[i1: i2]), label='w2')
+            pname += '2'
+        plt.legend()
+        plt.savefig(f'{pname}.49.pdf')
 
 
     if any(output['syn_bands']):
