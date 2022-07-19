@@ -172,9 +172,74 @@ def ft(node):
 
 
 def ft2(node):
-    from functools import partial
+    for event in node.ls('events'):
+        node.add(_ft2, args=(event,), mpiarg=node.ls(f'blend_obs/{event}'), group_mpiarg=True)
 
-    node.add(_ft, args=node.ls('events'))
+
+def _ft2(stas, event):
+    from seisbp import SeisBP
+    from nnodes import root
+    from sebox.catalog import catalog
+    import numpy as np
+
+    nbands = catalog.process['nbands']
+
+    nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.process['dt']))
+    df = 1 / catalog.process['dt'] / nt_se
+
+    imin = int(np.ceil(1 / catalog.process['period_max'] / df))
+    imax = int(np.floor(1 / catalog.process['period_min'] / df)) + 1
+    fincr = (imax - imin) // nbands
+
+    measurements = {}
+
+    with SeisBP(f'proc_obs/{event}.bp', 'r') as obs_bp, SeisBP(f'proc_syn/{event}.bp', 'r') as syn_bp:
+        for stap in stas:
+            sta = '.'.join(stap.split('.')[:2])
+            
+            try:
+                wins_rtz = root.load(f'blend_obs/{event}/{sta}.pickle')
+            
+            except:
+                # print(event, sta)
+                continue
+
+            if not any(len(wins) for wins in wins_rtz):
+                continue
+            
+            output = {}
+
+            for cmp in ('R', 'T', 'Z'):
+                try:
+                    obs_tr = obs_bp.trace(sta, cmp)
+                    syn_tr = syn_bp.trace(sta, cmp)
+                
+                except:
+                    pass
+                
+                else:
+                    m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    # try:
+                    #     m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    
+                    # except:
+                    #     print(event, sta, cmp, obs_tr.data)
+                    #     continue
+
+                    if m is not None:
+                        output[cmp] = m
+            
+            if len(output):
+                measurements[sta] = {}
+
+                for cmp in ('R', 'T', 'Z'):
+                    if cmp in output:
+                        measurements[sta][cmp] = {}
+                        measurements[sta][cmp]['obs'] = output[cmp]['obs_bands']
+                        measurements[sta][cmp]['syn'] = output[cmp]['syn_bands']
+                        measurements[sta][cmp]['win'] = output[cmp]['win_bands']
+        
+        root.dump(measurements, f'bands/{event}.pickle')
 
 
 def _ft(event):
@@ -306,7 +371,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
     cl = catalog.process['corner_left']
     cr = catalog.process['corner_right']
 
-    print(nt_se, imin, imax, fincr)
+    # print(nt_se, imin, imax, fincr)
 
     fobs = tp.cast(np.ndarray, fft(_pad(obs_tr.data, nt_se)))
     fsyn = tp.cast(np.ndarray, fft(_pad(syn_tr.data, nt_se)))
