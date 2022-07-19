@@ -341,6 +341,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
 
     nbands = catalog.process['nbands']
     bnames = ['#17-23s', '#23-40s', '#40-100s']
+    dtx = obs_tr.stats.delta / 60
+    t = np.linspace(0, (obs_tr.stats.npts-1) * dtx, dtx)
     
     nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.process['dt']))
     df = 1 / catalog.process['dt'] / nt_se
@@ -418,8 +420,12 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             output['syn_bands'][iband] = 1
 
             plt.figure(figsize=(20, 15))
-            plt.plot(obs.data, label='obs')
-            plt.plot(syn.data, label='syn')
+            plt.plot(t, obs.data, label='obs')
+            plt.plot(t, syn.data, label='syn')
+            
+            for win in wins:
+                plt.axvspan(win.left * dtx, win.right * dtx, facecolor='lightgray')
+            
             plt.legend()
             plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.svg')
         
