@@ -437,7 +437,7 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
                 plt.axvspan(win.left * dtx, win.right * dtx, facecolor='lightgray')
             
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.pdf')
+            plt.savefig(f'plots2/{sta}.{cmp}{bnames[iband]}.pdf')
         
         else:
             continue
@@ -453,7 +453,9 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
 
         d1 = obs.data.copy()
         d1_2 = obs.data.copy()
+        d1_3 = obs.data.copy()
         d2 = syn.data
+        d3 = syn2_tr.data
 
         bwins = []
         bwins2 = []
@@ -480,6 +482,8 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
 
                 if rb < catalog.window['threshold_blend']:
                     d1_2[fl:r] = d1[fl:r]
+                    d1_3[fl: l] = d3[fl: l]
+                    d1_3[l: r] += (d3[l: r] - d1_3[l: r]) * taper[nt:]
                     bwins2.append((fl,r))
 
             
@@ -495,6 +499,8 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
 
                 if rb < catalog.window['threshold_blend']:
                     d1_2[l:fr+1] = d1[l:fr+1]
+                    d1_3[r: fr + 1] = d3[r: fr + 1]
+                    d1_3[l: r] += (d3[l: r] - d1_3[l: r]) * taper[:nt]
                     bwins2.append((l,fr+1))
         
         # if len(bwins):
@@ -535,28 +541,36 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
             # plt.legend()
             # plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w.pdf')
         
-        output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
+        plt.figure(figsize=(20, 15))
+        plt.plot(t, d1_2, label='win')
+        plt.plot(t, d1_3, label='win(49)')
+        
+        for win in wins:
+            plt.axvspan(win.left * dtx, win.right * dtx, facecolor='lightgray')
+        
+        plt.legend()
+        plt.savefig(f'plots2/{sta}.{cmp}{bnames[iband]}.win.pdf')
+        
+        # output['win'][i1-imin: i2-imin] = fft(_pad(d1, nt_se))[i1: i2]
         plt.figure(figsize=(12, 8))
         plt.plot(np.angle(fobs[i1: i2] / fsyn[i1: i2]), label='original')
-        pname = f'plots/{sta}.{cmp}{bnames[iband]}_phase'
         # if len(bwins):
         #     plt.plot(np.angle(fft(_pad(d1, nt_se))[i1: i2] / fsyn[i1: i2]), label='w1')
         #     pname += '1'
         if len(bwins2):
             plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn[i1: i2]), label='windowed')
-            pname += '_w'
+            plt.plot(np.angle(fft(_pad(d1_3, nt_se))[i1: i2] / fsyn[i1: i2]), label='windowed(49)')
         plt.legend()
-        plt.savefig(f'{pname}.pdf')
+        plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.pdf')
 
         
-        plt.figure(figsize=(12, 8))
-        plt.plot(np.angle(fobs[i1: i2] / fsyn2[i1: i2]), label='original')
-        pname = f'plots/{sta}.{cmp}{bnames[iband]}_phase'
         if len(bwins2):
-            plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn2[i1: i2]), label='windowed')
-            pname += '_w'
-        plt.legend()
-        plt.savefig(f'{pname}.49.pdf')
+            plt.figure(figsize=(12, 8))
+            plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn[i1: i2]), label='old')
+            plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn2[i1: i2]), label='new')
+            plt.plot(np.angle(fft(_pad(d1_3, nt_se))[i1: i2] / fsyn2[i1: i2]), label='new(49)')
+            plt.legend()
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.49.pdf')
 
 
     if any(output['syn_bands']):
