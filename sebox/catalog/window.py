@@ -216,7 +216,7 @@ def _ft2(stas, event):
                     pass
                 
                 else:
-                    _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], sta, cmp)
 
 
 def _ft(event):
