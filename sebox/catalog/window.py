@@ -417,7 +417,7 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
             output['win'][i1-imin: i2-imin] = fobs[i1: i2]
             output['syn_bands'][iband] = 1
 
-            plt.figure(dpi=300)
+            plt.figure(figsize=(20, 15))
             plt.plot(obs.data, label='obs')
             plt.plot(syn.data, label='syn')
             plt.legend()
