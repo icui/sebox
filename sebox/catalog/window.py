@@ -206,8 +206,6 @@ def _ft2(stas, event):
 
             if not any(len(wins) for wins in wins_rtz):
                 continue
-            
-            output = {}
 
             for cmp in ('R', 'T', 'Z'):
                 try:
@@ -218,28 +216,7 @@ def _ft2(stas, event):
                     pass
                 
                 else:
-                    m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
-                    # try:
-                    #     m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
-                    
-                    # except:
-                    #     print(event, sta, cmp, obs_tr.data)
-                    #     continue
-
-                    if m is not None:
-                        output[cmp] = m
-            
-            if len(output):
-                measurements[sta] = {}
-
-                for cmp in ('R', 'T', 'Z'):
-                    if cmp in output:
-                        measurements[sta][cmp] = {}
-                        measurements[sta][cmp]['obs'] = output[cmp]['obs_bands']
-                        measurements[sta][cmp]['syn'] = output[cmp]['syn_bands']
-                        measurements[sta][cmp]['win'] = output[cmp]['win_bands']
-        
-        root.dump(measurements, f'bands/{event}.pickle')
+                    _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
 
 
 def _ft(event):
@@ -289,7 +266,7 @@ def _ft(event):
                     pass
                 
                 else:
-                    m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
+                    m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], sta, cmp)
                     # try:
                     #     m = _ft_trace(obs_tr, syn_tr, wins_rtz[cmp], cmp)
                     
@@ -350,15 +327,20 @@ def _pad(data, nt):
     
     return data[:nt]
 
-def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
+def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
     from scipy.fft import fft
     from pytomo3d.signal.process import sac_filter_trace
     import numpy as np
+    import matplotlib
+    import matplotlib.pyplot as plt
+
+    matplotlib.use('Agg')
     np.seterr(all='raise')
 
     from sebox.catalog import catalog
 
     nbands = catalog.process['nbands']
+    bnames = ['#17-23s', '#23-40s', '#40-100s']
     
     nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.process['dt']))
     df = 1 / catalog.process['dt'] / nt_se
@@ -434,6 +416,11 @@ def _ft_trace(obs_tr, syn_tr, wins_all, cmp):
             output['obs'][i1-imin: i2-imin] = fobs[i1: i2]
             output['win'][i1-imin: i2-imin] = fobs[i1: i2]
             output['syn_bands'][iband] = 1
+
+            plt.plot(obs.data, label='obs')
+            plt.plot(syn.data, label='syn')
+            plt.legend()
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.png')
         
         if has_full:
             output['obs_bands'][iband] = 1
