@@ -542,6 +542,7 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
             # plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}_w.pdf')
         
         plt.figure(figsize=(20, 15))
+        plt.plot(t, obs.data, label='obs')
         plt.plot(t, d1_2, label='win')
         plt.plot(t, d1_3, label='win(49)')
         
