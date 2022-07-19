@@ -406,7 +406,6 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
         syn_sum = sum(syn.data ** 2)
         obs_sum = sum(obs.data ** 2)
         diff_sum = sum(diff ** 2)
-        syn_mean = syn_sum = len(syn.data)
 
         def emean(data):
             return sum(data ** 2) / len(data)
@@ -452,6 +451,11 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
 
         bwins = []
         bwins2 = []
+
+        syn_mean = 0.0
+        for win in wins:
+            syn_mean += sum(syn.data[win.left:win.right+1] ** 2)
+        syn_mean /= len(syn.data)
 
         for i, win in enumerate(wins):
             fl = 0 if i == 0 else wins[i-1].right + nt + 1
