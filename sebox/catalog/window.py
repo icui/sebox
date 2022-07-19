@@ -342,7 +342,8 @@ def _ft_trace(obs_tr, syn_tr, wins_all, sta, cmp):
     nbands = catalog.process['nbands']
     bnames = ['#17-23s', '#23-40s', '#40-100s']
     dtx = obs_tr.stats.delta / 60
-    t = np.linspace(0, (obs_tr.stats.npts-1) * dtx, dtx)
+    ntx = obs_tr.stats.npts
+    t = np.linspace(0, (ntx-1) * dtx, ntx)
     
     nt_se = int(round((catalog.process['duration_encoding']) * 60 / catalog.process['dt']))
     df = 1 / catalog.process['dt'] / nt_se
