@@ -60,34 +60,34 @@ def __getattr__(name):
     raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 
-def create_catalog(node: Node):
-    """Create a catalog database."""
-    # create pickle file for events and event_data
-    node.add(index_events)
+# def create_catalog(node: Node):
+#     """Create a catalog database."""
+#     # create pickle file for events and event_data
+#     node.add(index_events)
 
-    # create pickle file for encoding parameters
-    node.add(index_encoding)
+#     # create pickle file for encoding parameters
+#     node.add(index_encoding)
 
-    # # download raw seismic data
-    # node.add(download)
+#     # # download raw seismic data
+#     # node.add(download)
 
-    # # compute and process synthetic data
-    # node.add(simulate)
+#     # # compute and process synthetic data
+#     # node.add(simulate)
 
-    # # process observed and synthetic seismic data
-    # node.add(process)
+#     # # process observed and synthetic seismic data
+#     # node.add(process)
 
-    # create trace windows
-    node.add(window)
+#     # create trace windows
+#     node.add(window)
 
-    # select traces based on windows
-    node.add(select)
+#     # select traces based on windows
+#     node.add(select)
 
-    # create pickle file for stations and station_data
-    node.add(index_stations)
+#     # create pickle file for stations and station_data
+#     node.add(index_stations)
 
-    # create pickle file for traces
-    node.add(index_traces)
+#     # create pickle file for traces
+#     node.add(index_traces)
 
-    # create pickle file for weighting
-    node.add(weight)
+#     # create pickle file for weighting
+#     node.add(weight)

@@ -574,7 +574,7 @@ def _ft_trace(obs_tr, syn_tr, syn2_tr, wins_all, sta, cmp):
             plt.plot(np.angle(fft(_pad(d1_2, nt_se))[i1: i2] / fsyn2[i1: i2]), label='new')
             plt.plot(np.angle(fft(_pad(d1_3, nt_se))[i1: i2] / fsyn2[i1: i2]), label='new(49)')
             plt.legend()
-            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.49.pdf')
+            plt.savefig(f'plots/{sta}.{cmp}{bnames[iband]}.iter.pdf')
 
 
     if any(output['syn_bands']):
